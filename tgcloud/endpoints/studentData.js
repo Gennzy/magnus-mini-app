@@ -28,13 +28,18 @@ export default async function (input, ctx) {
       .from(studentData)
       .where(eq(studentData.tgId, tgId))
       .get();
-    return row?.payload || { assignmentDrafts: {}, lessonNotes: {} };
+    return {
+      assignmentDrafts: cleanMap(row?.payload?.assignmentDrafts),
+      lessonNotes: cleanMap(row?.payload?.lessonNotes),
+      interestedFaculties: cleanMap(row?.payload?.interestedFaculties),
+    };
   }
 
   if (input?.action === 'save') {
     const payload = {
       assignmentDrafts: cleanMap(input.assignmentDrafts),
       lessonNotes: cleanMap(input.lessonNotes),
+      interestedFaculties: cleanMap(input.interestedFaculties),
     };
     await db.insert(studentData).values({
       tgId,
