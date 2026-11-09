@@ -32,7 +32,7 @@ export default async function (input, ctx) {
     const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
     const previous = Array.isArray(existing?.payload?.assignmentSubmissions) ? existing.payload.assignmentSubmissions : [];
     const submission = { id: 'sub-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8), assignmentId, answer, submittedAt: new Date().toISOString(), status: 'received' };
-    const payload = { ...(existing?.payload || {}), assignmentSubmissions: [...previous, submission].slice(-50) };
+    const payload = { ...(existing?.payload || {}), studentProfile: { firstName: String(ctx.initData.user.first_name || '').slice(0, 80), username: String(ctx.initData.user.username || '').slice(0, 64) }, assignmentSubmissions: [...previous, submission].slice(-50) };
     await db.insert(studentData).values({ tgId, payload, updatedAt: Math.floor(Date.now() / 1000) }).onConflictDoUpdate({ target: studentData.tgId, set: { payload, updatedAt: Math.floor(Date.now() / 1000) } }).run();
     return { ok: true, submission };
   }
