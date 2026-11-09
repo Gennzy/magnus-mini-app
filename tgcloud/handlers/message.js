@@ -1,5 +1,5 @@
 import { api, db } from 'sdk';
-import { eq } from 'sdk/db';
+import { eq, and } from 'sdk/db';
 import { adminUsers, botSettings, paymentOrders, studentSubscriptions, subscriptionPlans, adminAuditLog, supportSessions, supportRequests } from '../schema.js';
 import { DEFAULT_SUBSCRIPTION_PLANS, normalizePlan } from '../lib/subscriptionPlans.js';
 
@@ -74,6 +74,11 @@ async function processSuccessfulPayment(message) {
     console.error('MAGNUS: параметры successful_payment не совпали с заказом.', { orderId: order.id });
     return false;
   }
+
+  // Атомарно захватываем заказ, чтобы повторный update не продлил доступ второй раз.
+  const claimed = await db.update(paymentOrders).set({ status: 'processing' })
+    .where(and(eq(paymentOrders.id, order.id), eq(paymentOrders.status, 'pending'))).run();
+  if (!claimed?.rowsAffected) return false;
 
   const savedPlan = await db.select().from(subscriptionPlans)
     .where(eq(subscriptionPlans.planId, order.planId)).get();
