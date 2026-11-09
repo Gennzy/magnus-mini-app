@@ -320,8 +320,8 @@ function loadAdminStudentDetail(studentId){
  });
  if(!called){adminStudentDetailLoading=false;adminStudentDetailError='Открой MAGNUS через Telegram, чтобы загрузить профиль.';if(currentPage==='admin')render();}
 }
-  loadAdminPaymentOrders();
 function loadAdminPaymentPlans(){
+  loadAdminPaymentOrders();
  adminPaymentPlansLoading=true;adminPaymentPlansError='';
  if(currentPage==='admin')render();
  const called=callAdminApi('paymentPlans',{},(error,result)=>{
@@ -350,7 +350,7 @@ function adminPaymentOrdersSection(){
     const state=order.status==="paid"?"paid":"";
     return "<article class=admin-order-row><div class=admin-order-main><b>"+esc(order.planTitle||order.planId)+"</b><small>Telegram ID "+esc(order.tgId)+" · "+esc(date)+"</small><small>Заказ "+esc(String(order.id||"").slice(-12))+esc(charge)+"</small></div><div class=admin-order-side><strong>"+esc(Number(order.amount)+" ⭐")+"</strong><span class=admin-order-status "+state+">"+esc(paymentStatusLabel(order.status))+"</span></div></article>";
   }).join(""):"<div class=admin-empty>Заказов пока нет.</div>";
-  return "<section class=admin-payment-orders><div class=admin-section-head><div><span>ПЛАТЁЖНЫЙ РЕЕСТР</span><h2>Последние заказы</h2></div><button data-admin-payment-history-refresh>Обновить "+icon("refresh")+"</button></div><div class=admin-payment-summary><article><small>ПОДТВЕРЖДЕНО</small><b>"+Number(summary.paidOrders||0)+"</b></article><article><small>ПОЛУЧЕНО STARS</small><b>"+Number(summary.paidStars||0)+" ⭐</b></article><article><small>ОЖИДАЮТ</small><b>"+Number(summary.pendingOrders||0)+"</b></article></div><div class=admin-order-list>"+body+"</div><p class=admin-payment-footnote>Сводка рассчитана по последним 200 заказам. В сумму входят только подтверждённые оплаты.</p></section>";
+  return "<section class=admin-payment-orders><div class=admin-section-head><div><span>ПЛАТЁЖНЫЙ РЕЕСТР</span><h2>Последние заказы</h2></div><button data-admin-payment-history-refresh>Обновить "+icon("refresh")+"</button></div><div class=admin-payment-summary><article><small>ПОДТВЕРЖДЕНО</small><b>"+Number(summary.paidOrders||0)+"</b></article><article><small>ПОЛУЧЕНО STARS</small><b>"+Number(summary.paidStars||0)+" ⭐</b></article><article><small>ОЖИДАЮТ</small><b>"+Number(summary.pendingOrders||0)+"</b></article></div><div class=admin-order-list>"+body+"</div><p class=admin-payment-footnote>Сводка рассчитана по последним заказам (не более 200). В сумму входят только подтверждённые оплаты.</p></section>";
 }
 
 function adminPaymentPlansPage(){
