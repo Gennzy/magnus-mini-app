@@ -9,7 +9,7 @@ tg?.setBackgroundColor?.("#f7f7f5");
 const telegramUser = tg?.initDataUnsafe?.user;
 const firstName = telegramUser?.first_name || "Александр";
 const username = telegramUser?.username ? `@${telegramUser.username}` : "Студент MAGNUS";
-const avatarLetter = firstName.trim().charAt(0).toUpperCase() || "M";
+const avatarLetter = telegramUser?.first_name?.trim().charAt(0).toUpperCase() || "M";
 const telegramPhotoUrl = telegramUser?.photo_url || "";
 
 const faculties = [
@@ -498,18 +498,67 @@ function assignmentDetailPage() {
 }
 
 function documentsPage() {
-  return `<main class="screen inner-screen">${heading("ТВОИ ДОСТИЖЕНИЯ","То, чем можно<br><em>гордиться.</em>","Сертификаты и подтверждения прохождения образовательных программ.")}
-    <section class="certificate-preview"><div class="cert-topline"><span>MAGNUS</span><span>№ 000001</span></div><div class="cert-seal">M</div><small>INTERNATIONAL UNIVERSITY</small><h2>Сертификат<br>достижения</h2><p>Здесь появятся документы о завершении выбранных программ.</p><div class="cert-bottom"><span>KNOWLEDGE</span><span>2026</span></div></section>
-    <div class="empty-docs"><span class="empty-doc-icon">✦</span><div><b>Твоя первая награда впереди</b><p>Завершай курсы, проходи задания и возвращайся за своими достижениями.</p></div></div>
-    <p class="legal-note">Документы MAGNUS подтверждают прохождение соответствующих образовательных программ и не являются государственными дипломами о высшем образовании.</p>
+  return `<main class="screen inner-screen documents-screen">
+    ${heading("ЛИЧНЫЕ ДОКУМЕНТЫ", "Твои достижения<br><em>и документы.</em>", "Сертификаты и подтверждения обучения будут собраны здесь.")}
+    <section class="documents-empty-hero">
+      <div class="documents-empty-copy">
+        <span class="subtle-label">АРХИВ СТУДЕНТА</span>
+        <h2>Здесь будут<br>твои сертификаты.</h2>
+        <p>Сейчас выданных документов нет. Когда учебная система сформирует документ, он появится в этом разделе.</p>
+        <span class="documents-empty-status"><i></i>Пока нет документов</span>
+      </div>
+      <div class="documents-art" aria-hidden="true">
+        <div class="documents-art-orbit"></div>
+        <div class="documents-paper">
+          <span class="documents-paper-top">MAGNUS <i>STUDENT FILE</i></span>
+          <span class="documents-paper-icon">${icon("docs")}</span>
+          <b></b><b></b><b></b>
+          <span class="documents-paper-seal">M</span>
+        </div>
+        <span class="documents-art-spark">✦</span>
+      </div>
+    </section>
+    <section class="documents-next-step">
+      <div class="documents-next-icon">${icon("study")}</div>
+      <div><b>Продолжай свой путь</b><p>Учебные материалы и задания доступны в разделе обучения.</p></div>
+      <button data-go="study" aria-label="Перейти к обучению">${icon("arrow")}</button>
+    </section>
+    <p class="legal-note">Документы MAGNUS подтверждают прохождение соответствующих образовательных программ и не являются государственными дипломами о высшем образовании. Наличие и условия выдачи документов определяются правилами конкретной программы.</p>
   </main>`;
 }
 
 function profilePage() {
-  return `<main class="screen inner-screen">${heading("ТВОЙ АККАУНТ","Рад видеть<br><em>тебя здесь.</em>","Личное пространство студента MAGNUS.")}
-    <section class="profile-card"><div class="profile-avatar">${avatarContent()}</div><div class="profile-info"><small>СТУДЕНТ MAGNUS</small><h2>${esc(firstName)}</h2><p>${esc(username)}</p></div><span class="profile-medal">✦</span></section>
-    <div class="profile-stats"><div><b>03</b><small>Курса</small></div><div><b>02</b><small>Достижения</small></div><div><b>07</b><small>Дней подряд</small></div></div>
-    <section class="profile-menu"><button data-action="settings"><span class="menu-icon">⚙</span><span><b>Настройки</b><small>Внешний вид и предпочтения</small></span>${icon("arrow")}</button><button data-action="notifications"><span class="menu-icon">♧</span><span><b>Уведомления</b><small>Важные события и напоминания</small></span>${icon("arrow")}</button><button data-action="support"><span class="menu-icon">?</span><span><b>Поддержка</b><small>Помощь и обратная связь</small></span>${icon("arrow")}</button><button data-action="about"><span class="menu-icon">M</span><span><b>О MAGNUS</b><small>Университет нового поколения</small></span>${icon("arrow")}</button></section>
+  const draftCount = Object.values(assignmentDrafts).filter(value => String(value || "").trim()).length;
+  const noteCount = Object.values(lessonNotes).filter(value => String(value || "").trim()).length;
+  const telegramConnected = Boolean(telegramUser?.id);
+  const profileName = telegramUser?.first_name || "Гость MAGNUS";
+  const profileCaption = telegramUser?.username
+    ? `@${telegramUser.username}`
+    : telegramConnected ? "Профиль из Telegram" : "Telegram-профиль не получен";
+  return `<main class="screen inner-screen profile-screen">
+    ${heading("ЛИЧНОЕ ПРОСТРАНСТВО", "Твой профиль<br><em>MAGNUS.</em>", "Аккаунт и сохранённые учебные материалы.")}
+    <section class="profile-card">
+      <div class="profile-avatar">${avatarContent()}</div>
+      <div class="profile-info"><small>ЛИЧНЫЙ КАБИНЕТ</small><h2>${esc(profileName)}</h2><p>${esc(profileCaption)}</p></div>
+      <span class="profile-connection ${telegramConnected?"connected":""}">${telegramConnected?"TELEGRAM":"ГОСТЕВОЙ РЕЖИМ"}</span>
+    </section>
+    <div class="profile-content-heading"><div><span class="subtle-label">ТВОИ МАТЕРИАЛЫ</span><h2>Личные данные</h2></div><span>Локально</span></div>
+    <div class="profile-stats">
+      <div><b>${draftCount}</b><small>Черновики</small></div>
+      <div><b>${noteCount}</b><small>Заметки</small></div>
+      <div><b>${telegramConnected?"Да":"—"}</b><small>Telegram</small></div>
+    </div>
+    <section class="profile-sync-card">
+      <span class="profile-sync-icon">${icon("cloud")}</span>
+      <div><b>${cloudSyncReady?"Облачная синхронизация активна":"Сохранение учебных материалов"}</b><p>${cloudSyncReady?"Черновики и заметки синхронизируются с облачным хранилищем.":"Черновики и заметки сохраняются на этом устройстве. Облачное подключение пока не подтверждено."}</p></div>
+      <span class="profile-sync-state ${cloudSyncReady?"active":""}">${cloudSyncReady?"ОНЛАЙН":"ЛОКАЛЬНО"}</span>
+    </section>
+    <section class="profile-menu">
+      <button data-action="settings"><span class="menu-icon">⚙</span><span><b>Настройки</b><small>Внешний вид и предпочтения</small></span>${icon("arrow")}</button>
+      <button data-action="notifications"><span class="menu-icon">♧</span><span><b>Уведомления</b><small>Важные события и напоминания</small></span>${icon("arrow")}</button>
+      <button data-action="support"><span class="menu-icon">?</span><span><b>Поддержка</b><small>Помощь и обратная связь</small></span>${icon("arrow")}</button>
+      <button data-action="about"><span class="menu-icon">M</span><span><b>О MAGNUS</b><small>Пространство для знаний и развития</small></span>${icon("arrow")}</button>
+    </section>
   </main>`;
 }
 
