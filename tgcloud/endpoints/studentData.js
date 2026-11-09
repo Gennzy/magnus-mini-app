@@ -32,6 +32,8 @@ export default async function (input, ctx) {
       assignmentDrafts: cleanMap(row?.payload?.assignmentDrafts),
       lessonNotes: cleanMap(row?.payload?.lessonNotes),
       interestedFaculties: cleanMap(row?.payload?.interestedFaculties),
+      lessonQuizResults: cleanMap(row?.payload?.lessonQuizResults),
+      completedLessons: cleanMap(row?.payload?.completedLessons),
     };
   }
 
@@ -40,6 +42,8 @@ export default async function (input, ctx) {
       assignmentDrafts: cleanMap(input.assignmentDrafts),
       lessonNotes: cleanMap(input.lessonNotes),
       interestedFaculties: cleanMap(input.interestedFaculties),
+      lessonQuizResults: cleanMap(input.lessonQuizResults),
+      completedLessons: cleanMap(input.completedLessons),
     };
     await db.insert(studentData).values({
       tgId,
