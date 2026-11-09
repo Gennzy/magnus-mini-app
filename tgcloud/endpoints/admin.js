@@ -1,6 +1,6 @@
 import { db, api } from 'sdk';
 import { eq, desc } from 'sdk/db';
-import { adminUsers, studentData, botSettings, adminAuditLog } from '../schema.js';
+import { adminUsers, studentData, botSettings, adminAuditLog, adminMessages } from '../schema.js';
 
 const APP_URL = 'https://app9020486965.tgcloud.ai/';
 const BOT_COMMANDS = [
@@ -159,11 +159,61 @@ export default async function (input, ctx) {
         username: cleanText(profile.username, 64),
       },
       submissions: submissions.reverse(),
+      messages: await db.select().from(adminMessages)
+        .where(eq(adminMessages.studentId, studentId))
+        .orderBy(desc(adminMessages.createdAt)).limit(50).all(),
       interestedFaculties: Object.keys(plainMap(payload.interestedFaculties)),
       completedLessonIds: Object.keys(plainMap(payload.completedLessons)),
       quizLessonIds: Object.keys(plainMap(payload.lessonQuizResults)),
       notesCount: Object.keys(plainMap(payload.lessonNotes)).length,
       draftsCount: Object.keys(plainMap(payload.assignmentDrafts)).length,
+    };
+  }
+
+  if (input?.action === 'sendStudentMessage') {
+    const studentId = String(input.studentId || '').trim();
+    const messageText = typeof input.message === 'string' ? input.message.trim() : '';
+    if (!/^\d{5,20}$/.test(studentId)) {
+      return { ok: false, code: 'INVALID_STUDENT', message: 'Некорректный Telegram ID студента.' };
+    }
+    if (!messageText || messageText.length > 3500) {
+      return { ok: false, code: 'INVALID_MESSAGE', message: 'Сообщение должно содержать от 1 до 3500 символов.' };
+    }
+    const student = await db.select({ tgId: studentData.tgId }).from(studentData)
+      .where(eq(studentData.tgId, studentId)).get();
+    if (!student) return { ok: false, code: 'STUDENT_NOT_FOUND', message: 'Студент не найден в облачной базе.' };
+
+    let status = 'failed';
+    let telegramMessageId = null;
+    let errorMessage = '';
+    try {
+      const sent = await api.sendMessage({ chat_id: Number(studentId), text: messageText });
+      status = 'delivered';
+      telegramMessageId = Number(sent?.message_id) || null;
+    } catch (error) {
+      errorMessage = cleanText(error?.description || error?.message || 'Telegram не принял сообщение.', 500);
+      console.warn('MAGNUS: не удалось отправить сообщение студенту.', error);
+    }
+
+    const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+    const createdAt = Math.floor(Date.now() / 1000);
+    const record = {
+      id: messageId, studentId, adminTgId: tgId, adminEmail: admin.email,
+      messageText, status, telegramMessageId, errorMessage, createdAt,
+    };
+    await db.insert(adminMessages).values(record).run();
+    await writeAuditSafely({
+      action: 'student.message.sent', actorTgId: tgId, actorEmail: admin.email,
+      targetType: 'student', targetId: studentId,
+      summary: status === 'delivered' ? 'Студенту отправлено личное сообщение' : 'Не удалось доставить сообщение студенту',
+      details: { messageId, status, messageLength: messageText.length, telegramMessageId },
+    });
+    return {
+      ok: true, delivered: status === 'delivered',
+      message: status === 'delivered'
+        ? 'Сообщение доставлено в Telegram.'
+        : 'Telegram не доставил сообщение: ' + (errorMessage || 'ошибка отправки.'),
+      record,
     };
   }
 
