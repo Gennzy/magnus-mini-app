@@ -225,7 +225,7 @@ export default async function (message) {
   }
 
   const welcome = command === '/help'
-    ? 'MAGNUS — образовательное пространство.\n\n/start — открыть приложение\n/help — помощь'
+    ? 'MAGNUS — образовательное пространство.\n\n/start — открыть приложение\n/help — помощь\n/paysupport — помощь с оплатой'
     : welcomeMessage;
   await api.sendMessage({
     chat_id: message.chat.id,
