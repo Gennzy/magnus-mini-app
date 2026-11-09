@@ -1,6 +1,16 @@
 import { db } from 'sdk';
 import { eq } from 'sdk/db';
-import { studentData } from '../schema.js';
+import { studentData, studentSubscriptions } from '../schema.js';
+
+function publicSubscription(row, now = Math.floor(Date.now() / 1000)) {
+  if (!row) return { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
+  return {
+    status: row.status === 'active' && Number(row.endsAt) <= now ? 'expired' : row.status,
+    planId: String(row.planId || ''),
+    startsAt: Number(row.startsAt) || 0,
+    endsAt: Number(row.endsAt) || 0,
+  };
+}
 
 function cleanMap(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
@@ -52,6 +62,7 @@ export default async function (input, ctx) {
       },
     };
     const updatedAt = Math.floor(Date.now() / 1000);
+    const subscriptionRow = await db.select().from(studentSubscriptions).where(eq(studentSubscriptions.tgId, tgId)).get();
     await db.insert(studentData).values({ tgId, payload, updatedAt })
       .onConflictDoUpdate({ target: studentData.tgId, set: { payload, updatedAt } }).run();
     return {
@@ -61,6 +72,7 @@ export default async function (input, ctx) {
       lessonQuizResults: cleanMap(payload.lessonQuizResults),
       completedLessons: cleanMap(payload.completedLessons),
       assignmentSubmissions: Array.isArray(payload.assignmentSubmissions) ? payload.assignmentSubmissions.slice(-50) : [],
+      subscription: publicSubscription(subscriptionRow),
     };
   }
 
