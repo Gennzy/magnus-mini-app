@@ -7,7 +7,7 @@ const BOT_COMMANDS = [
   { command: 'start', description: 'Открыть MAGNUS' },
   { command: 'help', description: 'Помощь и возможности' },
 ];
-const DEFAULT_WELCOME = 'Добро пожаловать в MAGNUS.\\n\\nУчебные программы, материалы и задания собраны в одном пространстве.';
+const DEFAULT_WELCOME = 'Добро пожаловать в MAGNUS.\n\nУчебные программы, материалы и задания собраны в одном пространстве.';
 
 function menuKeyboard(admin = false) {
   return {
@@ -67,10 +67,21 @@ export default async function (message) {
     return;
   }
 
+  let welcomeMessage = DEFAULT_WELCOME;
+  let menuButtonText = 'Открыть MAGNUS';
   if (command === '/start') {
     try {
+      const saved = await db.select().from(botSettings).where(eq(botSettings.key, 'default')).get();
+      if (typeof saved?.welcomeMessage === 'string' && saved.welcomeMessage.trim()) welcomeMessage = saved.welcomeMessage;
+      if (typeof saved?.menuButtonText === 'string' && saved.menuButtonText.trim()) menuButtonText = saved.menuButtonText;
+    } catch (error) {
+      console.warn('MAGNUS: не удалось загрузить настройки приветствия, используются значения по умолчанию.', error);
+    }
+    try {
       await api.setMyCommands({ commands: BOT_COMMANDS });
-      await api.setChatMenuButton({ menu_button: { type: 'web_app', text: 'Открыть MAGNUS', web_app: { url: APP_URL } } });
+      await api.setChatMenuButton({
+        menu_button: { type: 'web_app', text: menuButtonText, web_app: { url: APP_URL } },
+      });
     } catch (error) {
       console.warn('MAGNUS: не удалось обновить меню бота.', error);
     }
@@ -78,7 +89,7 @@ export default async function (message) {
 
   const welcome = command === '/help'
     ? 'MAGNUS — образовательное пространство.\n\n/start — открыть приложение\n/help — помощь'
-    : 'Добро пожаловать в MAGNUS.\n\nУчебные программы, материалы и задания собраны в одном пространстве.';
+    : welcomeMessage;
   await api.sendMessage({
     chat_id: message.chat.id,
     text: welcome,
