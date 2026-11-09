@@ -102,7 +102,8 @@ const icon = (name, cls="") => {
     cloud:'<path d="M7 18a4 4 0 1 1 .7-7.94A5.5 5.5 0 0 1 18.4 9 4.5 4.5 0 0 1 18 18H7Z"/>',
     chart:'<path d="M4 19V5M4 19h16M8 15v-4M13 15V7M18 15V4"/>',
     play:'<path d="m9 6 9 6-9 6V6Z"/>',
-    back:'<path d="m15 18-6-6 6-6"/>'
+    back:'<path d="m15 18-6-6 6-6"/>',
+    refresh:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.7-2L20 12M4 12l2.7 5a7 7 0 0 0 11.7-2"/>'
   };
   return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.arrow}</svg>`;
 };
@@ -223,8 +224,8 @@ function callCloudStudentData(action, payload, callback) {
 }
 
 function callAdminApi(action,payload,callback){const serverless=tg?.Serverless;if(typeof serverless?.call!=="function")return false;serverless.call("admin",{action,...payload},(error,result)=>{if(typeof callback==="function")callback(error,result);});return true;}
-function loadAdminAccess(openPanel=false){callAdminApi("status",{},(error,result)=>{adminAccess={loading:false,isAdmin:!error&&Boolean(result?.isAdmin),role:result?.role||null};if(openPanel&&adminAccess.isAdmin)loadAdminDashboard();if(currentPage==="admin"||currentPage==="profile")render();});}
-function loadAdminDashboard(){adminLoading=true;adminError="";if(currentPage==="admin")render();callAdminApi("overview",{},(error,result)=>{adminLoading=false;if(error||!result?.ok){adminError=error?.message||result?.message||"Не удалось загрузить панель управления.";adminDashboard=null;}else{adminDashboard=result;adminError="";}if(currentPage==="admin")render();});}
+function loadAdminAccess(openPanel=false){const called=callAdminApi("status",{},(error,result)=>{adminAccess={loading:false,isAdmin:!error&&Boolean(result?.isAdmin),role:result?.role||null};if(openPanel&&adminAccess.isAdmin)loadAdminDashboard();if(currentPage==="admin"||currentPage==="profile")render();});if(!called){adminAccess={loading:false,isAdmin:false,role:null};if(currentPage==="admin"||currentPage==="profile")render();}}
+function loadAdminDashboard(){adminLoading=true;adminError="";if(currentPage==="admin")render();const called=callAdminApi("overview",{},(error,result)=>{adminLoading=false;if(error||!result?.ok){adminError=error?.message||result?.message||"Не удалось загрузить панель управления.";adminDashboard=null;}else{adminDashboard=result;adminError="";}if(currentPage==="admin")render();});if(!called){adminLoading=false;adminError="Открой MAGNUS через Telegram, чтобы подключить панель управления.";if(currentPage==="admin")render();}}
 function scheduleCloudStudentDataSync() {
   if (!cloudSyncReady) return;
   window.clearTimeout(cloudSyncTimer);
