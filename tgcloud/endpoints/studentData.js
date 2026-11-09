@@ -60,6 +60,7 @@ export default async function (input, ctx) {
       lessonQuizResults: cleanMap(input.lessonQuizResults),
       completedLessons: cleanMap(input.completedLessons),
       assignmentSubmissions: Array.isArray(existing?.payload?.assignmentSubmissions) ? existing.payload.assignmentSubmissions.slice(-50) : [],
+      studentProfile: existing?.payload?.studentProfile || null,
     };
     await db.insert(studentData).values({
       tgId,
