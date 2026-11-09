@@ -10,6 +10,7 @@ const telegramUser = tg?.initDataUnsafe?.user;
 const firstName = telegramUser?.first_name || "Александр";
 const username = telegramUser?.username ? `@${telegramUser.username}` : "Студент MAGNUS";
 const avatarLetter = firstName.trim().charAt(0).toUpperCase() || "M";
+const telegramPhotoUrl = telegramUser?.photo_url || "";
 
 const faculties = [
   { id:"psychology", num:"01", name:"Психология", en:"PSYCHOLOGY", desc:"Понимание человека, мышления и поведения", symbol:"◉", color:"lavender", topics:["Общая психология","Психология личности","Коммуникация и общество"] },
@@ -95,10 +96,14 @@ const icon = (name, cls="") => {
   return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.arrow}</svg>`;
 };
 
+function avatarContent() {
+  return `<span class="avatar-fallback">${esc(avatarLetter)}</span>${telegramPhotoUrl ? `<img src="${esc(telegramPhotoUrl)}" alt="Фото профиля Telegram" class="telegram-avatar-image" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}`;
+}
+
 function topbar() {
   return `<header class="topbar">
     <button class="brand" data-go="home" aria-label="MAGNUS — главная"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 48 48" role="presentation"><path d="M8 17C8 8 14 5 20 10c2-2 6-2 8 0 6-5 12-2 12 7v11c0 9-7 15-16 15S8 37 8 28V17Z" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round"/><path d="M10 14 6 7l10 3M38 14l4-7-10 3" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18" cy="23" r="6.3" fill="none" stroke="currentColor" stroke-width="2.6"/><circle cx="30" cy="23" r="6.3" fill="none" stroke="currentColor" stroke-width="2.6"/><circle cx="18" cy="23" r="2.2" fill="currentColor"/><circle cx="30" cy="23" r="2.2" fill="currentColor"/><path d="m21 33 3-3 3 3-3 3-3-3Z" fill="currentColor"/></svg></span><span class="brand-copy"><b>MAGNUS</b><small>UNIVERSITY</small></span></button>
-    <div class="top-actions"><button class="icon-button" data-action="notifications" aria-label="Уведомления">${icon("bell")}</button><button class="avatar-button" data-go="profile" aria-label="Профиль">${esc(avatarLetter)}</button></div>
+    <div class="top-actions"><button class="icon-button" data-action="notifications" aria-label="Уведомления">${icon("bell")}</button><button class="avatar-button" data-go="profile" aria-label="Профиль">${avatarContent()}</button></div>
   </header>`;
 }
 
@@ -393,7 +398,7 @@ function documentsPage() {
 
 function profilePage() {
   return `<main class="screen inner-screen">${heading("ТВОЙ АККАУНТ","Рад видеть<br><em>тебя здесь.</em>","Личное пространство студента MAGNUS.")}
-    <section class="profile-card"><div class="profile-avatar">${esc(avatarLetter)}</div><div class="profile-info"><small>СТУДЕНТ MAGNUS</small><h2>${esc(firstName)}</h2><p>${esc(username)}</p></div><span class="profile-medal">✦</span></section>
+    <section class="profile-card"><div class="profile-avatar">${avatarContent()}</div><div class="profile-info"><small>СТУДЕНТ MAGNUS</small><h2>${esc(firstName)}</h2><p>${esc(username)}</p></div><span class="profile-medal">✦</span></section>
     <div class="profile-stats"><div><b>03</b><small>Курса</small></div><div><b>02</b><small>Достижения</small></div><div><b>07</b><small>Дней подряд</small></div></div>
     <section class="profile-menu"><button data-action="settings"><span class="menu-icon">⚙</span><span><b>Настройки</b><small>Внешний вид и предпочтения</small></span>${icon("arrow")}</button><button data-action="notifications"><span class="menu-icon">♧</span><span><b>Уведомления</b><small>Важные события и напоминания</small></span>${icon("arrow")}</button><button data-action="support"><span class="menu-icon">?</span><span><b>Поддержка</b><small>Помощь и обратная связь</small></span>${icon("arrow")}</button><button data-action="about"><span class="menu-icon">M</span><span><b>О MAGNUS</b><small>Университет нового поколения</small></span>${icon("arrow")}</button></section>
   </main>`;
@@ -460,4 +465,45 @@ function bindEvents() {
   input?.addEventListener("input", e => { const pos=e.target.selectionStart; searchValue=e.target.value; const y=window.scrollY; render(); const next=document.querySelector("#faculty-search"); next?.focus(); next?.setSelectionRange(pos,pos); window.scrollTo(0,y); });
 }
 
+function triggerStartupHaptic() {
+  try {
+    const haptic = tg?.HapticFeedback;
+    if (typeof haptic?.impactOccurred === "function") {
+      haptic.impactOccurred("medium");
+      return;
+    }
+  } catch {
+    // Telegram или устройство могут не поддерживать тактильную отдачу.
+  }
+  try {
+    window.navigator?.vibrate?.(45);
+  } catch {
+    // Вибрация браузера необязательна и зависит от устройства.
+  }
+}
+
+function showStartupScreen() {
+  const root = document.querySelector("#app");
+  if (!root) return;
+  root.insertAdjacentHTML("afterbegin", `
+    <div class="startup-screen" role="status" aria-label="Загрузка MAGNUS">
+      <div class="startup-inner">
+        <div class="startup-owl-wrap"><img class="startup-owl" src="/mascot/magnus-owl.svg" alt="" /></div>
+        <div class="startup-wordmark">MAGNUS</div>
+        <div class="startup-caption">UNIVERSITY · LEARN WITH PURPOSE</div>
+        <div class="startup-loader" aria-hidden="true"><span></span></div>
+        <div class="startup-loading-text">Загружаем твоё пространство</div>
+      </div>
+    </div>
+  `);
+  window.setTimeout(() => {
+    const splash = document.querySelector(".startup-screen");
+    if (!splash) return;
+    splash.classList.add("is-hidden");
+    window.setTimeout(() => splash.remove(), 420);
+  }, 1100);
+}
+
 render();
+showStartupScreen();
+triggerStartupHaptic();
