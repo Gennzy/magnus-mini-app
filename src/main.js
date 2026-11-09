@@ -248,15 +248,18 @@ function dashboardOverview() {
   </section>`;
 }
 function dashboardTasksPreview() {
-  const preview = assignments.slice(0, 2);
+  const nextAssignment = assignments[0];
+  const laterAssignments = assignments.slice(1, 3);
   return `<section class="dashboard-work-grid">
-    <div class="dashboard-panel">
-      <div class="section-title"><div><span class="subtle-label">СЛЕДУЮЩИЕ ШАГИ</span><h2>Задания</h2></div><button class="text-link" data-go="assignments">Все задания ${icon("arrow")}</button></div>
-      ${preview.map(a => `<article class="dashboard-task">
-        <span class="task-marker ${hasAssignmentDraft(a.id) ? "draft" : ""}"></span>
-        <div class="dashboard-task-copy"><b>${a.title}</b><small>${a.course}</small><span>${hasAssignmentDraft(a.id) ? "Черновик сохранён" : "Срок: " + a.due}</span></div>
-        <button data-assignment-open="${a.id}" aria-label="Открыть задание">›</button>
-      </article>`).join("")}
+    <div class="dashboard-panel dashboard-assignment-panel">
+      <div class="section-title"><div><span class="subtle-label">ТВОЙ СЛЕДУЮЩИЙ ШАГ</span><h2>Ближайшее задание</h2></div><button class="text-link" data-go="assignments">Все задания ${icon("arrow")}</button></div>
+      <article class="dashboard-featured-task">
+        <div class="featured-task-top"><span class="featured-task-kind">${esc(nextAssignment.type)}</span><span class="featured-task-due">${hasAssignmentDraft(nextAssignment.id) ? "Черновик сохранён" : "Срок · " + esc(nextAssignment.dueHint)}</span></div>
+        <h3>${esc(nextAssignment.title)}</h3>
+        <p>${esc(nextAssignment.course)}</p>
+        <div class="featured-task-bottom"><span>${icon("clock")}${esc(nextAssignment.estimate)}</span><button data-assignment-open="${nextAssignment.id}">${hasAssignmentDraft(nextAssignment.id) ? "Продолжить" : "Открыть задание"} ${icon("arrow")}</button></div>
+      </article>
+      ${laterAssignments.map(a => `<article class="dashboard-upcoming-task"><span><b>${esc(a.title)}</b><small>${esc(a.course)} · ${esc(a.due)}</small></span><button data-assignment-open="${a.id}" aria-label="Открыть задание">${icon("arrow")}</button></article>`).join("")}
       <div class="dashboard-task-foot"><span>${assignments.length} учебных задания в списке</span><button data-go="assignments">Открыть центр заданий</button></div>
     </div>
     <div class="dashboard-next-card">
