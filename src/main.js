@@ -73,6 +73,8 @@ let activeAssignmentFilter = "Все";
 let assignmentDrafts = loadAssignmentDrafts();
 let lessonNotes = loadLessonNotes();
 let interestedFaculties = loadInterestedFaculties();
+let lessonQuizResults = loadLessonQuizResults();
+let completedLessons = loadCompletedLessons();
 let toastTimer;
 let cloudSyncTimer;
 let cloudSyncReady = false;
@@ -197,6 +199,10 @@ function loadInterestedFaculties() {
 function storeInterestedFaculties() {
   return writeStudentStorage("interestedFaculties", interestedFaculties);
 }
+function loadLessonQuizResults() { return readStudentStorage("lessonQuizResults"); }
+function storeLessonQuizResults() { return writeStudentStorage("lessonQuizResults", lessonQuizResults); }
+function loadCompletedLessons() { return readStudentStorage("completedLessons"); }
+function storeCompletedLessons() { return writeStudentStorage("completedLessons", completedLessons); }
 function callCloudStudentData(action, payload, callback) {
   const serverless = tg?.Serverless;
   if (typeof serverless?.call !== "function") return false;
@@ -213,7 +219,9 @@ function scheduleCloudStudentDataSync() {
     callCloudStudentData("save", {
       assignmentDrafts,
       lessonNotes,
-      interestedFaculties
+      interestedFaculties,
+      lessonQuizResults,
+      completedLessons
     }, (error) => {
       if (error) console.warn("MAGNUS: не удалось синхронизировать учебные данные.", error);
     });
@@ -229,16 +237,22 @@ function initializeCloudStudentData() {
     const localAssignments = Object.keys(assignmentDrafts).length > 0;
     const localNotes = Object.keys(lessonNotes).length > 0;
     const localInterests = Object.keys(interestedFaculties).length > 0;
+    const localQuizResults = Object.keys(lessonQuizResults).length > 0;
+    const localCompletedLessons = Object.keys(completedLessons).length > 0;
     assignmentDrafts = { ...(result.assignmentDrafts || {}), ...assignmentDrafts };
     lessonNotes = { ...(result.lessonNotes || {}), ...lessonNotes };
     interestedFaculties = { ...(result.interestedFaculties || {}), ...interestedFaculties };
+    lessonQuizResults = { ...(result.lessonQuizResults || {}), ...lessonQuizResults };
+    completedLessons = { ...(result.completedLessons || {}), ...completedLessons };
     storeAssignmentDrafts();
     storeLessonNotes();
     storeInterestedFaculties();
+    storeLessonQuizResults();
+    storeCompletedLessons();
     cloudSyncReady = true;
     render();
     // Если локальные данные старше облачных, объединённый результат также отправляем в облако.
-    if (localAssignments || localNotes || localInterests) scheduleCloudStudentDataSync();
+    if (localAssignments || localNotes || localInterests || localQuizResults || localCompletedLessons) scheduleCloudStudentDataSync();
   });
 }
 
@@ -394,6 +408,8 @@ function courseDetailPage() {
 
 function lessonPage() {
   const c = selectedCourse;
+  const quizResult = lessonQuizResults[c.id] ? JSON.parse(lessonQuizResults[c.id]) : null;
+  const lessonCompleted = Boolean(completedLessons[c.id]);
   const tabContent = lessonTab === "notes"
     ? `<div class="lesson-notes"><div class="lesson-notes-head"><label for="lesson-note">МОИ ЗАМЕТКИ</label><span>${icon("cloud")} АВТОСОХРАНЕНИЕ</span></div><textarea id="lesson-note" placeholder="Запишите важную мысль, пример или вопрос...">${esc(lessonNotes[c.id] || "")}</textarea><small>Заметки сохраняются автоматически на устройстве и отправляются в облако при доступности синхронизации.</small></div>`
     : lessonTab === "materials"
@@ -414,8 +430,9 @@ function lessonPage() {
     <section class="lesson-quiz" aria-labelledby="lesson-quiz-title"><div class="kicker">ПРОВЕРЬ СЕБЯ</div><h2 id="lesson-quiz-title">Что помогает перейти от теории к пониманию?</h2><p>Выберите один вариант ответа.</p>
       ${["Заучивание определений без примеров","Разбор конкретной ситуации и проверка вывода","Пропуск сложных понятий"].map((answer,i)=>`<button type="button" class="quiz-option ${quizChoice===String(i)?"chosen":""}" data-quiz="${i}" aria-pressed="${quizChoice===String(i)}"><span>${String.fromCharCode(65+i)}</span>${answer}${quizChoice===String(i)?'<b aria-hidden="true">✓</b>':""}</button>`).join("")}
       ${quizChoice!==""?`<div class="quiz-feedback ${quizChoice==="1"?"correct":"incorrect"}" role="status" aria-live="polite">${quizChoice==="1"?"Верно! Пример помогает связать понятия с практикой.":"Попробуйте ещё раз: подумайте, что помогает применить знания на практике."}</div>`:""}
+      ${quizResult?`<div class="quiz-saved-result">Последний сохранённый результат: ${quizResult.correct?"верный ответ":"ответ пока неверный"} · попыток: ${quizResult.attempts}</div>`:""}
     </section>
-    <div class="lesson-footer"><button class="lesson-finish" data-action="lesson-finish">Отметить в демо-режиме ${icon("arrow")}</button><small>Видео и завершение урока пока не связаны с учебной системой.</small></div>
+    <div class="lesson-footer"><button class="lesson-finish" data-action="lesson-finish" ${lessonCompleted?"disabled":""}>${lessonCompleted?"Пример отмечен как пройденный":"Отметить пример пройденным"} ${lessonCompleted?"":icon("arrow")}</button><small>${lessonCompleted?"Отметка сохранена в твоём профиле. Это не завершение официальной учебной программы.":"Сохраняется только отметка об ознакомительном примере, не официальный прогресс курса."}</small></div>
   </main>`;
 }
 
@@ -508,6 +525,8 @@ function documentsPage() {
 function profilePage() {
   const draftCount = Object.values(assignmentDrafts).filter(value => String(value || "").trim()).length;
   const noteCount = Object.values(lessonNotes).filter(value => String(value || "").trim()).length;
+  const completedCount = Object.keys(completedLessons).length;
+  const quizCount = Object.keys(lessonQuizResults).length;
   const telegramConnected = Boolean(telegramUser?.id);
   const profileName = telegramUser?.first_name || "Гость MAGNUS";
   const profileCaption = telegramUser?.username
@@ -524,6 +543,8 @@ function profilePage() {
     <div class="profile-stats">
       <div><b>${draftCount}</b><small>Черновики</small></div>
       <div><b>${noteCount}</b><small>Заметки</small></div>
+      <div><b>${completedCount}</b><small>Примеры пройдены</small></div>
+      <div><b>${quizCount}</b><small>Результаты тестов</small></div>
       <div><b>${telegramConnected?"Да":"—"}</b><small>Telegram</small></div>
     </div>
     <section class="profile-sync-card">
@@ -577,7 +598,14 @@ function bindEvents() {
     render();
   }));
   document.querySelectorAll("[data-lesson-tab]").forEach(el => el.addEventListener("click", () => { lessonTab=el.dataset.lessonTab; render(); }));
-  document.querySelectorAll("[data-quiz]").forEach(el => el.addEventListener("click", () => { quizChoice=el.dataset.quiz; render(); }));
+  document.querySelectorAll("[data-quiz]").forEach(el => el.addEventListener("click", () => {
+    quizChoice=el.dataset.quiz;
+    const previous = lessonQuizResults[selectedCourse.id] ? JSON.parse(lessonQuizResults[selectedCourse.id]) : null;
+    lessonQuizResults[selectedCourse.id] = JSON.stringify({ choice: quizChoice, correct: quizChoice === "1", attempts: (previous?.attempts || 0) + 1, answeredAt: new Date().toISOString() });
+    storeLessonQuizResults();
+    scheduleCloudStudentDataSync();
+    render();
+  }));
 
   document.querySelectorAll("[data-filter]").forEach(el => el.addEventListener("click", () => { activeFilter=el.dataset.filter; render(); }));
   document.querySelectorAll("[data-action]").forEach(el => el.addEventListener("click", () => {
@@ -603,7 +631,15 @@ function bindEvents() {
       toast(saved ? (interestedFaculties[selectedFaculty.id] ? "Направление сохранено." : "Направление убрано из интересов.") : "Не удалось сохранить интерес на устройстве.");
       return;
     }
-    const actions = {"lesson-finish":"Завершение урока пока не сохраняется.",notifications:"Система уведомлений пока не подключена.",course:"Раздел курсов пока демонстрационный.", "course-start":"Видеоурок пока недоступен.",settings:"Настройки появятся в следующем обновлении.",support:"Раздел поддержки скоро будет доступен.",about:"MAGNUS — пространство для знаний, открытий и развития."};
+    if (el.dataset.action === "lesson-finish") {
+      completedLessons[selectedCourse.id] = new Date().toISOString();
+      const saved = storeCompletedLessons();
+      scheduleCloudStudentDataSync();
+      render();
+      toast(saved ? "Отметка о прохождении примера сохранена." : "Не удалось сохранить отметку.");
+      return;
+    }
+    const actions = {notifications:"Система уведомлений пока не подключена.",course:"Раздел курсов пока демонстрационный.", "course-start":"Видеоурок пока недоступен.",settings:"Настройки появятся в следующем обновлении.",support:"Раздел поддержки скоро будет доступен.",about:"MAGNUS — пространство для знаний, открытий и развития."};
     toast(actions[el.dataset.action] || "Это действие пока недоступно.");
   }));
   const noteField = document.querySelector("#lesson-note");
