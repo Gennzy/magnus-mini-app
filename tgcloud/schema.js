@@ -40,3 +40,16 @@ export const adminAuditLog = table('admin_audit_log', {
   details: json('details').notNull(),
   createdAt: integer('created_at').notNull(),
 });
+
+// Исходящие сообщения студентам из защищённой панели администратора.
+export const adminMessages = table('admin_messages', {
+  id: text('id').primaryKey(),
+  studentId: text('student_id').notNull(),
+  adminTgId: text('admin_tg_id').notNull(),
+  adminEmail: text('admin_email').notNull(),
+  messageText: text('message_text').notNull(),
+  status: text('status').notNull(),
+  telegramMessageId: integer('telegram_message_id'),
+  errorMessage: text('error_message').notNull(),
+  createdAt: integer('created_at').notNull(),
+});
