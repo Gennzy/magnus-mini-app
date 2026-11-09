@@ -383,3 +383,299 @@
  .assignment-save-row{align-items:flex-start;flex-direction:column}
  .assignment-save-row .orange-button{width:100%}
 }
+
+
+/* MAGNUS — closer, clearer and more readable interface refinement */
+:root {
+  --muted: #555d61;
+  --line: #e3e4e1;
+}
+body { color: #202426; }
+.screen { max-width: 960px; }
+.subtle-label { color: #555e62; }
+.page-heading p,
+.greeting-row p,
+.course-details p,
+.mascot-note p,
+.faculty-card-copy > span,
+.profile-info p,
+.profile-menu small,
+.empty-docs p,
+.legal-note,
+.demo-disclaimer,
+.schedule-note,
+.assignment-demo-note {
+  color: #555f63;
+}
+.section-title { margin-bottom: 16px; }
+.section-title h2 { font-size: 20px; letter-spacing: -.45px; }
+.quick-item { min-height: 124px; }
+.quick-item b { font-size: 12px; }
+.quick-item small { font-size: 10px; color: #596267; }
+.course-details h3 { font-size: 14px; }
+.course-details p { font-size: 10px; }
+.course-meta { font-size: 9px; }
+.progress-caption { font-size: 9px; }
+.faculty-card-copy b { font-size: 14px; }
+.faculty-card-copy > span { font-size: 10px; }
+.faculty-card-copy i { font-size: 9px; }
+.filter-chip { font-size: 10px; padding: 9px 14px; }
+.nav-item { font-size: 10px; color: #50595e; }
+.nav-item.active { color: #bd560e; }
+.dashboard-overview,
+.dashboard-panel,
+.assignment-card,
+.assignment-instructions,
+.assignment-answer,
+.learning-overview,
+.course-progress-panel,
+.module-list,
+.profile-card,
+.profile-menu {
+  border-color: #e2e3df;
+  box-shadow: 0 4px 16px rgba(28, 30, 28, .035);
+}
+.dashboard-metric small,
+.dashboard-task-copy small,
+.dashboard-task-copy span,
+.dashboard-task-foot span,
+.dashboard-next-card > small,
+.assignment-summary span,
+.assignment-card > p,
+.assignment-card-meta span,
+.assignment-save-row small {
+  color: #535d61;
+}
+.assignment-card h2 { font-size: 14px; }
+.assignment-card-meta span,
+.assignment-save-row small { font-size: 9px; }
+.assignment-instructions > p { font-size: 13px; }
+.assignment-instructions li { font-size: 11px; }
+.assignment-answer textarea { font-size: 13px; }
+.lesson-reading { font-size: 14px; }
+.lesson-tabs button { font-size: 12px; }
+.lesson-notes textarea { font-size: 14px; }
+.quiz-option { font-size: 12px; }
+.task-marker { flex: none; }
+
+/* Phone-first sizing: fewer columns, larger touch targets and less visual distance */
+@media (max-width: 650px) {
+  .topbar { height: 66px; padding: 0 16px; }
+  .screen { padding: 19px 15px 34px; }
+  .greeting-row { margin: 6px 0 18px; align-items: center; }
+  .greeting-row h1 { font-size: 29px; line-height: 1.15; letter-spacing: -.85px; }
+  .greeting-row p { font-size: 13px; line-height: 1.45; }
+  .subtle-label { font-size: 9px; letter-spacing: 1.1px; color: #535c60; }
+  .streak { width: 58px; height: 58px; border-radius: 15px; }
+  .streak b { font-size: 19px; }
+  .streak small { font-size: 8px; color: #50595d; }
+
+  .hero-card {
+    min-height: 264px;
+    grid-template-columns: minmax(0, 1fr) 38%;
+    padding: 23px 16px 39px;
+    border-radius: 19px;
+  }
+  .hero-copy { max-width: 100%; }
+  .hero-eyebrow { font-size: 8px; letter-spacing: 1.1px; }
+  .hero-copy h2 { font-size: 29px; line-height: 1.12; letter-spacing: -.9px; margin: 13px 0 9px; }
+  .hero-copy p { font-size: 11px; line-height: 1.55; color: #e0e2e2; max-width: 210px; }
+  .orange-button { min-height: 42px; font-size: 10px; padding: 11px 14px; gap: 8px; }
+  .mascot-stage { min-height: 205px; margin-right: -5px; }
+  .hero-mascot { width: 155%; height: 205px; }
+  .hero-index { left: 16px; right: 16px; font-size: 7px; height: 27px; }
+
+  .quick-section, .courses-section { margin-top: 25px; }
+  .section-title { align-items: center; margin-bottom: 13px; }
+  .section-title h2 { font-size: 18px; line-height: 1.2; }
+  .text-link { font-size: 10px; gap: 5px; }
+  .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .quick-item {
+    min-height: 104px;
+    padding: 13px 12px;
+    border-radius: 14px;
+  }
+  .quick-icon { width: 35px; height: 35px; margin-bottom: 9px; }
+  .quick-item b { font-size: 12px; line-height: 1.25; }
+  .quick-item small { font-size: 10px; margin-top: 4px; }
+
+  .course-card,
+  .course-card.compact { grid-template-columns: 104px minmax(0, 1fr); border-radius: 15px; }
+  .course-card .course-art,
+  .course-card.compact .course-art { min-height: 137px; }
+  .course-art-mark,
+  .course-card.compact .course-art-mark { font-size: 30px; }
+  .course-details { padding: 12px 11px; }
+  .course-meta { font-size: 8px; gap: 5px; }
+  .course-details h3 { font-size: 12px; line-height: 1.35; margin: 8px 0 5px; }
+  .course-details p { font-size: 9px; line-height: 1.4; margin-bottom: 10px; white-space: normal; }
+  .progress-caption { font-size: 8px; }
+  .progress-caption button { font-size: 8px; }
+
+  .mascot-note { margin-top: 19px; padding: 12px; gap: 10px; }
+  .note-avatar { width: 44px; height: 44px; }
+  .note-avatar img { width: 44px; height: 44px; }
+  .mascot-note p { font-size: 10px; line-height: 1.5; }
+
+  .page-heading { padding: 8px 0 17px; }
+  .page-heading h1 { font-size: 39px; line-height: 1.05; letter-spacing: -1.35px; margin: 10px 0; }
+  .page-heading p { font-size: 13px; line-height: 1.6; }
+  .search-box { height: 48px; padding: 0 13px; }
+  .search-box input { font-size: 13px; }
+  .filter-row { padding: 12px 0 16px; }
+  .filter-chip { font-size: 10px; padding: 9px 13px; }
+
+  .faculty-grid { grid-template-columns: 1fr; gap: 10px; }
+  .faculty-card { grid-template-columns: 91px minmax(0, 1fr); min-height: 112px; padding: 10px; gap: 12px; }
+  .faculty-art { height: 92px; }
+  .faculty-art span { font-size: 35px; }
+  .faculty-card-copy { gap: 4px; }
+  .faculty-card-copy small { font-size: 8px; }
+  .faculty-card-copy b { font-size: 14px; line-height: 1.25; margin: 3px 0; }
+  .faculty-card-copy > span { font-size: 10px; line-height: 1.45; }
+  .faculty-card-copy i { font-size: 9px; margin-top: 3px; }
+
+  .detail-banner { min-height: 205px; padding: 20px; }
+  .detail-banner h1 { font-size: 34px; }
+  .detail-banner p { font-size: 11px; line-height: 1.5; }
+  .detail-symbol { font-size: 100px; }
+  .faculty-intro { gap: 10px; padding: 24px 2px 12px; }
+  .faculty-intro h2 { font-size: 29px; }
+  .faculty-intro > p { font-size: 12px; line-height: 1.65; }
+  .detail-topics { padding: 25px 2px; }
+  .detail-topics li { font-size: 11px; padding: 13px 2px; }
+  .outcome-grid { grid-template-columns: 1fr; gap: 8px; }
+  .outcome-card { min-height: 78px; padding: 12px 14px; }
+  .outcome-card > b { font-size: 12px; line-height: 1.4; }
+  .faculty-method { padding: 15px; gap: 12px; }
+  .faculty-method h3 { font-size: 14px; }
+  .faculty-method p { font-size: 11px; line-height: 1.55; }
+
+  .learning-overview { padding: 15px; }
+  .overview-head h2 { font-size: 16px; }
+  .week-chart { height: 128px; }
+  .day-bar small { font-size: 9px; }
+  .bar-value { width: 22px; }
+  .stat-card { min-height: 104px; padding: 13px; }
+  .stat-card > b { font-size: 23px; }
+  .stat-card > small { font-size: 9px; }
+  .schedule-period { font-size: 9px; }
+  .schedule-calendar { gap: 5px; }
+  .calendar-day { min-height: 68px; border-radius: 11px; }
+  .calendar-day small { font-size: 9px; }
+  .calendar-day b { font-size: 16px; }
+  .schedule-day-heading b { font-size: 12px; }
+  .schedule-day-heading span { font-size: 9px; }
+  .schedule-item { padding: 13px 0; gap: 9px; }
+  .schedule-item time { font-size: 10px; width: 40px; }
+  .schedule-item b { font-size: 11px; }
+  .schedule-item small { font-size: 9px; }
+
+  .dashboard-overview { padding: 15px; margin-top: 18px; }
+  .dashboard-overview .section-title h2 { font-size: 17px; }
+  .dashboard-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .dashboard-metric { min-height: 76px; padding: 10px; gap: 9px; }
+  .dashboard-metric.progress-metric { grid-column: 1 / -1; }
+  .dashboard-metric b { font-size: 19px; }
+  .dashboard-metric small { font-size: 9px; }
+  .metric-ring { width: 42px; height: 42px; }
+  .metric-ring span { font-size: 9px; }
+  .metric-icon { width: 34px; height: 34px; }
+  .dashboard-overview-foot { align-items: flex-start; flex-direction: column; gap: 7px; }
+  .dashboard-overview-foot span,
+  .dashboard-overview-foot button { font-size: 9px; }
+  .dashboard-work-grid { grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
+  .dashboard-panel { padding: 15px; }
+  .dashboard-panel .section-title h2 { font-size: 17px; }
+  .dashboard-task { gap: 10px; padding: 13px 0; }
+  .dashboard-task-copy b { font-size: 11px; line-height: 1.4; }
+  .dashboard-task-copy small,
+  .dashboard-task-copy span { font-size: 9px; }
+  .dashboard-task-foot span,
+  .dashboard-task-foot button { font-size: 9px; }
+  .dashboard-next-card { min-height: 215px; padding: 17px; }
+  .dashboard-next-card h3 { font-size: 15px; }
+  .dashboard-next-card p { font-size: 10px; }
+  .dashboard-next-card button { font-size: 9px; min-height: 38px; }
+
+  .assignment-summary { gap: 7px; }
+  .assignment-summary > div { padding: 12px 10px; }
+  .assignment-summary b { font-size: 20px; }
+  .assignment-summary span { font-size: 8px; }
+  .assignment-list { grid-template-columns: 1fr; gap: 10px; }
+  .assignment-card { padding: 15px; }
+  .assignment-card h2 { font-size: 14px; line-height: 1.4; }
+  .assignment-card > p { font-size: 10px; }
+  .assignment-card-meta span { font-size: 9px; }
+  .assignment-open { font-size: 10px; min-height: 35px; }
+  .assignment-detail-head h1 { font-size: 32px; }
+  .assignment-detail-head > p { font-size: 12px; }
+  .assignment-detail-meta span { font-size: 10px; }
+  .assignment-instructions,
+  .assignment-answer { padding: 15px; }
+  .assignment-instructions > p { font-size: 13px; line-height: 1.7; }
+  .assignment-instructions li { font-size: 11px; line-height: 1.55; }
+  .assignment-answer h2,
+  .assignment-instructions h2 { font-size: 16px; }
+  .assignment-answer textarea { min-height: 160px; font-size: 13px; }
+  .assignment-save-row { flex-direction: column; align-items: stretch; }
+  .assignment-save-row small { font-size: 9px; }
+  .assignment-save-row .orange-button { width: 100%; }
+
+  .lesson-heading { padding: 16px 2px 17px; }
+  .lesson-heading h1 { font-size: 40px; line-height: 1.06; }
+  .lesson-heading p { font-size: 12px; }
+  .lesson-player { height: 205px; }
+  .lesson-tabs { margin: 18px 0 14px; }
+  .lesson-tabs button { font-size: 12px; padding: 12px 15px; }
+  .lesson-reading { font-size: 13px; line-height: 1.7; }
+  .lesson-reading h3 { font-size: 21px; }
+  .lesson-notes textarea { min-height: 145px; font-size: 13px; }
+  .lesson-quiz { padding: 16px; }
+  .lesson-quiz h2 { font-size: 19px; line-height: 1.3; }
+  .lesson-quiz > p { font-size: 12px; }
+  .quiz-option { font-size: 11px; line-height: 1.45; padding: 12px; }
+  .lesson-finish { min-height: 48px; font-size: 12px; }
+  .lesson-footer small { font-size: 9px; }
+
+  .certificate-preview { min-height: 275px; padding: 20px; }
+  .certificate-preview h2 { font-size: 28px; }
+  .certificate-preview p { font-size: 10px; line-height: 1.5; }
+  .empty-docs b { font-size: 12px; }
+  .empty-docs p { font-size: 10px; line-height: 1.5; }
+  .legal-note { font-size: 9px; line-height: 1.6; }
+  .profile-card { padding: 15px; }
+  .profile-avatar { width: 52px; height: 52px; font-size: 21px; }
+  .profile-info h2 { font-size: 18px; }
+  .profile-info p { font-size: 10px; }
+  .profile-stats b { font-size: 20px; }
+  .profile-stats small { font-size: 9px; }
+  .profile-menu button { min-height: 58px; padding: 12px 14px; }
+  .profile-menu b { font-size: 11px; }
+  .profile-menu small { font-size: 9px; }
+
+  .back-button { font-size: 11px; padding-bottom: 15px; }
+  .nav-item { font-size: 10px; gap: 5px; }
+  .nav-item svg { width: 21px; height: 21px; }
+  .bottom-nav { padding-top: 9px; padding-bottom: calc(9px + env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 380px) {
+  .screen { padding-left: 13px; padding-right: 13px; }
+  .hero-card { grid-template-columns: minmax(0, 1fr) 34%; padding-left: 14px; padding-right: 12px; }
+  .hero-copy h2 { font-size: 26px; }
+  .hero-copy p { font-size: 10px; }
+  .hero-mascot { width: 165%; }
+  .course-card,
+  .course-card.compact { grid-template-columns: 91px minmax(0, 1fr); }
+  .course-details { padding-left: 9px; padding-right: 9px; }
+  .course-details h3 { font-size: 11px; }
+  .dashboard-metrics { gap: 6px; }
+  .calendar-day { min-height: 62px; }
+}
+
+@media (min-width: 651px) and (max-width: 900px) {
+  .screen { padding-left: 20px; padding-right: 20px; }
+  .dashboard-work-grid { grid-template-columns: minmax(0, 1.1fr) minmax(210px, .9fr); }
+  .dashboard-metric { gap: 8px; padding: 10px; }
+}
