@@ -679,3 +679,116 @@ body { color: #202426; }
   .dashboard-work-grid { grid-template-columns: minmax(0, 1.1fr) minmax(210px, .9fr); }
   .dashboard-metric { gap: 8px; padding: 10px; }
 }
+
+
+/* MAGNUS startup screen and Telegram profile photos */
+.avatar-button,
+.profile-avatar {
+  position: relative;
+  overflow: hidden;
+}
+.avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+.telegram-avatar-image {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.startup-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #f7f7f5;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .38s ease, visibility .38s ease;
+}
+.startup-screen.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.startup-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.startup-owl-wrap {
+  width: 132px;
+  height: 132px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 14px;
+  border-radius: 34px;
+  background: #fff;
+  box-shadow: 0 14px 42px rgba(36, 32, 26, .07);
+}
+.startup-owl {
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+  animation: startupOwlFloat 1.2s ease-in-out infinite;
+}
+.startup-wordmark {
+  color: #202426;
+  font: 800 23px/1.1 Manrope, sans-serif;
+  letter-spacing: 3px;
+}
+.startup-caption {
+  margin-top: 7px;
+  color: #7b8182;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1.7px;
+}
+.startup-loader {
+  width: 112px;
+  height: 3px;
+  margin-top: 30px;
+  overflow: hidden;
+  border-radius: 9px;
+  background: #e8e7e2;
+}
+.startup-loader span {
+  display: block;
+  width: 38%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--orange);
+  animation: startupProgress .95s ease-in-out infinite;
+}
+.startup-loading-text {
+  margin-top: 11px;
+  color: #6e7678;
+  font-size: 10px;
+}
+@keyframes startupOwlFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-6px) scale(1.025); }
+}
+@keyframes startupProgress {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(300%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .startup-owl,
+  .startup-loader span {
+    animation: none;
+  }
+  .startup-screen {
+    transition: none;
+  }
+}
