@@ -432,7 +432,16 @@ function lessonPage() {
 
 
 function assignmentsPage() {
-  const filters = ["Все", "Нужно выполнить", "Черновики"];
+  const counts = {
+    all: assignments.length,
+    pending: assignments.filter(a => !hasAssignmentDraft(a.id)).length,
+    drafts: assignments.filter(a => hasAssignmentDraft(a.id)).length
+  };
+  const filters = [
+    { label:"Все", count:counts.all },
+    { label:"Нужно выполнить", count:counts.pending },
+    { label:"Черновики", count:counts.drafts }
+  ];
   const filtered = assignments.filter(a => {
     if (activeAssignmentFilter === "Черновики") return hasAssignmentDraft(a.id);
     if (activeAssignmentFilter === "Нужно выполнить") return !hasAssignmentDraft(a.id);
@@ -441,47 +450,48 @@ function assignmentsPage() {
   return `<main class="screen inner-screen assignments-screen">
     ${heading("ТВОИ УЧЕБНЫЕ ЗАДАЧИ", "Двигайся<br><em>шаг за шагом.</em>", "Все задания и практические работы собраны в одном месте.")}
     <div class="assignment-summary">
-      <div><b>${assignments.length}</b><span>Всего заданий</span></div>
-      <div><b>${assignments.filter(a => !hasAssignmentDraft(a.id)).length}</b><span>Ожидают работы</span></div>
-      <div><b>${assignments.filter(a => hasAssignmentDraft(a.id)).length}</b><span>С черновиком</span></div>
+      <div><b>${counts.all}</b><span>Всего заданий</span></div>
+      <div><b>${counts.pending}</b><span>Без черновика</span></div>
+      <div><b>${counts.drafts}</b><span>С черновиком</span></div>
     </div>
-    <div class="assignment-filter-row">${filters.map(f => `<button class="filter-chip ${activeAssignmentFilter===f?"selected":""}" data-assignment-filter="${f}" aria-pressed="${activeAssignmentFilter===f}">${f}</button>`).join("")}</div>
+    <div class="assignment-filter-row" role="group" aria-label="Фильтр заданий">${filters.map(f => `<button class="filter-chip ${activeAssignmentFilter===f.label?"selected":""}" data-assignment-filter="${f.label}" aria-pressed="${activeAssignmentFilter===f.label}"><span>${f.label}</span><b>${f.count}</b></button>`).join("")}</div>
     <div class="assignment-list">
       ${filtered.map(a => `<article class="assignment-card">
-        <div class="assignment-card-top"><span class="assignment-kind">${a.type}</span><span class="assignment-status ${hasAssignmentDraft(a.id)?"has-draft":""}">${assignmentStatusText(a.id)}</span></div>
-        <h2>${a.title}</h2>
-        <p>${a.course}</p>
-        <div class="assignment-card-meta"><span>Срок: <b>${a.due}</b></span><span>${a.estimate}</span></div>
+        <div class="assignment-card-top"><span class="assignment-kind">${esc(a.type)}</span><span class="assignment-status ${hasAssignmentDraft(a.id)?"has-draft":""}">${assignmentStatusText(a.id)}</span></div>
+        <h2>${esc(a.title)}</h2>
+        <p>${esc(a.course)}</p>
+        <div class="assignment-card-meta"><span class="assignment-due"><small>СРОК</small><b>${esc(a.due)}</b></span><span class="assignment-estimate"><small>ВРЕМЯ</small><b>${esc(a.estimate)}</b></span></div>
         <button class="assignment-open" data-assignment-open="${a.id}">Открыть задание ${icon("arrow")}</button>
       </article>`).join("")}
-      ${filtered.length ? "" : `<div class="empty-message">В этой категории пока нет заданий.</div>`}
+      ${filtered.length ? "" : `<div class="assignment-empty"><span>✦</span><b>${activeAssignmentFilter==="Черновики"?"Черновиков пока нет":"Все задания уже разобраны"}</b><p>${activeAssignmentFilter==="Черновики"?"Начни с любого задания — текст ответа сохранится здесь.":"В этой категории пока нет заданий."}</p><button data-assignment-filter="Все">Показать все задания</button></div>`}
     </div>
-    <p class="assignment-demo-note">Демонстрационные задания и сроки. Сохранённые ответы остаются в локальном хранилище этого браузера и пока не отправляются преподавателю.</p>
+    <p class="assignment-demo-note">Задания и сроки демонстрационные. Черновики сохраняются на устройстве; отправка преподавателю и проверка пока не подключены.</p>
   </main>`;
 }
 
 function assignmentDetailPage() {
   const a = assignments.find(item => item.id === selectedAssignmentId) || assignments[0];
   const draft = assignmentDrafts[a.id] || "";
+  const saved = hasAssignmentDraft(a.id);
   return `<main class="screen inner-screen assignment-detail-screen">
     <button class="back-button" data-go="assignments">${icon("back")} Все задания</button>
-    <div class="assignment-detail-head">
-      <span class="assignment-kind">${a.type} · MAGNUS</span>
-      <span class="assignment-status ${hasAssignmentDraft(a.id)?"has-draft":""}">${assignmentStatusText(a.id)}</span>
-      <h1>${a.title}</h1>
-      <p>${a.course}</p>
-      <div class="assignment-detail-meta"><span>Срок сдачи <b>${a.due}</b></span><span>Оценка времени <b>${a.estimate}</b></span></div>
-    </div>
+    <section class="assignment-detail-hero">
+      <div class="assignment-detail-top"><span class="assignment-kind">${esc(a.type)} · MAGNUS</span><span class="assignment-status ${saved?"has-draft":""}">${assignmentStatusText(a.id)}</span></div>
+      <h1>${esc(a.title)}</h1>
+      <p>${esc(a.course)}</p>
+      <div class="assignment-detail-meta"><span><small>СРОК СДАЧИ</small><b>${esc(a.due)}</b></span><span><small>ОЦЕНКА ВРЕМЕНИ</small><b>${esc(a.estimate)}</b></span></div>
+    </section>
     <section class="assignment-instructions">
       <span class="subtle-label">ЧТО НУЖНО СДЕЛАТЬ</span>
-      <p>${a.description}</p>
+      <p>${esc(a.description)}</p>
       <h2>План выполнения</h2>
-      <ol>${a.requirements.map((r,i)=>`<li><span>0${i+1}</span>${r}</li>`).join("")}</ol>
+      <ol>${a.requirements.map((r,i)=>`<li><span>0${i+1}</span>${esc(r)}</li>`).join("")}</ol>
     </section>
     <section class="assignment-answer">
-      <div><span class="subtle-label">ТВОЙ ОТВЕТ</span><h2>Рабочее поле</h2></div>
-      <textarea id="assignment-answer" placeholder="Начни писать ответ здесь...">${esc(draft)}</textarea>
-      <div class="assignment-save-row"><small>Черновик сохраняется на этом устройстве.</small><button class="orange-button" data-action="save-assignment-draft">Сохранить черновик ${icon("arrow")}</button></div>
+      <div class="assignment-answer-head"><div><span class="subtle-label">ТВОЙ ОТВЕТ</span><h2>Рабочее поле</h2></div><span class="assignment-draft-mark">${saved?"ЧЕРНОВИК ЕСТЬ":"НОВЫЙ ОТВЕТ"}</span></div>
+      <textarea id="assignment-answer" aria-label="Текст ответа на задание" placeholder="Начни писать ответ здесь...">${esc(draft)}</textarea>
+      <div class="assignment-answer-footer"><span id="assignment-char-count">${draft.length} символов</span><span id="assignment-save-status" role="status" aria-live="polite">${saved?"Сохранено на устройстве":"Автосохранение включено"}</span></div>
+      <div class="assignment-save-row"><small>Ответ пока является личным черновиком и не отправляется преподавателю.</small><button class="orange-button" data-action="save-assignment-draft">Сохранить черновик ${icon("arrow")}</button></div>
     </section>
     <p class="assignment-demo-note">Это демонстрационный центр заданий. Отправка преподавателю, загрузка файлов, проверка и выставление оценок пока не подключены.</p>
   </main>`;
