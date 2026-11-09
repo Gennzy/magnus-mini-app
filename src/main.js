@@ -26,6 +26,43 @@ const courses = [
   { id:"brand", title:"Основы бренд-стратегии", category:"Маркетинг", lesson:"Урок 01 · Сила позиционирования", progress:12, time:"45 мин", color:"course-brand", mark:"M" }
 ];
 
+
+const assignments = [
+  {
+    id:"ai-case",
+    title:"Практическая работа: разбор кейса",
+    course:"Введение в искусственный интеллект",
+    type:"Практика",
+    due:"10 ноября",
+    dueHint:"Завтра",
+    estimate:"20–30 минут",
+    description:"Разберите короткий сценарий использования искусственного интеллекта и объясните, какую задачу технология решает, какие данные ей нужны и где может возникнуть ошибка.",
+    requirements:["Опишите задачу своими словами.","Назовите один возможный риск или ограничение.","Предложите способ проверить результат."]
+  },
+  {
+    id:"mind-reflection",
+    title:"Рефлексия: как мы принимаем решения",
+    course:"Психология мышления",
+    type:"Короткий ответ",
+    due:"12 ноября",
+    dueHint:"Через 3 дня",
+    estimate:"10–15 минут",
+    description:"Вспомните повседневное решение, которое вы недавно приняли. Кратко опишите, какие факторы повлияли на выбор и какую роль сыграли эмоции или привычки.",
+    requirements:["Опишите ситуацию в 2–3 предложениях.","Выделите два фактора, повлиявших на решение.","Сформулируйте один вывод."]
+  },
+  {
+    id:"brand-review",
+    title:"Мини-анализ узнаваемого бренда",
+    course:"Основы бренд-стратегии",
+    type:"Анализ",
+    due:"14 ноября",
+    dueHint:"Суббота",
+    estimate:"25–30 минут",
+    description:"Выберите знакомый бренд и опишите, какое первое впечатление он создаёт, кому адресовано его предложение и что помогает отличить его от конкурентов.",
+    requirements:["Укажите выбранный бренд.","Опишите его аудиторию.","Назовите один элемент позиционирования."]
+  }
+];
+
 let currentPage = "home";
 let selectedFaculty = faculties[0];
 let selectedCourse = courses[0];
@@ -34,6 +71,9 @@ let quizChoice = "";
 let searchValue = "";
 let activeFilter = "Все";
 let selectedDay = "Пт";
+let selectedAssignmentId = assignments[0].id;
+let activeAssignmentFilter = "Все";
+let assignmentDrafts = loadAssignmentDrafts();
 let toastTimer;
 
 const esc = (v) => String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -64,7 +104,7 @@ function topbar() {
 
 function bottomNav() {
   const items = [["home","home","Главная"],["faculties","faculty","Факультеты"],["study","study","Обучение"],["documents","docs","Документы"],["profile","profile","Профиль"]];
-  return `<nav class="bottom-nav">${items.map(([id,ic,label]) => `<button data-go="${id}" class="nav-item ${currentPage===id || (currentPage==="facultyDetail"&&id==="faculties") || (currentPage==="courseDetail"&&id==="study") || (currentPage==="lesson"&&id==="study")?"active":""}">${icon(ic)}<span>${label}</span></button>`).join("")}</nav>`;
+  return `<nav class="bottom-nav">${items.map(([id,ic,label]) => `<button data-go="${id}" class="nav-item ${currentPage===id || (currentPage==="facultyDetail"&&id==="faculties") || (currentPage==="courseDetail"&&id==="study") || (currentPage==="lesson"&&id==="study") || (currentPage==="assignments"&&id==="study") || (currentPage==="assignmentDetail"&&id==="study")?"active":""}">${icon(ic)}<span>${label}</span></button>`).join("")}</nav>`;
 }
 
 function heading(kicker, title, desc="") {
@@ -78,6 +118,65 @@ function courseTile(c, compact=false) {
   </article>`;
 }
 
+
+
+function loadAssignmentDrafts() {
+  try {
+    return JSON.parse(window.localStorage.getItem("magnus.assignmentDrafts") || "{}") || {};
+  } catch {
+    return {};
+  }
+}
+function storeAssignmentDrafts() {
+  try {
+    window.localStorage.setItem("magnus.assignmentDrafts", JSON.stringify(assignmentDrafts));
+    return true;
+  } catch {
+    return false;
+  }
+}
+function hasAssignmentDraft(id) {
+  return Boolean(String(assignmentDrafts[id] || "").trim());
+}
+function assignmentStatusText(id) {
+  return hasAssignmentDraft(id) ? "Черновик на устройстве" : "К выполнению";
+}
+
+function dashboardOverview() {
+  const drafted = assignments.filter(a => hasAssignmentDraft(a.id)).length;
+  return `<section class="dashboard-overview">
+    <div class="section-title"><div><span class="subtle-label">ТВОЯ ТРАЕКТОРИЯ</span><h2>Прогресс обучения</h2></div><span class="dashboard-demo-tag">ДЕМО-ДАННЫЕ</span></div>
+    <div class="dashboard-metrics">
+      <article class="dashboard-metric progress-metric"><div class="metric-ring"><span>68%</span></div><div><b>68%</b><small>Общий прогресс</small></div></article>
+      <article class="dashboard-metric"><span class="metric-icon peach">▤</span><div><b>24 <i>/ 36</i></b><small>Уроков завершено</small></div></article>
+      <article class="dashboard-metric"><span class="metric-icon mint">◷</span><div><b>12 <i>ч</i></b><small>Время обучения</small></div></article>
+    </div>
+    <div class="dashboard-overview-foot"><span>§{drafted} из §{assignments.length} заданий имеют локальный черновик</span><button data-go="study">Моя статистика §{icon("arrow")}</button></div>
+  </section>`;
+}
+function dashboardTasksPreview() {
+  const preview = assignments.slice(0, 2);
+  return `<section class="dashboard-work-grid">
+    <div class="dashboard-panel">
+      <div class="section-title"><div><span class="subtle-label">СЛЕДУЮЩИЕ ШАГИ</span><h2>Задания</h2></div><button class="text-link" data-go="assignments">Все задания §{icon("arrow")}</button></div>
+      §{preview.map(a => `<article class="dashboard-task">
+        <span class="task-marker §{hasAssignmentDraft(a.id) ? "draft" : ""}"></span>
+        <div class="dashboard-task-copy"><b>§{a.title}</b><small>§{a.course}</small><span>§{hasAssignmentDraft(a.id) ? "Черновик сохранён" : "Срок: " + a.due}</span></div>
+        <button data-assignment-open="§{a.id}" aria-label="Открыть задание">›</button>
+      </article>`).join("")}
+      <div class="dashboard-task-foot"><span>§{assignments.length} учебных задания в списке</span><button data-go="assignments">Открыть центр заданий</button></div>
+    </div>
+    <div class="dashboard-next-card">
+      <span class="subtle-label">БЛИЖАЙШЕЕ ЗАНЯТИЕ</span>
+      <div class="next-date"><b>10</b><span>НОЯБРЯ<br>12:00</span></div>
+      <h3>Введение в искусственный интеллект</h3>
+      <p>Видеоурок · 18 минут</p>
+      <button data-go="study">Посмотреть расписание §{icon("arrow")}</button>
+      <small>Демонстрационное расписание</small>
+    </div>
+  </section>`;
+}
+
 function homePage() {
   return `<main class="screen home-screen">
     <section class="greeting-row"><div><div class="subtle-label">ПОНЕДЕЛЬНИК · ТВОЙ НОВЫЙ СТАРТ</div><h1>Привет, ${esc(firstName)}! <span class="wave">✦</span></h1><p>К чему сегодня хочется прийти?</p></div><div class="streak"><span>✦</span><b>7</b><small>дней подряд</small></div></section>
@@ -86,6 +185,8 @@ function homePage() {
       <div class="mascot-stage"><span class="floating-token token-one">✦</span><span class="floating-token token-two">M</span><span class="floating-token token-three">+</span><img src="/mascot/magnus-owl.svg" class="hero-mascot" alt="Совёнок MAGNUS" /></div>
       <div class="hero-index"><span>01</span><span>ОБУЧЕНИЕ НАЧИНАЕТСЯ С ИНТЕРЕСА</span></div>
     </section>
+    ${dashboardOverview()}
+    ${dashboardTasksPreview()}
     <section class="quick-section"><div class="section-title"><div><span class="subtle-label">ТВОЁ ПРОСТРАНСТВО</span><h2>Быстрый доступ</h2></div><button class="text-link" data-go="faculties">Все разделы ${icon("arrow")}</button></div><div class="quick-grid">
       <button class="quick-item" data-go="faculties"><span class="quick-icon peach">${icon("faculty")}</span><b>Факультеты</b><small>Найди своё</small></button>
       <button class="quick-item" data-go="study"><span class="quick-icon lilac">${icon("study")}</span><b>Обучение</b><small>Твои курсы</small></button>
@@ -225,6 +326,63 @@ function lessonPage() {
   </main>`;
 }
 
+
+function assignmentsPage() {
+  const filters = ["Все", "Нужно выполнить", "Черновики"];
+  const filtered = assignments.filter(a => {
+    if (activeAssignmentFilter === "Черновики") return hasAssignmentDraft(a.id);
+    if (activeAssignmentFilter === "Нужно выполнить") return !hasAssignmentDraft(a.id);
+    return true;
+  });
+  return `<main class="screen inner-screen assignments-screen">
+    §{heading("ТВОИ УЧЕБНЫЕ ЗАДАЧИ", "Двигайся<br><em>шаг за шагом.</em>", "Все задания и практические работы собраны в одном месте.")}
+    <div class="assignment-summary">
+      <div><b>§{assignments.length}</b><span>Всего заданий</span></div>
+      <div><b>§{assignments.filter(a => !hasAssignmentDraft(a.id)).length}</b><span>Ожидают работы</span></div>
+      <div><b>§{assignments.filter(a => hasAssignmentDraft(a.id)).length}</b><span>С черновиком</span></div>
+    </div>
+    <div class="assignment-filter-row">§{filters.map(f => `<button class="filter-chip §{activeAssignmentFilter===f?"selected":""}" data-assignment-filter="§{f}">§{f}</button>`).join("")}</div>
+    <div class="assignment-list">
+      §{filtered.map(a => `<article class="assignment-card">
+        <div class="assignment-card-top"><span class="assignment-kind">§{a.type}</span><span class="assignment-status §{hasAssignmentDraft(a.id)?"has-draft":""}">§{assignmentStatusText(a.id)}</span></div>
+        <h2>§{a.title}</h2>
+        <p>§{a.course}</p>
+        <div class="assignment-card-meta"><span>Срок: <b>§{a.due}</b></span><span>§{a.estimate}</span></div>
+        <button class="assignment-open" data-assignment-open="§{a.id}">Открыть задание §{icon("arrow")}</button>
+      </article>`).join("")}
+      §{filtered.length ? "" : `<div class="empty-message">В этой категории пока нет заданий.</div>`}
+    </div>
+    <p class="assignment-demo-note">Демонстрационные задания и сроки. Сохранённые ответы остаются в локальном хранилище этого браузера и пока не отправляются преподавателю.</p>
+  </main>`;
+}
+
+function assignmentDetailPage() {
+  const a = assignments.find(item => item.id === selectedAssignmentId) || assignments[0];
+  const draft = assignmentDrafts[a.id] || "";
+  return `<main class="screen inner-screen assignment-detail-screen">
+    <button class="back-button" data-go="assignments">§{icon("back")} Все задания</button>
+    <div class="assignment-detail-head">
+      <span class="assignment-kind">§{a.type} · MAGNUS</span>
+      <span class="assignment-status §{hasAssignmentDraft(a.id)?"has-draft":""}">§{assignmentStatusText(a.id)}</span>
+      <h1>§{a.title}</h1>
+      <p>§{a.course}</p>
+      <div class="assignment-detail-meta"><span>Срок сдачи <b>§{a.due}</b></span><span>Оценка времени <b>§{a.estimate}</b></span></div>
+    </div>
+    <section class="assignment-instructions">
+      <span class="subtle-label">ЧТО НУЖНО СДЕЛАТЬ</span>
+      <p>§{a.description}</p>
+      <h2>План выполнения</h2>
+      <ol>§{a.requirements.map((r,i)=>`<li><span>0§{i+1}</span>§{r}</li>`).join("")}</ol>
+    </section>
+    <section class="assignment-answer">
+      <div><span class="subtle-label">ТВОЙ ОТВЕТ</span><h2>Рабочее поле</h2></div>
+      <textarea id="assignment-answer" placeholder="Начни писать ответ здесь...">§{esc(draft)}</textarea>
+      <div class="assignment-save-row"><small>Черновик сохраняется на этом устройстве.</small><button class="orange-button" data-action="save-assignment-draft">Сохранить черновик §{icon("arrow")}</button></div>
+    </section>
+    <p class="assignment-demo-note">Это демонстрационный центр заданий. Отправка преподавателю, загрузка файлов, проверка и выставление оценок пока не подключены.</p>
+  </main>`;
+}
+
 function documentsPage() {
   return `<main class="screen inner-screen">${heading("ТВОИ ДОСТИЖЕНИЯ","То, чем можно<br><em>гордиться.</em>","Сертификаты и подтверждения прохождения образовательных программ.")}
     <section class="certificate-preview"><div class="cert-topline"><span>MAGNUS</span><span>№ 000001</span></div><div class="cert-seal">M</div><small>INTERNATIONAL UNIVERSITY</small><h2>Сертификат<br>достижения</h2><p>Здесь появятся документы о завершении выбранных программ.</p><div class="cert-bottom"><span>KNOWLEDGE</span><span>2026</span></div></section>
@@ -242,7 +400,7 @@ function profilePage() {
 }
 
 function render() {
-  const pages = {home:homePage,faculties:facultiesPage,facultyDetail:facultyDetailPage,study:studyPage,courseDetail:courseDetailPage,lesson:lessonPage,documents:documentsPage,profile:profilePage};
+  const pages = {home:homePage,faculties:facultiesPage,facultyDetail:facultyDetailPage,study:studyPage,courseDetail:courseDetailPage,lesson:lessonPage,assignments:assignmentsPage,assignmentDetail:assignmentDetailPage,documents:documentsPage,profile:profilePage};
   document.querySelector("#app").innerHTML = `${topbar()}${(pages[currentPage] || homePage)()}${bottomNav()}<div class="toast" id="toast" role="status"></div>`;
   bindEvents();
 }
@@ -267,12 +425,33 @@ function bindEvents() {
     render();
     window.scrollTo({top:0,behavior:"smooth"});
   }));
+  document.querySelectorAll("[data-assignment-open]").forEach(el => el.addEventListener("click", () => {
+    selectedAssignmentId = el.dataset.assignmentOpen;
+    currentPage = "assignmentDetail";
+    render();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }));
+  document.querySelectorAll("[data-assignment-filter]").forEach(el => el.addEventListener("click", () => {
+    activeAssignmentFilter = el.dataset.assignmentFilter;
+    render();
+  }));
   document.querySelectorAll("[data-day]").forEach(el => el.addEventListener("click", () => { selectedDay=el.dataset.day; render(); }));
   document.querySelectorAll("[data-lesson-tab]").forEach(el => el.addEventListener("click", () => { lessonTab=el.dataset.lessonTab; render(); }));
   document.querySelectorAll("[data-quiz]").forEach(el => el.addEventListener("click", () => { quizChoice=el.dataset.quiz; render(); }));
 
   document.querySelectorAll("[data-filter]").forEach(el => el.addEventListener("click", () => { activeFilter=el.dataset.filter; render(); }));
   document.querySelectorAll("[data-action]").forEach(el => el.addEventListener("click", () => {
+    if (el.dataset.action === "save-assignment-draft") {
+      const field = document.querySelector("#assignment-answer");
+      if (!field) return;
+      assignmentDrafts[selectedAssignmentId] = field.value;
+      const saved = storeAssignmentDrafts();
+      render();
+      toast(saved
+        ? "Черновик сохранён на этом устройстве. Преподавателю он пока не отправлен."
+        : "Не удалось сохранить черновик в памяти браузера.");
+      return;
+    }
     if (el.dataset.action === "open-lesson") { currentPage="lesson"; lessonTab="lesson"; quizChoice=""; render(); window.scrollTo({top:0,behavior:"smooth"}); return; }
     const actions = {"lesson-finish":"Урок отмечен в демонстрационном режиме. Сохранение прогресса подключим позже.",notifications:"Новых уведомлений пока нет.",course:"Раздел курсов пока демонстрационный.", "course-start":"Учебный плеер подключим на следующем этапе.",interest:"Интерес сохранён в демо-режиме.",settings:"Настройки появятся в следующем обновлении.",support:"Раздел поддержки скоро будет доступен.",about:"MAGNUS — пространство для знаний, открытий и развития."};
     toast(actions[el.dataset.action] || "Скоро будет доступно.");
