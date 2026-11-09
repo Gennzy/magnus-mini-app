@@ -1,10 +1,8 @@
-import { table, integer, text } from 'sdk/db';
+import { table, text, json, integer } from 'sdk/db';
 
-// Your database tables go here as named exports. Deploying this file registers the
-// schema; applying the changes (a migration) updates the database.
-
-// Uncomment to define your first table:
-// export const users = table('users', {
-//   id:   integer('id').primaryKey({ autoIncrement: true }),
-//   name: text('name').notNull(),
-// });
+// Учебные данные привязаны к Telegram ID и доступны на разных устройствах.
+export const studentData = table('student_data', {
+  tgId: text('tg_id').primaryKey(),
+  payload: json('payload').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+});
