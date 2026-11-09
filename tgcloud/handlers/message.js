@@ -1,12 +1,13 @@
 import { api, db } from 'sdk';
 import { eq } from 'sdk/db';
-import { adminUsers, botSettings, paymentOrders, studentSubscriptions, subscriptionPlans, adminAuditLog } from '../schema.js';
+import { adminUsers, botSettings, paymentOrders, studentSubscriptions, subscriptionPlans, adminAuditLog, supportSessions, supportRequests } from '../schema.js';
 import { DEFAULT_SUBSCRIPTION_PLANS, normalizePlan } from '../lib/subscriptionPlans.js';
 
 const APP_URL = 'https://app9020486965.tgcloud.ai/';
 const BOT_COMMANDS = [
   { command: 'start', description: 'Открыть MAGNUS' },
   { command: 'help', description: 'Помощь и возможности' },
+  { command: 'paysupport', description: 'Помощь с оплатой' },
 ];
 const DEFAULT_WELCOME = 'Добро пожаловать в MAGNUS.\n\nУчебные программы, материалы и задания собраны в одном пространстве.';
 
@@ -16,6 +17,45 @@ function menuKeyboard(admin = false) {
       { text: admin ? 'Открыть админ-панель' : 'Открыть MAGNUS', web_app: { url: admin ? APP_URL + '?admin=1' : APP_URL } },
     ]],
   };
+}
+
+async function handlePaymentSupportMessage(message) {
+  const tgId = String(message.from?.id || '');
+  if (!tgId || message.chat?.type !== 'private' || typeof message.text !== 'string') return false;
+  const session = await db.select().from(supportSessions).where(eq(supportSessions.tgId, tgId)).get();
+  if (!session) return false;
+  const messageText = message.text.trim();
+  if (messageText.length < 5 || messageText.length > 3000) {
+    await api.sendMessage({ chat_id: message.chat.id, text: 'Опиши проблему подробнее — от 5 до 3000 символов. Или отправь /paysupport, чтобы начать обращение заново.' });
+    return true;
+  }
+  const displayName = [message.from?.first_name, message.from?.last_name].filter(Boolean).join(' ').slice(0, 160) || 'Пользователь Telegram';
+  const username = String(message.from?.username || '');
+  const id = 'support-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+  await db.insert(supportRequests).values({
+    id, tgId, username, displayName, messageText, status: 'new',
+    createdAt: Math.floor(Date.now() / 1000),
+  }).run();
+  await db.delete(supportSessions).where(eq(supportSessions.tgId, tgId)).run();
+
+  const admins = await db.select().from(adminUsers).all();
+  let notified = 0;
+  for (const admin of admins.filter(item => item.active)) {
+    try {
+      await api.sendMessage({
+        chat_id: Number(admin.tgId),
+        text: 'Новое обращение по оплате MAGNUS\n\n' + displayName + (username ? ' · @' + username : '') + '\nTelegram ID: ' + tgId + '\n\n' + messageText + '\n\nОтветь студенту через админ-панель → Студенты → его профиль.',
+      });
+      notified++;
+    } catch (error) {
+      console.warn('MAGNUS: не удалось уведомить администратора о запросе поддержки.', error);
+    }
+  }
+  await api.sendMessage({
+    chat_id: message.chat.id,
+    text: notified ? 'Обращение передано команде MAGNUS. Мы ответим тебе здесь.' : 'Обращение сохранено, но сейчас не удалось уведомить команду. Попробуй позже.',
+  });
+  return true;
 }
 
 async function processSuccessfulPayment(message) {
@@ -103,11 +143,25 @@ export default async function (message) {
   }
   const text = String(message.text || '').trim();
   const command = text.split(/\s+/)[0].split('@')[0].toLowerCase();
-  if (!['/start', '/help', '/admin', '/menu'].includes(command)) return;
+  if (command !== '/paysupport' && !['/start', '/help', '/admin', '/menu'].includes(command)) {
+    try { await handlePaymentSupportMessage(message); } catch (error) { console.error('MAGNUS: ошибка обработки обращения поддержки.', error); }
+    return;
+  }
   if (message.chat?.type !== 'private') {
     if (command === '/admin') await api.sendMessage({
       chat_id: message.chat.id,
       text: 'Панель управления доступна только в личном чате с ботом.',
+    });
+    return;
+  }
+
+  if (command === '/paysupport') {
+    const tgId = String(message.from?.id || '');
+    await db.insert(supportSessions).values({ tgId, openedAt: Math.floor(Date.now() / 1000) })
+      .onConflictDoUpdate({ target: supportSessions.tgId, set: { openedAt: Math.floor(Date.now() / 1000) } }).run();
+    await api.sendMessage({
+      chat_id: message.chat.id,
+      text: 'Поддержка по оплате MAGNUS.\n\nОпиши, что произошло: укажи дату, примерное время и название тарифа. Не отправляй данные банковских карт или пароли. Сообщение будет передано команде MAGNUS.',
     });
     return;
   }
