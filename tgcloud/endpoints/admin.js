@@ -102,14 +102,16 @@ export default async function (input, ctx) {
     items[index] = reviewed;
     const payload = { ...row.payload, assignmentSubmissions: items.slice(-50) };
     await db.update(studentData).set({ payload, updatedAt: Math.floor(Date.now() / 1000) }).where(eq(studentData.tgId, studentId)).run();
+    let notificationSent = false;
     try {
       const text = status === 'reviewed' ? 'Преподаватель проверил твоё задание MAGNUS.' : 'По заданию MAGNUS нужны доработки.';
       const details = [grade === null ? '' : 'Оценка: ' + grade + '/100', comment ? 'Комментарий: ' + comment : ''].filter(Boolean).join('\n');
       await api.sendMessage({ chat_id: Number(studentId), text: [text, details].filter(Boolean).join('\n\n') });
+      notificationSent = true;
     } catch (error) {
       console.warn('MAGNUS: не удалось отправить уведомление о проверке.', error);
     }
-    return { ok: true, submission: reviewed };
+    return { ok: true, submission: reviewed, notificationSent };
   }
 
   if (input?.action === 'configureBot') {
