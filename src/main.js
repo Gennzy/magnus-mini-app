@@ -417,7 +417,7 @@ function lessonPage() {
 function assignmentsPage() {
   const counts = {
     all: assignments.length,
-    pending: assignments.filter(a => !hasAssignmentDraft(a.id)).length,
+    pending: assignments.filter(a => !hasAssignmentDraft(a.id) && !hasAssignmentSubmission(a.id)).length,
     drafts: assignments.filter(a => hasAssignmentDraft(a.id) && !hasAssignmentSubmission(a.id)).length,
     submitted: assignments.filter(a => hasAssignmentSubmission(a.id)).length
   };
@@ -443,7 +443,7 @@ function assignmentsPage() {
     <div class="assignment-filter-row" role="group" aria-label="Фильтр заданий">${filters.map(f => `<button class="filter-chip ${activeAssignmentFilter===f.label?"selected":""}" data-assignment-filter="${f.label}" aria-pressed="${activeAssignmentFilter===f.label}"><span>${f.label}</span><b>${f.count}</b></button>`).join("")}</div>
     <div class="assignment-list">
       ${filtered.map(a => `<article class="assignment-card">
-        <div class="assignment-card-top"><span class="assignment-kind">${esc(a.type)}</span><span class="assignment-status ${hasAssignmentDraft(a.id)?"has-draft":""}">${assignmentStatusText(a.id)}</span></div>
+        <div class="assignment-card-top"><span class="assignment-kind">${esc(a.type)}</span><span class="assignment-status ${hasAssignmentSubmission(a.id)?"is-submitted":hasAssignmentDraft(a.id)?"has-draft":""}">${assignmentStatusText(a.id)}</span></div>
         <h2>${esc(a.title)}</h2>
         <p>${esc(a.course)}</p>
         <div class="assignment-card-meta"><span class="assignment-due"><small>СРОК</small><b>${esc(a.due)}</b></span><span class="assignment-estimate"><small>ВРЕМЯ</small><b>${esc(a.estimate)}</b></span></div>
