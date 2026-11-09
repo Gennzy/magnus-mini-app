@@ -7,6 +7,7 @@
 - The first owner link is created from the project owner's local Telegram Cloud CLI session.
 - The Mini App calls `POST /api/admin`; the endpoint uses platform-verified `ctx.initData.user` and checks the administrator table on every privileged action.
 - Administrators can review student submissions, add a comment, set a 0–100 score, accept a submission or return it for revision.
+- The **Журнал** tab stores administrator actions: review decisions, bot-setting changes, and owner grants. It records metadata and delivery outcomes, not the full student answer or the text of private bot settings.
 - The bot section reports webhook state and lets the owner edit the `/start` greeting, bot descriptions and Mini App menu-button text. Settings are stored in `bot_settings` and applied to Telegram.
 
 ## Connect the first owner
@@ -28,6 +29,7 @@ The grant action deliberately refuses calls carrying Mini App init data. It is i
 
 - Never grant access based only on a username or a Telegram ID sent in chat. The local CLI grant is an explicit owner action that binds the email identity and Telegram account.
 - Do not expose the grant action as a public UI control.
-- All review and bot-management actions require a matching active row in `admin_users`.
+- All review, bot-management and audit-log read actions require a matching active row in `admin_users`.
+- Audit entries are append-only from the application workflow. A review entry records status and score changes plus whether the Telegram notification was delivered; bot-setting entries list which fields changed without copying their contents.
 - The bot can only send review notifications to users who have opened the bot at least once; Telegram may reject a message otherwise. A failed notification does not roll back the saved review.
 - The current owner grant is intentionally manual. A full multi-admin identity provider / account recovery flow is a separate authentication feature.
