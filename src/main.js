@@ -151,27 +151,27 @@ function dashboardOverview() {
       <article class="dashboard-metric"><span class="metric-icon peach">▤</span><div><b>24 <i>/ 36</i></b><small>Уроков завершено</small></div></article>
       <article class="dashboard-metric"><span class="metric-icon mint">◷</span><div><b>12 <i>ч</i></b><small>Время обучения</small></div></article>
     </div>
-    <div class="dashboard-overview-foot"><span>§{drafted} из §{assignments.length} заданий имеют локальный черновик</span><button data-go="study">Моя статистика §{icon("arrow")}</button></div>
+    <div class="dashboard-overview-foot"><span>${drafted} из ${assignments.length} заданий имеют локальный черновик</span><button data-go="study">Моя статистика ${icon("arrow")}</button></div>
   </section>`;
 }
 function dashboardTasksPreview() {
   const preview = assignments.slice(0, 2);
   return `<section class="dashboard-work-grid">
     <div class="dashboard-panel">
-      <div class="section-title"><div><span class="subtle-label">СЛЕДУЮЩИЕ ШАГИ</span><h2>Задания</h2></div><button class="text-link" data-go="assignments">Все задания §{icon("arrow")}</button></div>
-      §{preview.map(a => `<article class="dashboard-task">
-        <span class="task-marker §{hasAssignmentDraft(a.id) ? "draft" : ""}"></span>
-        <div class="dashboard-task-copy"><b>§{a.title}</b><small>§{a.course}</small><span>§{hasAssignmentDraft(a.id) ? "Черновик сохранён" : "Срок: " + a.due}</span></div>
-        <button data-assignment-open="§{a.id}" aria-label="Открыть задание">›</button>
+      <div class="section-title"><div><span class="subtle-label">СЛЕДУЮЩИЕ ШАГИ</span><h2>Задания</h2></div><button class="text-link" data-go="assignments">Все задания ${icon("arrow")}</button></div>
+      ${preview.map(a => `<article class="dashboard-task">
+        <span class="task-marker ${hasAssignmentDraft(a.id) ? "draft" : ""}"></span>
+        <div class="dashboard-task-copy"><b>${a.title}</b><small>${a.course}</small><span>${hasAssignmentDraft(a.id) ? "Черновик сохранён" : "Срок: " + a.due}</span></div>
+        <button data-assignment-open="${a.id}" aria-label="Открыть задание">›</button>
       </article>`).join("")}
-      <div class="dashboard-task-foot"><span>§{assignments.length} учебных задания в списке</span><button data-go="assignments">Открыть центр заданий</button></div>
+      <div class="dashboard-task-foot"><span>${assignments.length} учебных задания в списке</span><button data-go="assignments">Открыть центр заданий</button></div>
     </div>
     <div class="dashboard-next-card">
       <span class="subtle-label">БЛИЖАЙШЕЕ ЗАНЯТИЕ</span>
       <div class="next-date"><b>10</b><span>НОЯБРЯ<br>12:00</span></div>
       <h3>Введение в искусственный интеллект</h3>
       <p>Видеоурок · 18 минут</p>
-      <button data-go="study">Посмотреть расписание §{icon("arrow")}</button>
+      <button data-go="study">Посмотреть расписание ${icon("arrow")}</button>
       <small>Демонстрационное расписание</small>
     </div>
   </section>`;
@@ -335,22 +335,22 @@ function assignmentsPage() {
     return true;
   });
   return `<main class="screen inner-screen assignments-screen">
-    §{heading("ТВОИ УЧЕБНЫЕ ЗАДАЧИ", "Двигайся<br><em>шаг за шагом.</em>", "Все задания и практические работы собраны в одном месте.")}
+    ${heading("ТВОИ УЧЕБНЫЕ ЗАДАЧИ", "Двигайся<br><em>шаг за шагом.</em>", "Все задания и практические работы собраны в одном месте.")}
     <div class="assignment-summary">
-      <div><b>§{assignments.length}</b><span>Всего заданий</span></div>
-      <div><b>§{assignments.filter(a => !hasAssignmentDraft(a.id)).length}</b><span>Ожидают работы</span></div>
-      <div><b>§{assignments.filter(a => hasAssignmentDraft(a.id)).length}</b><span>С черновиком</span></div>
+      <div><b>${assignments.length}</b><span>Всего заданий</span></div>
+      <div><b>${assignments.filter(a => !hasAssignmentDraft(a.id)).length}</b><span>Ожидают работы</span></div>
+      <div><b>${assignments.filter(a => hasAssignmentDraft(a.id)).length}</b><span>С черновиком</span></div>
     </div>
-    <div class="assignment-filter-row">§{filters.map(f => `<button class="filter-chip §{activeAssignmentFilter===f?"selected":""}" data-assignment-filter="§{f}">§{f}</button>`).join("")}</div>
+    <div class="assignment-filter-row">${filters.map(f => `<button class="filter-chip ${activeAssignmentFilter===f?"selected":""}" data-assignment-filter="${f}">${f}</button>`).join("")}</div>
     <div class="assignment-list">
-      §{filtered.map(a => `<article class="assignment-card">
-        <div class="assignment-card-top"><span class="assignment-kind">§{a.type}</span><span class="assignment-status §{hasAssignmentDraft(a.id)?"has-draft":""}">§{assignmentStatusText(a.id)}</span></div>
-        <h2>§{a.title}</h2>
-        <p>§{a.course}</p>
-        <div class="assignment-card-meta"><span>Срок: <b>§{a.due}</b></span><span>§{a.estimate}</span></div>
-        <button class="assignment-open" data-assignment-open="§{a.id}">Открыть задание §{icon("arrow")}</button>
+      ${filtered.map(a => `<article class="assignment-card">
+        <div class="assignment-card-top"><span class="assignment-kind">${a.type}</span><span class="assignment-status ${hasAssignmentDraft(a.id)?"has-draft":""}">${assignmentStatusText(a.id)}</span></div>
+        <h2>${a.title}</h2>
+        <p>${a.course}</p>
+        <div class="assignment-card-meta"><span>Срок: <b>${a.due}</b></span><span>${a.estimate}</span></div>
+        <button class="assignment-open" data-assignment-open="${a.id}">Открыть задание ${icon("arrow")}</button>
       </article>`).join("")}
-      §{filtered.length ? "" : `<div class="empty-message">В этой категории пока нет заданий.</div>`}
+      ${filtered.length ? "" : `<div class="empty-message">В этой категории пока нет заданий.</div>`}
     </div>
     <p class="assignment-demo-note">Демонстрационные задания и сроки. Сохранённые ответы остаются в локальном хранилище этого браузера и пока не отправляются преподавателю.</p>
   </main>`;
@@ -360,24 +360,24 @@ function assignmentDetailPage() {
   const a = assignments.find(item => item.id === selectedAssignmentId) || assignments[0];
   const draft = assignmentDrafts[a.id] || "";
   return `<main class="screen inner-screen assignment-detail-screen">
-    <button class="back-button" data-go="assignments">§{icon("back")} Все задания</button>
+    <button class="back-button" data-go="assignments">${icon("back")} Все задания</button>
     <div class="assignment-detail-head">
-      <span class="assignment-kind">§{a.type} · MAGNUS</span>
-      <span class="assignment-status §{hasAssignmentDraft(a.id)?"has-draft":""}">§{assignmentStatusText(a.id)}</span>
-      <h1>§{a.title}</h1>
-      <p>§{a.course}</p>
-      <div class="assignment-detail-meta"><span>Срок сдачи <b>§{a.due}</b></span><span>Оценка времени <b>§{a.estimate}</b></span></div>
+      <span class="assignment-kind">${a.type} · MAGNUS</span>
+      <span class="assignment-status ${hasAssignmentDraft(a.id)?"has-draft":""}">${assignmentStatusText(a.id)}</span>
+      <h1>${a.title}</h1>
+      <p>${a.course}</p>
+      <div class="assignment-detail-meta"><span>Срок сдачи <b>${a.due}</b></span><span>Оценка времени <b>${a.estimate}</b></span></div>
     </div>
     <section class="assignment-instructions">
       <span class="subtle-label">ЧТО НУЖНО СДЕЛАТЬ</span>
-      <p>§{a.description}</p>
+      <p>${a.description}</p>
       <h2>План выполнения</h2>
-      <ol>§{a.requirements.map((r,i)=>`<li><span>0§{i+1}</span>§{r}</li>`).join("")}</ol>
+      <ol>${a.requirements.map((r,i)=>`<li><span>0${i+1}</span>${r}</li>`).join("")}</ol>
     </section>
     <section class="assignment-answer">
       <div><span class="subtle-label">ТВОЙ ОТВЕТ</span><h2>Рабочее поле</h2></div>
-      <textarea id="assignment-answer" placeholder="Начни писать ответ здесь...">§{esc(draft)}</textarea>
-      <div class="assignment-save-row"><small>Черновик сохраняется на этом устройстве.</small><button class="orange-button" data-action="save-assignment-draft">Сохранить черновик §{icon("arrow")}</button></div>
+      <textarea id="assignment-answer" placeholder="Начни писать ответ здесь...">${esc(draft)}</textarea>
+      <div class="assignment-save-row"><small>Черновик сохраняется на этом устройстве.</small><button class="orange-button" data-action="save-assignment-draft">Сохранить черновик ${icon("arrow")}</button></div>
     </section>
     <p class="assignment-demo-note">Это демонстрационный центр заданий. Отправка преподавателю, загрузка файлов, проверка и выставление оценок пока не подключены.</p>
   </main>`;
