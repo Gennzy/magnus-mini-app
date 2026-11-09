@@ -684,9 +684,17 @@ function toast(message) {
 }
 
 function bindEvents() {
-  document.querySelectorAll("[data-admin-tab]").forEach(el=>el.addEventListener("click",()=>{adminTab=el.dataset.adminTab;render();if(adminTab==="audit")loadAdminAudit();}));
+  document.querySelectorAll("[data-admin-tab]").forEach(el=>el.addEventListener("click",()=>{adminTab=el.dataset.adminTab;if(adminTab==="students")loadAdminStudents();else if(adminTab==="audit")loadAdminAudit();else render();}));
   document.querySelectorAll("[data-admin-refresh]").forEach(el=>el.addEventListener("click",()=>{if(adminAccess.isAdmin)loadAdminDashboard();else loadAdminAccess(true);}));
   document.querySelectorAll("[data-admin-audit-refresh]").forEach(el=>el.addEventListener("click",loadAdminAudit));
+  document.querySelectorAll("[data-admin-students-refresh]").forEach(el=>el.addEventListener("click",loadAdminStudents));
+  document.querySelectorAll("[data-admin-student]").forEach(el=>el.addEventListener("click",()=>loadAdminStudentDetail(el.dataset.adminStudent)));
+  document.querySelectorAll("[data-admin-student-back]").forEach(el=>el.addEventListener("click",()=>{adminStudentSelected="";adminStudentDetail=null;adminStudentDetailError="";render();}));
+  document.querySelectorAll("[data-admin-student-search]").forEach(input=>input.addEventListener("input",()=>{
+    const query=input.value.trim().toLowerCase();let visible=0;
+    document.querySelectorAll("[data-admin-student-row]").forEach(row=>{const match=(row.dataset.search||"").includes(query);row.hidden=!match;if(match)visible++;});
+    const empty=document.querySelector(".admin-student-empty-filter");if(empty)empty.hidden=visible>0;
+  }));
   document.querySelectorAll("[data-admin-action]").forEach(el=>el.addEventListener("click",()=>{
     if(el.dataset.adminAction==="save-bot-settings"){
       const payload={};
