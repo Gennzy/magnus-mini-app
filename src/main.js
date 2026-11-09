@@ -250,7 +250,7 @@ function dashboardTasksPreview() {
   const laterAssignments = assignments.slice(1, 3);
   return `<section class="dashboard-work-grid">
     <div class="dashboard-panel dashboard-assignment-panel">
-      <div class="section-title"><div><span class="subtle-label">ЗАДАНИЯ</span><h2>Ближайшее задание</h2></div><button class="text-link" data-go="assignments">Все задания ${icon("arrow")}</button></div>
+      <div class="section-title"><div><span class="subtle-label">УЧЕБНЫЕ ПРИМЕРЫ</span><h2>Примеры заданий</h2></div><button class="text-link" data-go="assignments">Все задания ${icon("arrow")}</button></div>
       <article class="dashboard-featured-task">
         <div class="featured-task-top"><span class="featured-task-kind">${esc(nextAssignment.type)}</span><span class="featured-task-due">${hasAssignmentDraft(nextAssignment.id) ? "Черновик сохранён" : "Пример задания"}</span></div>
         <h3>${esc(nextAssignment.title)}</h3>
@@ -279,7 +279,7 @@ function homePage() {
     <section class="courses-section home-featured-course"><div class="section-title"><div><span class="subtle-label">СЛЕДУЮЩИЙ УРОК</span><h2>Продолжить обучение</h2></div><button class="text-link" data-go="study">Все курсы ${icon("arrow")}</button></div>${courseTile(courses[0],true)}</section>
     <section class="quick-section"><div class="section-title"><div><span class="subtle-label">РАЗДЕЛЫ</span><h2>Быстрый доступ</h2></div><button class="text-link" data-go="faculties">Все разделы ${icon("arrow")}</button></div><div class="quick-grid">
       <button class="quick-item" data-go="faculties"><span class="quick-icon peach">${icon("faculty")}</span><b>Факультеты</b><small>Найди своё</small></button>
-      <button class="quick-item" data-go="study"><span class="quick-icon lilac">${icon("study")}</span><b>Обучение</b><small>Учебные программы</small></button>
+      <button class="quick-item" data-go="study"><span class="quick-icon lilac">${icon("study")}</span><b>Обучение</b><small>Расписание и курсы</small></button>
       <button class="quick-item" data-go="documents"><span class="quick-icon butter">${icon("docs")}</span><b>Документы</b><small>Сертификаты</small></button>
       <button class="quick-item" data-go="profile"><span class="quick-icon mint">${icon("profile")}</span><b>Профиль</b><small>Твой аккаунт</small></button>
     </div></section>
@@ -343,7 +343,7 @@ function studyPage() {
   return `<main class="screen inner-screen study-screen">
     ${heading("ОБУЧЕНИЕ", "Расписание<br><em>и курсы.</em>", "Выбирай курс, открывай уроки и работай с материалами.")}
     ${schedulePanel()}
-    <section class="courses-section study-courses"><div class="section-title"><div><span class="subtle-label">ДОСТУПНЫЕ ПРОГРАММЫ</span><h2>Мои курсы</h2></div><span class="course-count">${courses.length} курса</span></div>${courses.map(c=>courseTile(c,true)).join("")}</section>
+    <section class="courses-section study-courses"><div class="section-title"><div><span class="subtle-label">УЧЕБНЫЕ ПРИМЕРЫ</span><h2>Примеры курсов</h2></div><span class="course-count">${courses.length} курса</span></div>${courses.map(c=>courseTile(c,true)).join("")}</section>
   </main>`;
 }
 
