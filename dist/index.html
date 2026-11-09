@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAGNUS — Student Dashboard</title>
+  <link rel="stylesheet" crossorigin href="/assets/index-DIApt2rj.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">M</span><span>MAGNUS<small>INTERNATIONAL UNIVERSITY</small></span></div>
+    <div class="nav-label">ОБУЧЕНИЕ</div>
+    <nav>
+      <a class="active" href="#overview">▦ <span>Обзор</span></a>
+      <a href="#courses">▤ <span>Мои курсы</span></a>
+      <a href="#assignments">◷ <span>Задания</span><i>2</i></a>
+      <a href="#schedule">▦ <span>Расписание</span></a>
+      <a href="#documents">▧ <span>Документы</span></a>
+    </nav>
+    <div class="sidebar-bottom"><div class="help-icon">?</div><div><b>Нужна помощь?</b><small>Мы всегда на связи</small></div></div>
+  </aside>
+  <main id="overview">
+    <header><div class="mobile-brand">MAGNUS</div><div class="crumb">Личный кабинет <span>/</span> Обзор</div><div class="header-right"><button class="icon-btn" aria-label="Уведомления">♧<em></em></button><div class="avatar">А</div><div class="user-name">Александр<small>Студент</small></div></div></header>
+    <section class="welcome">
+      <div><div class="eyebrow">ПОНЕДЕЛЬНИК, 9 НОЯБРЯ</div><h1>С возвращением,<br><span>Александр!</span></h1><p>Продолжайте двигаться к своим целям. Ваш следующий шаг уже ждёт вас.</p><a class="primary" href="#courses">Продолжить обучение <b>↗</b></a></div>
+      <div class="owl-scene"><div class="orb"></div><div class="owl">🦉</div><div class="scene-caption">LEARN · GROW · ACHIEVE</div></div>
+    </section>
+    <section class="stats">
+      <article class="stat"><div class="stat-icon orange">↗</div><div><small>Общий прогресс</small><strong>68<span>%</span></strong><label>+8% за эту неделю</label></div><div class="ring"><span>68%</span></div></article>
+      <article class="stat"><div class="stat-icon dark">▤</div><div><small>Завершено уроков</small><strong>24</strong><label>из 36 уроков</label></div><div class="mini-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
+      <article class="stat"><div class="stat-icon pale">◷</div><div><small>Время обучения</small><strong>32<span>ч</span></strong><label>За последние 30 дней</label></div><div class="stat-arrow">↗</div></article>
+    </section>
+    <div class="content-grid">
+      <section class="panel courses" id="courses">
+        <div class="section-head"><div><div class="eyebrow">ВАШ ПУТЬ</div><h2>Продолжить обучение</h2></div><a href="#courses">Все курсы ↗</a></div>
+        <article class="course-card"><div class="course-art management"><span>МЕНЕДЖМЕНТ</span><b>01</b><div class="art-shape">◒</div></div><div class="course-info"><div class="course-meta">ФАКУЛЬТЕТ МЕНЕДЖМЕНТА <span>•</span> МОДУЛЬ 4</div><h3>Основы современного менеджмента</h3><p>Стратегии управления и развитие команд</p><div class="progress-row"><span>Прогресс курса</span><b>68%</b></div><div class="progress"><i style="width:68%"></i></div><button class="continue" onclick="toast('Открытие урока будет подключено к учебному модулю')">Продолжить урок <b>→</b></button></div></article>
+        <div class="section-head second"><div><div class="eyebrow">ВАШИ ПРОГРАММЫ</div><h2>Мои факультеты</h2></div><a href="#courses">Каталог ↗</a></div>
+        <div class="faculty-row"><div class="faculty-icon f1">◎</div><div><b>Психология</b><small>8 уроков · 2 модуля</small></div><span class="faculty-status">Активен</span></div>
+        <div class="faculty-row"><div class="faculty-icon f2">⌘</div><div><b>Менеджмент</b><small>16 уроков · 4 модуля</small></div><span class="faculty-status">Активен</span></div>
+      </section>
+      <aside class="right-column">
+        <section class="panel tasks" id="assignments"><div class="section-head"><div><div class="eyebrow">НЕ ЗАБУДЬТЕ</div><h2>Задания</h2></div><span class="count">2</span></div>
+          <div class="task"><div class="task-dot urgent"></div><div><b>Практическая работа</b><small>Основы менеджмента</small><label>Срок: 10 ноября</label></div><span class="task-arrow">→</span></div>
+          <div class="task"><div class="task-dot"></div><div><b>Тест по модулю 4</b><small>Управление командами</small><label>Срок: 12 ноября</label></div><span class="task-arrow">→</span></div>
+          <a class="all-link" href="#assignments">Все задания →</a>
+        </section>
+        <section class="panel schedule" id="schedule"><div class="section-head"><div><div class="eyebrow">ВАШ КАЛЕНДАРЬ</div><h2>Ближайшее</h2></div><a href="#schedule">Все ↗</a></div>
+          <div class="event"><div class="date"><b>10</b><small>НОЯ</small></div><div><b>Самостоятельная работа</b><small>Менеджмент · Практика</small></div></div>
+          <div class="event"><div class="date"><b>12</b><small>НОЯ</small></div><div><b>Контрольный тест</b><small>Модуль 4 · Онлайн</small></div></div>
+        </section>
+      </aside>
+    </div>
+    <footer>© 2026 MAGNUS International University <span>Демонстрационный интерфейс · Данные примерные</span></footer>
+  </main>
+</div>
+<div id="toast" role="status"></div>
+<script src="dashboard.js"></script>
+</body></html>
