@@ -90,6 +90,7 @@ let completedLessons = loadCompletedLessons();
 let studentSubscription = { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
 let availableSubscriptionPlans = [];
 let paymentPlansLoading = false;
+let paymentPlansError = '';
 let toastTimer;
 let cloudSyncTimer;
 let cloudSyncReady = false;
@@ -241,7 +242,9 @@ function loadPaymentPlans(){
  paymentPlansLoading=true;
  callPaymentApi("plans",{},(error,result)=>{
   paymentPlansLoading=false;
-  if(!error&&result?.ok){availableSubscriptionPlans=Array.isArray(result.plans)?result.plans:[];if(currentPage==="profile")render();}
+  if(!error&&result?.ok){availableSubscriptionPlans=Array.isArray(result.plans)?result.plans:[];paymentPlansError='';}
+  else paymentPlansError=error?.message||result?.message||'Не удалось загрузить тарифы.';
+  if(currentPage==="profile")render();
  });
 }
 function purchaseSubscription(planId,button){
@@ -611,7 +614,7 @@ function profilePage() {
       <span class="profile-connection ${telegramConnected?"connected":""}">${telegramConnected?"TELEGRAM":"ГОСТЕВОЙ РЕЖИМ"}</span>
     </section>
     <section class="profile-subscription-card"><div><span>УЧЕБНЫЙ ДОСТУП</span><b>${subscriptionLabel}</b><small>${studentSubscription.status==='active'&&subscriptionUntil?'Действует до '+subscriptionUntil:'Информация о доступе обновляется из аккаунта'}</small></div><i class="profile-subscription-indicator ${studentSubscription.status==='active'?'active':''}"></i></section>
-    <section class="profile-plans"><div class="profile-plans-heading"><span class="subtle-label">ПОДПИСКА</span><h2>Выбери срок обучения</h2><p>Оплата цифрового доступа проходит внутри Telegram через Stars.</p></div>${availableSubscriptionPlans.length?availableSubscriptionPlans.map(plan=>`<article class="profile-plan"><div><b>${esc(plan.days+' дней')}</b><small>${esc(plan.title)}</small></div><strong>${Number(plan.starsPrice)} ⭐</strong><button data-buy-plan="${esc(plan.planId)}">Купить</button></article>`).join(''):'<div class="profile-plans-empty">'+(paymentPlansLoading?'Загружаем тарифы…':'Сейчас нет доступных тарифов.')+'</div>'}</section>
+    <section class="profile-plans"><div class="profile-plans-heading"><span class="subtle-label">ПОДПИСКА</span><h2>Выбери срок обучения</h2><p>Оплата цифрового доступа проходит внутри Telegram через Stars.</p></div>${availableSubscriptionPlans.length?availableSubscriptionPlans.map(plan=>`<article class="profile-plan"><div><b>${esc(plan.days+' дней')}</b><small>${esc(plan.title)}</small></div><strong>${Number(plan.starsPrice)} ⭐</strong><button data-buy-plan="${esc(plan.planId)}">Купить</button></article>`).join(''):'<div class="profile-plans-empty">'+(paymentPlansLoading?'Загружаем тарифы…':paymentPlansError?'Не удалось загрузить тарифы. Попробуй обновить профиль.':'Сейчас нет доступных тарифов.')+'</div>'}</section>
     <div class="profile-content-heading"><div><span class="subtle-label">СОХРАНЁННОЕ</span><h2>Учебные материалы</h2></div><span>${cloudSyncReady?"Синхронизировано":"На устройстве"}</span></div>
     <div class="profile-stats">
       <div><b>${draftCount}</b><small>Черновики</small></div>
