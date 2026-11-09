@@ -19,7 +19,7 @@ export const adminUsers = table("admin_users", {
 
 // Настройки Telegram-бота редактируются владельцем из админ-панели.
 export const botSettings = table('bot_settings', {
-  key: text('key').primaryKey(),
+  key: text('setting_key').primaryKey(),
   welcomeMessage: text('welcome_message').notNull(),
   description: text('description').notNull(),
   shortDescription: text('short_description').notNull(),
