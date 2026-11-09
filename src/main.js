@@ -276,11 +276,10 @@ function dashboardTasksPreview() {
 
 function homePage() {
   return `<main class="screen home-screen">
-    <section class="greeting-row"><div><div class="subtle-label">ПОНЕДЕЛЬНИК · ТВОЙ НОВЫЙ СТАРТ</div><h1>Привет, ${esc(firstName)}! <span class="wave">✦</span></h1><p>К чему сегодня хочется прийти?</p></div><div class="streak"><span>✦</span><b>7</b><small>дней подряд</small></div></section>
+    <section class="greeting-row"><div><div class="subtle-label">ЛИЧНЫЙ КАБИНЕТ</div><h1>Привет, ${esc(firstName)}!</h1><p>С чего начнём сегодня?</p></div></section>
     <section class="hero-card">
-      <div class="hero-glow"></div><div class="hero-copy"><span class="hero-eyebrow">MAGNUS · LEARN WITH PURPOSE</span><h2>Знания —<br>твой супернавык.</h2><p>Открывай новое, задавай вопросы и расти каждый день.</p><button class="orange-button" data-go="faculties">Выбрать направление ${icon("arrow")}</button></div>
-      <div class="mascot-stage"><span class="floating-token token-one">✦</span><span class="floating-token token-two">M</span><span class="floating-token token-three">+</span><img src="/mascot/magnus-owl.svg" class="hero-mascot" alt="Совёнок MAGNUS" /></div>
-      <div class="hero-index"><span>01</span><span>ОБУЧЕНИЕ НАЧИНАЕТСЯ С ИНТЕРЕСА</span></div>
+      <div class="hero-copy"><span class="hero-eyebrow">ОБУЧЕНИЕ В MAGNUS</span><h2>Найди своё<br>направление.</h2><p>Выбери факультет, посмотри программы и начни с первого урока.</p><button class="orange-button" data-go="faculties">Смотреть факультеты ${icon("arrow")}</button></div>
+      <div class="mascot-stage"><img src="/mascot/magnus-owl.svg" class="hero-mascot" alt="Совёнок MAGNUS" /></div>
     </section>
     <section class="courses-section home-featured-course"><div class="section-title"><div><span class="subtle-label">ТВОЙ СЛЕДУЮЩИЙ ШАГ</span><h2>Продолжить обучение</h2></div><button class="text-link" data-go="study">Все курсы ${icon("arrow")}</button></div>${courseTile(courses[0],true)}</section>
     <section class="quick-section"><div class="section-title"><div><span class="subtle-label">ТВОЁ ПРОСТРАНСТВО</span><h2>Быстрый доступ</h2></div><button class="text-link" data-go="faculties">Все разделы ${icon("arrow")}</button></div><div class="quick-grid">
@@ -291,7 +290,6 @@ function homePage() {
     </div></section>
     ${dashboardOverview()}
     ${dashboardTasksPreview()}
-    <section class="mascot-note"><div class="note-avatar"><img src="/mascot/magnus-owl.svg" alt="" /></div><div><span class="subtle-label">МАЛЕНЬКОЕ НАПОМИНАНИЕ</span><p>Большие открытия начинаются с маленького шага. Выбери то, что интересно именно тебе.</p></div><span class="note-star">✦</span></section>
   </main>`;
 }
 
@@ -499,31 +497,20 @@ function assignmentDetailPage() {
 
 function documentsPage() {
   return `<main class="screen inner-screen documents-screen">
-    ${heading("ЛИЧНЫЕ ДОКУМЕНТЫ", "Твои достижения<br><em>и документы.</em>", "Сертификаты и подтверждения обучения будут собраны здесь.")}
-    <section class="documents-empty-hero">
-      <div class="documents-empty-copy">
-        <span class="subtle-label">АРХИВ СТУДЕНТА</span>
-        <h2>Здесь будут<br>твои сертификаты.</h2>
-        <p>Сейчас выданных документов нет. Когда учебная система сформирует документ, он появится в этом разделе.</p>
-        <span class="documents-empty-status"><i></i>Пока нет документов</span>
-      </div>
-      <div class="documents-art" aria-hidden="true">
-        <div class="documents-art-orbit"></div>
-        <div class="documents-paper">
-          <span class="documents-paper-top">MAGNUS <i>STUDENT FILE</i></span>
-          <span class="documents-paper-icon">${icon("docs")}</span>
-          <b></b><b></b><b></b>
-          <span class="documents-paper-seal">M</span>
-        </div>
-        <span class="documents-art-spark">✦</span>
+    ${heading("СЕРТИФИКАТЫ", "Документы об<br><em>обучении.</em>", "В этом разделе будут храниться сертификаты по завершённым программам MAGNUS.")}
+    <section class="certificate-specimen" aria-label="Образец оформления будущего сертификата">
+      <div class="certificate-specimen-inner">
+        <div class="certificate-specimen-top"><b>MAGNUS</b><span>ОБРАЗЕЦ · НЕ ВЫДАН</span></div>
+        <div class="certificate-specimen-rule"></div>
+        <span class="certificate-specimen-eyebrow">ПОДТВЕРЖДЕНИЕ ОБУЧЕНИЯ</span>
+        <h2>Сертификат</h2>
+        <p>о прохождении образовательной программы</p>
+        <div class="certificate-specimen-name"><i></i><span>ИМЯ СТУДЕНТА</span></div>
+        <div class="certificate-specimen-footer"><span>ОБРАЗОВАТЕЛЬНАЯ ПРОГРАММА</span><span>ДАТА ВЫДАЧИ</span></div>
       </div>
     </section>
-    <section class="documents-next-step">
-      <div class="documents-next-icon">${icon("study")}</div>
-      <div><b>Продолжай свой путь</b><p>Учебные материалы и задания доступны в разделе обучения.</p></div>
-      <button data-go="study" aria-label="Перейти к обучению">${icon("arrow")}</button>
-    </section>
-    <p class="legal-note">Документы MAGNUS подтверждают прохождение соответствующих образовательных программ и не являются государственными дипломами о высшем образовании. Наличие и условия выдачи документов определяются правилами конкретной программы.</p>
+    <div class="documents-empty-state"><b>Пока нет выданных сертификатов</b><p>Образец выше показывает оформление. Настоящий документ появится здесь после завершения программы и выполнения условий его выдачи.</p><button data-go="study">Перейти к обучению ${icon("arrow")}</button></div>
+    <p class="legal-note">Образец не является выданным документом. Сертификаты MAGNUS подтверждают прохождение соответствующих образовательных программ и не являются государственными дипломами о высшем образовании.</p>
   </main>`;
 }
 
