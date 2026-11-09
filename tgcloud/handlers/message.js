@@ -11,7 +11,7 @@ const BOT_COMMANDS = [
 function menuKeyboard(admin = false) {
   return {
     inline_keyboard: [[
-      { text: 'Открыть MAGNUS', web_app: { url: admin ? APP_URL + "?admin=1" : APP_URL } },
+      { text: admin ? 'Открыть админ-панель' : 'Открыть MAGNUS', web_app: { url: admin ? APP_URL + '?admin=1' : APP_URL } },
     ]],
   };
 }
@@ -50,9 +50,17 @@ export default async function (message) {
       });
       return;
     }
+    try {
+      await api.setChatMenuButton({
+        chat_id: message.chat.id,
+        menu_button: { type: 'web_app', text: 'Админ-панель', web_app: { url: APP_URL + '?admin=1' } },
+      });
+    } catch (error) {
+      console.warn('MAGNUS: не удалось установить кнопку админ-панели.', error);
+    }
     await api.sendMessage({
       chat_id: message.chat.id,
-      text: 'MAGNUS · Панель управления\n\nУправление учебными отправками, проверкой работ и настройками бота.',
+      text: 'Доступ администратора подтверждён.\n\nНажми кнопку ниже — откроется рабочая панель MAGNUS с обзором, проверкой работ и управлением ботом. Также панель доступна через кнопку меню «Админ-панель» рядом со строкой ввода.',
       reply_markup: menuKeyboard(true),
     });
     return;
