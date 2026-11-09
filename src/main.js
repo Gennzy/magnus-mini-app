@@ -86,6 +86,7 @@ let lessonNotes = loadLessonNotes();
 let interestedFaculties = loadInterestedFaculties();
 let lessonQuizResults = loadLessonQuizResults();
 let completedLessons = loadCompletedLessons();
+let studentSubscription = { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
 let toastTimer;
 let cloudSyncTimer;
 let cloudSyncReady = false;
@@ -297,6 +298,7 @@ function initializeCloudStudentData() {
     interestedFaculties = { ...(result.interestedFaculties || {}), ...interestedFaculties };
     lessonQuizResults = { ...(result.lessonQuizResults || {}), ...lessonQuizResults };
     completedLessons = { ...(result.completedLessons || {}), ...completedLessons };
+    studentSubscription = result.subscription || { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
     storeAssignmentDrafts();
     storeLessonNotes();
     storeInterestedFaculties();
@@ -546,6 +548,8 @@ function profilePage() {
   const profileCaption = telegramUser?.username
     ? `@${telegramUser.username}`
     : telegramConnected ? "Профиль из Telegram" : "Telegram-профиль не получен";
+  const subscriptionLabel = studentSubscription.status === 'active' ? 'Доступ активен' : studentSubscription.status === 'expired' ? 'Срок доступа истёк' : studentSubscription.status === 'revoked' ? 'Доступ отозван' : 'Нет активного доступа';
+  const subscriptionUntil = studentSubscription.endsAt ? new Date(studentSubscription.endsAt * 1000).toLocaleDateString('ru-RU') : '';
   return `<main class="screen inner-screen profile-screen">
     ${heading("ЛИЧНОЕ ПРОСТРАНСТВО", "Твой профиль<br><em>MAGNUS.</em>", "Аккаунт и сохранённые учебные материалы.")}
     <section class="profile-card">
@@ -553,6 +557,7 @@ function profilePage() {
       <div class="profile-info"><small>ЛИЧНЫЙ КАБИНЕТ</small><h2>${esc(profileName)}</h2><p>${esc(profileCaption)}</p></div>
       <span class="profile-connection ${telegramConnected?"connected":""}">${telegramConnected?"TELEGRAM":"ГОСТЕВОЙ РЕЖИМ"}</span>
     </section>
+    <section class="profile-subscription-card"><div><span>УЧЕБНЫЙ ДОСТУП</span><b>${subscriptionLabel}</b><small>${studentSubscription.status==='active'&&subscriptionUntil?'Действует до '+subscriptionUntil:'Информация о доступе обновляется из аккаунта'}</small></div><i class="profile-subscription-indicator ${studentSubscription.status==='active'?'active':''}"></i></section>
     <div class="profile-content-heading"><div><span class="subtle-label">СОХРАНЁННОЕ</span><h2>Учебные материалы</h2></div><span>${cloudSyncReady?"Синхронизировано":"На устройстве"}</span></div>
     <div class="profile-stats">
       <div><b>${draftCount}</b><small>Черновики</small></div>
@@ -620,7 +625,9 @@ function adminStudentCard(student){
  const name=adminStudentName(student);
  const username=student.username?'@'+student.username:'Telegram ID '+student.telegramId;
  const search=(name+' '+username+' '+student.telegramId).toLowerCase();
- return `<button class="admin-student-row" type="button" data-admin-student="${esc(student.telegramId)}" data-admin-student-row data-search="${esc(search)}"><span class="admin-student-avatar">${esc((student.firstName||'M').charAt(0).toUpperCase())}</span><span class="admin-student-main"><b>${esc(name)}</b><small>${esc(username)}</small><small>Активность: ${esc(adminStudentLastSeen(student.updatedAt))}</small></span><span class="admin-student-counts"><b>${student.submissionsCount} работ</b><small>${student.pendingCount} ожидают</small></span><span class="admin-student-chevron">${icon('chevron-right')}</span></button>`;
+ const subscription=student.subscription||{};
+ const accessLabel=subscription.status==='active'?'Доступ активен':subscription.status==='expired'?'Истёк':subscription.status==='revoked'?'Отозван':'Без доступа';
+ return `<button class="admin-student-row" type="button" data-admin-student="${esc(student.telegramId)}" data-admin-student-row data-search="${esc(search)}"><span class="admin-student-avatar">${esc((student.firstName||'M').charAt(0).toUpperCase())}</span><span class="admin-student-main"><b>${esc(name)}</b><small>${esc(username)}</small><small>Активность: ${esc(adminStudentLastSeen(student.updatedAt))}</small><small class="admin-student-access ${subscription.status==='active'?'active':''}">${accessLabel}</small></span><span class="admin-student-counts"><b>${student.submissionsCount} работ</b><small>${student.pendingCount} ожидают</small></span><span class="admin-student-chevron">${icon('chevron-right')}</span></button>`;
 }
 function adminStudentSubmission(item,student){
  return adminSubmissionCard({...item,studentId:student.telegramId,studentName:adminStudentName(student)},false);
@@ -640,7 +647,11 @@ function adminStudentDetailPage(){
  const lessonName=id=>Object.values(curriculum).flat().find(item=>item[0]===id)?.[1]||id;
  const submissions=Array.isArray(detail.submissions)?detail.submissions:[];
  const messages=Array.isArray(detail.messages)?detail.messages:[];
+ const subscription=detail.subscription||student.subscription||{status:'none'};
+ const subscriptionStatus=subscription.status==='active'&&subscription.endsAt*1000>Date.now()?'Доступ активен':subscription.status==='expired'?'Срок истёк':subscription.status==='revoked'?'Отозван':'Нет доступа';
+ const subscriptionEnd=subscription.endsAt?new Date(subscription.endsAt*1000).toLocaleString('ru-RU',{dateStyle:'medium',timeStyle:'short'}):'—';
  return `<section class="admin-student-detail"><button class="admin-back-button" data-admin-student-back>${icon('arrow-left')} К списку студентов</button><header class="admin-student-profile-head"><span class="admin-student-avatar large">${esc((student.firstName||'M').charAt(0).toUpperCase())}</span><div><span class="admin-eyebrow">ПРОФИЛЬ СТУДЕНТА</span><h2>${esc(name)}</h2><p>${student.username?'@'+esc(student.username)+' · ':''}Telegram ID ${esc(student.telegramId||'—')}</p><small>Последняя активность: ${esc(adminStudentLastSeen(student.updatedAt))}</small></div></header>
+ <section class="admin-subscription-panel"><div class="admin-section-head"><div><span>УПРАВЛЕНИЕ ДОСТУПОМ</span><h2>Подписка и срок обучения</h2></div><span class="admin-subscription-status ${subscription.status==='active'&&subscription.endsAt*1000>Date.now()?'active':''}">${subscriptionStatus}</span></div><div class="admin-subscription-facts"><div><small>ТЕКУЩИЙ ТАРИФ</small><b>${esc(subscription.planId||'Не назначен')}</b></div><div><small>ДЕЙСТВУЕТ ДО</small><b>${esc(subscriptionEnd)}</b></div></div><div class="admin-subscription-actions"><label>Выдать или продлить доступ<select data-admin-subscription-days><option value="7">7 дней</option><option value="30" selected>30 дней</option><option value="90">90 дней</option><option value="365">365 дней</option></select></label><button class="orange-button" data-admin-subscription-grant data-student-id="${esc(student.telegramId)}">Выдать доступ</button><button class="admin-subscription-revoke" data-admin-subscription-revoke data-student-id="${esc(student.telegramId)}" ${subscription.status==='active'&&subscription.endsAt*1000>Date.now()?'':'disabled'}>Отозвать доступ</button></div><small class="admin-subscription-note">Ручное назначение доступа администратором. Платёжная интеграция пока не подключена.</small></section>
  <div class="admin-student-metrics"><article><b>${Number(student.submissionsCount)||0}</b><span>Отправлено работ</span></article><article><b>${Number(student.pendingCount)||0}</b><span>Ожидают проверки</span></article><article><b>${Number(student.completedLessonsCount)||0}</b><span>Пройдено примеров</span></article><article><b>${Number(student.quizAttempts)||0}</b><span>Ответов в тестах</span></article></div>
  <div class="admin-student-activity-grid"><article><span>ИНТЕРЕСЫ</span><h3>Направления</h3><p>${facultiesList.length?facultiesList.map(esc).join(', '):'Пока не выбраны'}</p></article><article><span>УЧЕБНАЯ АКТИВНОСТЬ</span><h3>Сохранённые материалы</h3><p>${Number(detail.notesCount)||0} заметок · ${Number(detail.draftsCount)||0} черновиков</p></article></div>
  <div class="admin-section-head"><div><span>ИСТОРИЯ ОТПРАВЛЕНИЙ</span><h2>Работы студента</h2></div><span class="admin-count">${submissions.length}</span></div>${submissions.map(item=>adminStudentSubmission(item,student)).join('')||`<div class="admin-empty">Студент пока не отправлял работы.</div>`}
@@ -703,6 +714,27 @@ function bindEvents() {
   document.querySelectorAll("[data-admin-students-refresh]").forEach(el=>el.addEventListener("click",loadAdminStudents));
   document.querySelectorAll("[data-admin-student]").forEach(el=>el.addEventListener("click",()=>loadAdminStudentDetail(el.dataset.adminStudent)));
   document.querySelectorAll("[data-admin-student-back]").forEach(el=>el.addEventListener("click",()=>{adminStudentSelected="";adminStudentDetail=null;adminStudentDetailError="";render();}));
+  document.querySelectorAll("[data-admin-subscription-grant]").forEach(button=>button.addEventListener("click",()=>{
+    const studentId=button.dataset.studentId;
+    const days=Number(document.querySelector("[data-admin-subscription-days]")?.value||30);
+    if(!window.confirm("Выдать этому студенту учебный доступ на "+days+" дней?"))return;
+    button.disabled=true;button.textContent="Сохраняем…";
+    const called=callAdminApi("grantSubscription",{studentId,days},(error,result)=>{
+      if(error||!result?.ok){button.disabled=false;button.textContent="Выдать доступ";toast(error?.message||result?.message||"Не удалось выдать доступ.");return;}
+      toast(result.message||"Доступ выдан.");loadAdminStudentDetail(studentId);
+    });
+    if(!called){button.disabled=false;button.textContent="Выдать доступ";toast("Открой панель из Telegram.");}
+  }));
+  document.querySelectorAll("[data-admin-subscription-revoke]").forEach(button=>button.addEventListener("click",()=>{
+    const studentId=button.dataset.studentId;
+    if(!window.confirm("Отозвать действующий учебный доступ у этого студента?"))return;
+    button.disabled=true;button.textContent="Отзываем…";
+    const called=callAdminApi("revokeSubscription",{studentId},(error,result)=>{
+      if(error||!result?.ok){button.disabled=false;button.textContent="Отозвать доступ";toast(error?.message||result?.message||"Не удалось отозвать доступ.");return;}
+      toast(result.message||"Доступ отозван.");loadAdminStudentDetail(studentId);
+    });
+    if(!called){button.disabled=false;button.textContent="Отозвать доступ";toast("Открой панель из Telegram.");}
+  }));
   document.querySelectorAll("[data-admin-student-send]").forEach(button=>button.addEventListener("click",()=>{
     const field=document.querySelector("[data-admin-student-message]");
     const message=(field?.value||"").trim();
