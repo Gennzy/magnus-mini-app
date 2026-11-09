@@ -7,6 +7,7 @@ const APP_URL = 'https://app9020486965.tgcloud.ai/';
 const BOT_COMMANDS = [
   { command: 'start', description: 'Открыть MAGNUS' },
   { command: 'help', description: 'Помощь и возможности' },
+  { command: 'paysupport', description: 'Помощь с оплатой' },
 ];
 const DEFAULT_BOT_SETTINGS = {
   welcomeMessage: 'Добро пожаловать в MAGNUS.\n\nУчебные программы, материалы и задания собраны в одном пространстве.',
