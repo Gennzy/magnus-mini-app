@@ -75,6 +75,7 @@ let selectedDay = "Пт";
 let selectedAssignmentId = assignments[0].id;
 let activeAssignmentFilter = "Все";
 let assignmentDrafts = loadAssignmentDrafts();
+let lessonNotes = loadLessonNotes();
 let toastTimer;
 
 const esc = (v) => String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -135,6 +136,21 @@ function loadAssignmentDrafts() {
 function storeAssignmentDrafts() {
   try {
     window.localStorage.setItem("magnus.assignmentDrafts", JSON.stringify(assignmentDrafts));
+    return true;
+  } catch {
+    return false;
+  }
+}
+function loadLessonNotes() {
+  try {
+    return JSON.parse(window.localStorage.getItem("magnus.lessonNotes") || "{}") || {};
+  } catch {
+    return {};
+  }
+}
+function storeLessonNotes() {
+  try {
+    window.localStorage.setItem("magnus.lessonNotes", JSON.stringify(lessonNotes));
     return true;
   } catch {
     return false;
@@ -309,7 +325,7 @@ function courseDetailPage() {
 function lessonPage() {
   const c = selectedCourse;
   const tabContent = lessonTab === "notes"
-    ? `<div class="lesson-notes"><label for="lesson-note">МОИ ЗАМЕТКИ</label><textarea id="lesson-note" placeholder="Запишите важную мысль, пример или вопрос..."></textarea><small>Заметки пока хранятся только в этом демонстрационном экране.</small></div>`
+    ? `<div class="lesson-notes"><label for="lesson-note">МОИ ЗАМЕТКИ</label><textarea id="lesson-note" placeholder="Запишите важную мысль, пример или вопрос...">${esc(lessonNotes[c.id] || "")}</textarea><small>Заметки автоматически сохраняются на этом устройстве.</small></div>`
     : lessonTab === "materials"
       ? `<div class="lesson-reading"><span class="subtle-label">КОНСПЕКТ · 4 МИН ЧТЕНИЯ</span><h3>Главная идея занятия</h3><p>Любая сложная тема становится понятнее, если разделить её на небольшие понятия, увидеть связь между ними и разобрать конкретный пример.</p><blockquote>Сначала наблюдение — затем гипотеза — после этого проверка.</blockquote><h3>На что обратить внимание</h3><ul><li>Определите ключевые понятия.</li><li>Найдите связь между причиной и следствием.</li><li>Проверьте вывод на примере.</li></ul></div>`
       : `<div class="lesson-reading"><span class="subtle-label">УРОК 03 · 24 МИНУТЫ</span><h3>Разбираем на примерах</h3><p>В этом занятии мы переходим от теории к практике. Посмотрите на ситуацию, выделите основные факторы и попробуйте объяснить, почему результат получился именно таким.</p><div class="lesson-callout"><b>Цель занятия</b><span>Научиться применять ключевые понятия курса к реальным ситуациям.</span></div><p>После просмотра изучите конспект и ответьте на контрольный вопрос.</p></div>`;
@@ -461,6 +477,11 @@ function bindEvents() {
     const actions = {"lesson-finish":"Урок отмечен в демонстрационном режиме. Сохранение прогресса подключим позже.",notifications:"Новых уведомлений пока нет.",course:"Раздел курсов пока демонстрационный.", "course-start":"Учебный плеер подключим на следующем этапе.",interest:"Интерес сохранён в демо-режиме.",settings:"Настройки появятся в следующем обновлении.",support:"Раздел поддержки скоро будет доступен.",about:"MAGNUS — пространство для знаний, открытий и развития."};
     toast(actions[el.dataset.action] || "Скоро будет доступно.");
   }));
+  const noteField = document.querySelector("#lesson-note");
+  noteField?.addEventListener("input", e => {
+    lessonNotes[selectedCourse.id] = e.target.value;
+    storeLessonNotes();
+  });
   const input = document.querySelector("#faculty-search");
   input?.addEventListener("input", e => { const pos=e.target.selectionStart; searchValue=e.target.value; const y=window.scrollY; render(); const next=document.querySelector("#faculty-search"); next?.focus(); next?.setSelectionRange(pos,pos); window.scrollTo(0,y); });
 }
