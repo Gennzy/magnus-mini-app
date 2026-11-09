@@ -1594,3 +1594,89 @@ button:focus-visible, [tabindex="0"]:focus-visible, input:focus-visible, textare
   .profile-avatar { width: 52px; height: 52px; }
   .profile-menu { border-radius: 17px; }
 }
+
+
+/* Final mobile ergonomics pass */
+html { -webkit-text-size-adjust: 100%; }
+body { overflow-x: hidden; }
+#app { width: 100%; overflow-x: clip; }
+.screen, .inner-screen { width: 100%; min-width: 0; }
+button, a, input, textarea { touch-action: manipulation; }
+.text-link {
+  min-height: 38px;
+  padding: 4px 0 4px 8px;
+  justify-content: center;
+}
+.icon-button, .avatar-button { width: 42px; height: 42px; }
+.nav-item {
+  min-width: 0;
+  min-height: 48px;
+  justify-content: center;
+  gap: 5px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.nav-item svg { width: 20px; height: 20px; }
+.filter-chip { min-height: 38px; }
+@media (max-width: 650px) {
+  .topbar { height: 62px; }
+  .screen { padding-bottom: calc(34px + env(safe-area-inset-bottom)); }
+  .greeting-row { gap: 10px; }
+  .greeting-row > div:first-child { min-width: 0; }
+  .streak { flex: none; }
+  .section-title { gap: 8px; }
+  .section-title > div { min-width: 0; }
+  .section-title h2 { overflow-wrap: anywhere; }
+  .text-link { flex: none; font-size: 9px; }
+  .quick-item { min-width: 0; }
+  .quick-item b { overflow-wrap: anywhere; }
+  .course-details { min-width: 0; }
+  .course-meta span { min-width: 0; }
+  .course-meta span:last-child { white-space: nowrap; }
+  .progress-caption { gap: 5px; }
+  .progress-caption button { white-space: nowrap; }
+  .assignment-card-top { align-items: flex-start; flex-wrap: wrap; }
+  .assignment-detail-meta { gap: 9px 16px; }
+  .lesson-tabs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .lesson-tabs button { min-width: 0; padding: 11px 7px; white-space: nowrap; }
+  .lesson-footer { gap: 10px; }
+  .profile-info { overflow-wrap: anywhere; }
+  .bottom-nav {
+    justify-content: space-around;
+    padding-top: 7px;
+    padding-bottom: calc(7px + env(safe-area-inset-bottom));
+  }
+  .nav-item { width: 20%; max-width: none; }
+}
+@media (max-width: 380px) {
+  .topbar { padding-left: 12px; padding-right: 12px; }
+  .screen { padding-left: 13px; padding-right: 13px; }
+  .home-screen .greeting-row h1 { font-size: 26px; }
+  .home-screen .greeting-row .subtle-label { font-size: 8px; letter-spacing: .8px; }
+  .home-screen .hero-card { min-height: 248px; }
+  .home-screen .hero-copy h2 { font-size: 25px; }
+  .home-screen .hero-copy p { font-size: 10px; }
+  .home-screen .hero-copy .orange-button { min-height: 39px; padding: 10px 11px; font-size: 9px; gap: 5px; }
+  .home-screen .hero-eyebrow { font-size: 6px; letter-spacing: .75px; }
+  .home-screen .hero-index { font-size: 6px; letter-spacing: .9px; }
+  .home-screen .dashboard-metrics { gap: 6px; }
+  .home-screen .dashboard-metric { gap: 7px; padding: 9px 7px; }
+  .home-screen .dashboard-metric b { font-size: 18px; }
+  .home-screen .metric-icon { width: 29px; height: 29px; }
+  .home-screen .metric-ring { width: 37px; height: 37px; }
+  .course-card, .course-card.compact { grid-template-columns: 88px minmax(0,1fr); }
+  .course-details { padding: 10px 9px; }
+  .course-details h3 { font-size: 11px; }
+  .course-meta { font-size: 7px; }
+  .course-meta span:last-child { white-space: normal; text-align: right; }
+  .progress-caption { font-size: 7px; }
+  .faculty-card { grid-template-columns: 82px minmax(0,1fr); gap: 10px; }
+  .faculty-art { height: 86px; }
+  .faculty-card-copy b { font-size: 13px; }
+  .detail-topics { grid-template-columns: 1fr; gap: 12px; }
+  .assignment-summary > div { padding: 10px 7px; }
+  .assignment-summary b { font-size: 18px; }
+  .assignment-summary span { font-size: 7px; }
+  .lesson-heading h1 { font-size: 35px; }
+  .nav-item { font-size: 8px; }
+}
