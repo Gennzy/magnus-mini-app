@@ -1871,3 +1871,80 @@ button, a, input, textarea { touch-action: manipulation; }
 @media (max-width: 650px) {
   .course-detail-hero .course-art-illustration { width: 76%; opacity: .26; transform: scale(1.14); }
 }
+
+
+/* Consistent editorial heading language across every MAGNUS section */
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #a95d2e;
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 850;
+  letter-spacing: 1.65px;
+  text-transform: uppercase;
+}
+.kicker::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 2px;
+  flex: none;
+  border-radius: 99px;
+  background: linear-gradient(90deg,#f47718,#f9b17b);
+  box-shadow: 0 2px 5px rgba(244,122,25,.2);
+}
+.page-heading {
+  padding-top: 20px;
+  padding-bottom: 24px;
+}
+.page-heading h1 {
+  margin-top: 14px;
+  letter-spacing: -2.25px;
+}
+.page-heading p {
+  color: #687074;
+  font-size: 13px;
+  line-height: 1.72;
+}
+.section-title .subtle-label {
+  display: inline-block;
+  margin-bottom: 2px;
+}
+.brand-copy b { letter-spacing: 1.55px; }
+.brand-copy small { letter-spacing: 2.35px; }
+.brand-symbol {
+  border-radius: 12px 12px 14px 14px;
+  position: relative;
+  overflow: hidden;
+}
+.brand-symbol::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: inherit;
+  pointer-events: none;
+}
+.course-meta span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  letter-spacing: .15px;
+}
+.course-meta span:first-child::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .75;
+}
+@media (max-width: 650px) {
+  .page-heading { padding-top: 10px; padding-bottom: 19px; }
+  .page-heading h1 { letter-spacing: -1.6px; }
+  .kicker { font-size: 8px; letter-spacing: 1.2px; }
+  .kicker::before { width: 14px; }
+}
