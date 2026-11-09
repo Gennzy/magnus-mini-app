@@ -183,6 +183,27 @@ export default async function (input, ctx) {
     return { ok: true, plans: saved, message: 'Тарифы сохранены.' };
   }
 
+  if (input?.action === 'paymentOrders') {
+    const rows = await db.select().from(paymentOrders)
+      .orderBy(desc(paymentOrders.createdAt)).limit(200).all();
+    const savedPlans = await db.select().from(subscriptionPlans).all();
+    const planTitles = new Map(savedPlans.map(row => [row.planId, row.title]));
+    const fallbackTitles = new Map(DEFAULT_SUBSCRIPTION_PLANS.map(plan => [plan.planId, plan.title]));
+    const orders = rows.map(order => ({
+      id: order.id, tgId: String(order.tgId), planId: order.planId,
+      planTitle: planTitles.get(order.planId) || fallbackTitles.get(order.planId) || order.planId,
+      amount: Number(order.amount) || 0, currency: order.currency, status: order.status,
+      createdAt: Number(order.createdAt) || 0, paidAt: Number(order.paidAt) || 0,
+      telegramChargeId: cleanText(order.telegramChargeId, 120),
+    }));
+    const paidOrders = orders.filter(order => order.status === 'paid');
+    return { ok: true, orders, summary: {
+      totalOrders: orders.length, paidOrders: paidOrders.length,
+      paidStars: paidOrders.reduce((sum, order) => sum + order.amount, 0),
+      pendingOrders: orders.filter(order => order.status === 'pending' || order.status === 'processing').length,
+      failedOrders: orders.filter(order => order.status === 'invoice_failed').length,
+    }, limited: rows.length === 200 };
+  }
   if (input?.action === 'auditLog') {
     const entries = await db.select().from(adminAuditLog)
       .orderBy(desc(adminAuditLog.createdAt)).limit(150).all();
