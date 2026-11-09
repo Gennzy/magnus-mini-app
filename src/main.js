@@ -76,6 +76,7 @@ let activeFilter = "Все";
 let selectedAssignmentId = assignments[0].id;
 let activeAssignmentFilter = "Все";
 let assignmentDrafts = loadAssignmentDrafts();
+let assignmentSubmissions = loadAssignmentSubmissions();
 let lessonNotes = loadLessonNotes();
 let interestedFaculties = loadInterestedFaculties();
 let lessonQuizResults = loadLessonQuizResults();
@@ -186,6 +187,8 @@ function writeStudentStorage(kind, value) {
     return false;
   }
 }
+function loadAssignmentSubmissions() { return readStudentStorage("assignmentSubmissions"); }
+function storeAssignmentSubmissions() { return writeStudentStorage("assignmentSubmissions", assignmentSubmissions); }
 function loadAssignmentDrafts() {
   return readStudentStorage("assignmentDrafts");
 }
@@ -226,7 +229,8 @@ function scheduleCloudStudentDataSync() {
       lessonNotes,
       interestedFaculties,
       lessonQuizResults,
-      completedLessons
+      completedLessons,
+      assignmentSubmissions
     }, (error) => {
       if (error) console.warn("MAGNUS: не удалось синхронизировать учебные данные.", error);
     });
@@ -240,11 +244,14 @@ function initializeCloudStudentData() {
       return;
     }
     const localAssignments = Object.keys(assignmentDrafts).length > 0;
+    const localSubmissions = Object.keys(assignmentSubmissions).length > 0;
     const localNotes = Object.keys(lessonNotes).length > 0;
     const localInterests = Object.keys(interestedFaculties).length > 0;
     const localQuizResults = Object.keys(lessonQuizResults).length > 0;
     const localCompletedLessons = Object.keys(completedLessons).length > 0;
     assignmentDrafts = { ...(result.assignmentDrafts || {}), ...assignmentDrafts };
+    assignmentSubmissions = { ...(result.assignmentSubmissions || []).reduce((map,item)=>{ if(item?.assignmentId){(map[item.assignmentId] ||= []).push(item);} return map; },{}), ...assignmentSubmissions };
+    storeAssignmentSubmissions();
     lessonNotes = { ...(result.lessonNotes || {}), ...lessonNotes };
     interestedFaculties = { ...(result.interestedFaculties || {}), ...interestedFaculties };
     lessonQuizResults = { ...(result.lessonQuizResults || {}), ...lessonQuizResults };
@@ -257,7 +264,7 @@ function initializeCloudStudentData() {
     cloudSyncReady = true;
     render();
     // Если локальные данные старше облачных, объединённый результат также отправляем в облако.
-    if (localAssignments || localNotes || localInterests || localQuizResults || localCompletedLessons) scheduleCloudStudentDataSync();
+    if (localAssignments || localSubmissions || localNotes || localInterests || localQuizResults || localCompletedLessons) scheduleCloudStudentDataSync();
   });
 }
 
@@ -448,30 +455,21 @@ function assignmentsPage() {
 }
 
 function assignmentDetailPage() {
-  const a = assignments.find(item => item.id === selectedAssignmentId) || assignments[0];
-  const draft = assignmentDrafts[a.id] || "";
-  const saved = hasAssignmentDraft(a.id);
+  const a=assignments.find(item=>item.id===selectedAssignmentId)||assignments[0];
+  const draft=assignmentDrafts[a.id]||"",saved=hasAssignmentDraft(a.id),submissions=assignmentSubmissions[a.id]||[];
+  const latest=submissions[submissions.length-1];
   return `<main class="screen inner-screen assignment-detail-screen">
     <button class="back-button" data-go="assignments">${icon("back")} Все задания</button>
-    <section class="assignment-detail-hero">
-      <div class="assignment-detail-top"><span class="assignment-kind">${esc(a.type)} · MAGNUS</span><span class="assignment-status ${saved?"has-draft":""}" id="assignment-detail-status">${assignmentStatusText(a.id)}</span></div>
-      <h1>${esc(a.title)}</h1>
-      <p>${esc(a.course)}</p>
-      <div class="assignment-detail-meta"><span><small>СРОК СДАЧИ</small><b>${esc(a.due)}</b></span><span><small>ОЦЕНКА ВРЕМЕНИ</small><b>${esc(a.estimate)}</b></span></div>
-    </section>
-    <section class="assignment-instructions">
-      <span class="subtle-label">ЧТО НУЖНО СДЕЛАТЬ</span>
-      <p>${esc(a.description)}</p>
-      <h2>План выполнения</h2>
-      <ol>${a.requirements.map((r,i)=>`<li><span>0${i+1}</span>${esc(r)}</li>`).join("")}</ol>
-    </section>
-    <section class="assignment-answer">
-      <div class="assignment-answer-head"><div><span class="subtle-label">ТВОЙ ОТВЕТ</span><h2>Рабочее поле</h2></div><span class="assignment-draft-mark" id="assignment-draft-mark">${saved?"ЧЕРНОВИК ЕСТЬ":"НОВЫЙ ОТВЕТ"}</span></div>
-      <textarea id="assignment-answer" aria-label="Текст ответа на задание" placeholder="Начни писать ответ здесь...">${esc(draft)}</textarea>
+    <section class="assignment-detail-hero"><div class="assignment-detail-top"><span class="assignment-kind">${esc(a.type)} · MAGNUS</span><span class="assignment-status ${saved?"has-draft":""}" id="assignment-detail-status">${latest?"Отправлено":saved?"Черновик сохранён":"К выполнению"}</span></div><h1>${esc(a.title)}</h1><p>${esc(a.course)}</p><div class="assignment-detail-meta"><span><small>СРОК СДАЧИ</small><b>${esc(a.due)}</b></span><span><small>ОЦЕНКА ВРЕМЕНИ</small><b>${esc(a.estimate)}</b></span></div></section>
+    <section class="assignment-instructions"><span class="subtle-label">ЧТО НУЖНО СДЕЛАТЬ</span><p>${esc(a.description)}</p><h2>План выполнения</h2><ol>${a.requirements.map((r,i)=>`<li><span>0${i+1}</span>${esc(r)}</li>`).join("")}</ol></section>
+    <section class="assignment-answer"><div class="assignment-answer-head"><div><span class="subtle-label">ТВОЙ ОТВЕТ</span><h2>Рабочее поле</h2></div><span class="assignment-draft-mark" id="assignment-draft-mark">${saved?"ЧЕРНОВИК ЕСТЬ":"НОВЫЙ ОТВЕТ"}</span></div>
+      <textarea id="assignment-answer" aria-label="Текст ответа на задание" maxlength="12000" placeholder="Начни писать ответ здесь...">${esc(draft)}</textarea>
       <div class="assignment-answer-footer"><span id="assignment-char-count">${draft.length} символов</span><span id="assignment-save-status" role="status" aria-live="polite">${saved?"Сохранено на устройстве":"Автосохранение включено"}</span></div>
-      <div class="assignment-save-row"><small>Ответ пока является личным черновиком и не отправляется преподавателю.</small><button class="orange-button" data-action="save-assignment-draft">Сохранить черновик ${icon("arrow")}</button></div>
+      <div class="assignment-save-row"><small>Черновик можно редактировать до отправки. После отправки ответ сохранится в истории.</small><button class="orange-button" data-action="save-assignment-draft">Сохранить черновик</button></div>
+      <div class="assignment-submit-row"><p>Отправка сохранит ответ в облаке MAGNUS. Сейчас автоматическая или преподавательская проверка не подключена.</p><button class="assignment-submit-button" data-action="submit-assignment" ${draft.trim().length<30?"disabled":""}>Отправить ответ</button></div>
     </section>
-    <p class="assignment-demo-note">Это демонстрационный центр заданий. Отправка преподавателю, загрузка файлов, проверка и выставление оценок пока не подключены.</p>
+    ${submissions.length?`<section class="assignment-history"><div class="section-title"><div><span class="subtle-label">ИСТОРИЯ</span><h2>Отправленные ответы</h2></div><span class="course-count">${submissions.length}</span></div>${submissions.slice().reverse().map((item,index)=>`<article class="submission-record"><div><b>Попытка ${submissions.length-index}</b><span>${new Date(item.submittedAt).toLocaleString("ru-RU",{dateStyle:"medium",timeStyle:"short"})}</span></div><p>${esc(item.answer)}</p><small>Получено сервером · проверка преподавателем не проводилась</small></article>`).join("")}</section>`:""}
+    <p class="assignment-demo-note">Отправленные ответы доступны в облачной истории этого аккаунта. Преподавательская проверка, оценки и обратная связь будут подключены отдельно.</p>
   </main>`;
 }
 
@@ -595,6 +593,21 @@ function bindEvents() {
         : "Не удалось сохранить черновик в памяти браузера.");
       return;
     }
+    if (el.dataset.action === "submit-assignment") {
+      const field=document.querySelector("#assignment-answer"),answer=field?.value.trim()||"";
+      if(answer.length<30){toast("Добавь ещё немного текста: минимум 30 символов.");return;}
+      if(answer.length>12000){toast("Ответ слишком длинный. Максимум — 12 000 символов.");return;}
+      if(!telegramUser?.id){toast("Отправка доступна после открытия MAGNUS из Telegram.");return;}
+      el.disabled=true;el.textContent="Отправляем…";
+      const called=callCloudStudentData("submitAssignment",{assignmentId:selectedAssignmentId,answer},(error,result)=>{
+        if(error||!result?.ok||!result.submission){toast(result?.message||"Не удалось отправить ответ. Попробуй ещё раз.");render();return;}
+        assignmentSubmissions[selectedAssignmentId]=[...(assignmentSubmissions[selectedAssignmentId]||[]),result.submission].slice(-50);
+        storeAssignmentSubmissions();
+        toast("Ответ сохранён в облачной истории MAGNUS.");render();
+      });
+      if(!called){toast("Облачная отправка недоступна в этом режиме.");render();}
+      return;
+    }
     if (el.dataset.action === "open-lesson") { selectedLessonId=courseLessons(selectedCourse.id)[0]?.[0]||""; currentPage="lesson"; lessonTab="lesson"; quizChoice=""; render(); window.scrollTo({top:0,behavior:"smooth"}); return; }
     if (el.dataset.action === "interest") {
       if (interestedFaculties[selectedFaculty.id]) delete interestedFaculties[selectedFaculty.id];
@@ -634,6 +647,8 @@ function bindEvents() {
     const draftMark = document.querySelector("#assignment-draft-mark");
     if (counter) counter.textContent = `${value.length} символов`;
     if (status) status.textContent = saved ? "Сохранено на устройстве" : "Не удалось сохранить";
+    const submitButton=document.querySelector("[data-action=\"submit-assignment\"]");
+    if(submitButton) submitButton.disabled=value.trim().length<30;
     if (headerStatus) {
       headerStatus.textContent = value.trim() ? "Черновик сохранён" : "К выполнению";
       headerStatus.classList.toggle("has-draft", Boolean(value.trim()));
