@@ -8,7 +8,7 @@ const BOT_COMMANDS = [
   { command: 'help', description: 'Помощь и возможности' },
 ];
 const DEFAULT_BOT_SETTINGS = {
-  welcomeMessage: 'Добро пожаловать в MAGNUS.\\n\\nУчебные программы, материалы и задания собраны в одном пространстве.',
+  welcomeMessage: 'Добро пожаловать в MAGNUS.\n\nУчебные программы, материалы и задания собраны в одном пространстве.',
   description: 'MAGNUS — образовательная платформа. Изучай темы, выполняй задания и отслеживай результаты.',
   shortDescription: 'Обучение, учебные программы и задания в Telegram.',
   menuButtonText: 'Открыть MAGNUS',
