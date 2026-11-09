@@ -186,12 +186,16 @@ function initializeCloudStudentData() {
       console.warn("MAGNUS: облачная синхронизация пока недоступна.", error || "");
       return;
     }
+    const localAssignments = Object.keys(assignmentDrafts).length > 0;
+    const localNotes = Object.keys(lessonNotes).length > 0;
     assignmentDrafts = { ...(result.assignmentDrafts || {}), ...assignmentDrafts };
     lessonNotes = { ...(result.lessonNotes || {}), ...lessonNotes };
     storeAssignmentDrafts();
     storeLessonNotes();
     cloudSyncReady = true;
     render();
+    // Если локальные данные старше облачных, объединённый результат также отправляем в облако.
+    if (localAssignments || localNotes) scheduleCloudStudentDataSync();
   });
 }
 
