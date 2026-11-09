@@ -7,7 +7,7 @@ tg?.setHeaderColor?.("#f7f7f5");
 tg?.setBackgroundColor?.("#f7f7f5");
 
 const telegramUser = tg?.initDataUnsafe?.user;
-const firstName = telegramUser?.first_name || "Александр";
+const firstName = telegramUser?.first_name || "друг";
 const username = telegramUser?.username ? `@${telegramUser.username}` : "Студент MAGNUS";
 const avatarLetter = telegramUser?.first_name?.trim().charAt(0).toUpperCase() || "M";
 const telegramPhotoUrl = telegramUser?.photo_url || "";
