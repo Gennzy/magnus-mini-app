@@ -23,6 +23,11 @@ export default async function (input, ctx) {
   }
 
   const tgId = String(telegramId);
+  const telegramProfile = {
+    firstName: String(ctx.initData.user.first_name || '').slice(0, 80),
+    lastName: String(ctx.initData.user.last_name || '').slice(0, 80),
+    username: String(ctx.initData.user.username || '').slice(0, 64),
+  };
   if (input?.action === 'submitAssignment') {
     const assignmentId = String(input.assignmentId || '');
     const answer = typeof input.answer === 'string' ? input.answer.trim() : '';
@@ -32,22 +37,30 @@ export default async function (input, ctx) {
     const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
     const previous = Array.isArray(existing?.payload?.assignmentSubmissions) ? existing.payload.assignmentSubmissions : [];
     const submission = { id: 'sub-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8), assignmentId, answer, submittedAt: new Date().toISOString(), status: 'received' };
-    const payload = { ...(existing?.payload || {}), studentProfile: { firstName: String(ctx.initData.user.first_name || '').slice(0, 80), username: String(ctx.initData.user.username || '').slice(0, 64) }, assignmentSubmissions: [...previous, submission].slice(-50) };
+    const payload = { ...(existing?.payload || {}), studentProfile: telegramProfile, assignmentSubmissions: [...previous, submission].slice(-50) };
     await db.insert(studentData).values({ tgId, payload, updatedAt: Math.floor(Date.now() / 1000) }).onConflictDoUpdate({ target: studentData.tgId, set: { payload, updatedAt: Math.floor(Date.now() / 1000) } }).run();
     return { ok: true, submission };
   }
   if (input?.action === 'load') {
-    const row = await db.select({ payload: studentData.payload })
-      .from(studentData)
-      .where(eq(studentData.tgId, tgId))
-      .get();
+    const existing = await db.select().from(studentData).where(eq(studentData.tgId, tgId)).get();
+    const payload = {
+      ...(existing?.payload || {}),
+      studentProfile: {
+        firstName: telegramProfile.firstName || existing?.payload?.studentProfile?.firstName || '',
+        lastName: telegramProfile.lastName || existing?.payload?.studentProfile?.lastName || '',
+        username: telegramProfile.username || existing?.payload?.studentProfile?.username || '',
+      },
+    };
+    const updatedAt = Math.floor(Date.now() / 1000);
+    await db.insert(studentData).values({ tgId, payload, updatedAt })
+      .onConflictDoUpdate({ target: studentData.tgId, set: { payload, updatedAt } }).run();
     return {
-      assignmentDrafts: cleanMap(row?.payload?.assignmentDrafts),
-      lessonNotes: cleanMap(row?.payload?.lessonNotes),
-      interestedFaculties: cleanMap(row?.payload?.interestedFaculties),
-      lessonQuizResults: cleanMap(row?.payload?.lessonQuizResults),
-      completedLessons: cleanMap(row?.payload?.completedLessons),
-      assignmentSubmissions: Array.isArray(row?.payload?.assignmentSubmissions) ? row.payload.assignmentSubmissions.slice(-50) : [],
+      assignmentDrafts: cleanMap(payload.assignmentDrafts),
+      lessonNotes: cleanMap(payload.lessonNotes),
+      interestedFaculties: cleanMap(payload.interestedFaculties),
+      lessonQuizResults: cleanMap(payload.lessonQuizResults),
+      completedLessons: cleanMap(payload.completedLessons),
+      assignmentSubmissions: Array.isArray(payload.assignmentSubmissions) ? payload.assignmentSubmissions.slice(-50) : [],
     };
   }
 
@@ -60,7 +73,11 @@ export default async function (input, ctx) {
       lessonQuizResults: cleanMap(input.lessonQuizResults),
       completedLessons: cleanMap(input.completedLessons),
       assignmentSubmissions: Array.isArray(existing?.payload?.assignmentSubmissions) ? existing.payload.assignmentSubmissions.slice(-50) : [],
-      studentProfile: existing?.payload?.studentProfile || null,
+      studentProfile: {
+        firstName: telegramProfile.firstName || existing?.payload?.studentProfile?.firstName || '',
+        lastName: telegramProfile.lastName || existing?.payload?.studentProfile?.lastName || '',
+        username: telegramProfile.username || existing?.payload?.studentProfile?.username || '',
+      },
     };
     await db.insert(studentData).values({
       tgId,
