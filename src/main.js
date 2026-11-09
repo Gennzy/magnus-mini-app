@@ -548,12 +548,28 @@ function adminSubmissionCard(item,reviewable){
 }
 function adminPage(){
  if(!adminAccess.isAdmin)return `<main class="screen inner-screen admin-screen"><div class="admin-access-state"><span class="admin-eyebrow">MAGNUS · CONTROL</span><h1>Панель управления</h1><p>${adminAccess.loading?"Проверяем права доступа…":"Для этого аккаунта пока не подключены права администратора."}</p><button class="orange-button" data-admin-refresh>Проверить доступ</button></div></main>`;
- const data=adminDashboard,stats=data?.stats||{students:0,submissions:0,pending:0,reviewed:0},items=data?.submissions||[];
+ const data=adminDashboard;
+ const stats=data?.stats||{students:0,submissions:0,pending:0,reviewed:0};
+ const items=data?.submissions||[];
+ const settings=data?.botSettings||{
+  welcomeMessage:"Добро пожаловать в MAGNUS.\\n\\nУчебные программы, материалы и задания собраны в одном пространстве.",
+  description:"MAGNUS — образовательная платформа. Изучай темы, выполняй задания и отслеживай результаты.",
+  shortDescription:"Обучение, учебные программы и задания в Telegram.",
+  menuButtonText:"Открыть MAGNUS"
+ };
  const tabs=[["overview","Обзор"],["reviews","Работы"],["bot","Бот"]];
  return `<main class="screen inner-screen admin-screen"><header class="admin-header"><div><span class="admin-eyebrow">MAGNUS · CONTROL CENTER</span><h1>Управление</h1><p>${esc(data?.admin?.email||"Администратор")} · ${esc(data?.admin?.role||"admin")}</p></div><button class="admin-refresh" data-admin-refresh aria-label="Обновить данные">${icon("refresh")}</button></header>
  <nav class="admin-tabs" aria-label="Разделы панели">${tabs.map(([key,label])=>`<button class="${adminTab===key?"active":""}" data-admin-tab="${key}">${label}</button>`).join("")}</nav>
  ${adminLoading&&!data?`<div class="admin-loading">Загружаем данные MAGNUS…</div>`:""}${adminError?`<div class="admin-error" role="alert">${esc(adminError)}</div>`:""}
- ${adminTab==="overview"?`<section><div class="admin-stat-grid"><article><span>СТУДЕНТЫ</span><b>${stats.students}</b><small>Аккаунтов с учебными данными</small></article><article><span>ОТПРАВКИ</span><b>${stats.submissions}</b><small>Ответов в истории</small></article><article class="needs-review"><span>ОЖИДАЮТ ПРОВЕРКИ</span><b>${stats.pending}</b><small>Нужны действия преподавателя</small></article><article><span>РАССМОТРЕНО</span><b>${stats.reviewed}</b><small>Проверено или возвращено</small></article></div><div class="admin-section-head"><div><span>ПОСЛЕДНИЕ СОБЫТИЯ</span><h2>Учебные работы</h2></div><button data-admin-tab="reviews">Все работы ${icon("arrow")}</button></div>${items.slice(0,4).map(item=>adminSubmissionCard(item,false)).join("")||`<div class="admin-empty">Отправленных работ пока нет.</div>`}</section>`:adminTab==="reviews"?`<section><div class="admin-section-head"><div><span>ПРОВЕРКА</span><h2>Работы студентов</h2></div><span class="admin-count">${items.length}</span></div>${items.map(item=>adminSubmissionCard(item,true)).join("")||`<div class="admin-empty">Пока нет отправленных работ.</div>`}</section>`:`<section><div class="admin-bot-card"><div class="admin-bot-top"><span class="admin-bot-icon">M</span><div><span>TELEGRAM BOT</span><h2>${esc(data?.bot?.firstName||"MAGNUS")}</h2><p>@${esc(data?.bot?.username||"bot")}</p></div><span class="admin-live">${data?.bot?.webhookActive?"Webhook активен":"Webhook не настроен"}</span></div><div class="admin-bot-meta"><div><small>ОЖИДАЮТ ОБРАБОТКИ</small><b>${Number(data?.bot?.webhookPending||0)}</b></div><div><small>КОМАНД В МЕНЮ</small><b>${data?.bot?.commands?.length||0}</b></div></div>${data?.bot?.lastError?`<p class="admin-bot-warning">${esc(data.bot.lastError)}</p>`:""}</div><div class="admin-settings-card"><span>БЫСТРАЯ НАСТРОЙКА</span><h2>Команды и меню бота</h2><p>Установить /start, /help и /admin, обновить описание и кнопку открытия Mini App в меню Telegram.</p><button class="orange-button" data-admin-action="configure-bot">Настроить бота ${icon("arrow")}</button></div><div class="admin-command-list"><span>КОМАНДЫ БОТА</span>${(data?.bot?.commands||[]).map(item=>`<div><b>/${esc(item.command)}</b><span>${esc(item.description)}</span></div>`).join("")||`<p>Команды ещё не настроены.</p>`}</div></section>`}
+ ${adminTab==="overview"?`<section><div class="admin-stat-grid"><article><span>СТУДЕНТЫ</span><b>${stats.students}</b><small>Аккаунтов с учебными данными</small></article><article><span>ОТПРАВКИ</span><b>${stats.submissions}</b><small>Ответов в истории</small></article><article class="needs-review"><span>ОЖИДАЮТ ПРОВЕРКИ</span><b>${stats.pending}</b><small>Нужны действия преподавателя</small></article><article><span>РАССМОТРЕНО</span><b>${stats.reviewed}</b><small>Проверено или возвращено</small></article></div><div class="admin-section-head"><div><span>ПОСЛЕДНИЕ СОБЫТИЯ</span><h2>Учебные работы</h2></div><button data-admin-tab="reviews">Все работы ${icon("arrow")}</button></div>${items.slice(0,4).map(item=>adminSubmissionCard(item,false)).join("")||`<div class="admin-empty">Отправленных работ пока нет.</div>`}</section>`:adminTab==="reviews"?`<section><div class="admin-section-head"><div><span>ПРОВЕРКА</span><h2>Работы студентов</h2></div><span class="admin-count">${items.length}</span></div>${items.map(item=>adminSubmissionCard(item,true)).join("")||`<div class="admin-empty">Пока нет отправленных работ.</div>`}</section>`:`<section><div class="admin-bot-card"><div class="admin-bot-top"><span class="admin-bot-icon">M</span><div><span>TELEGRAM BOT</span><h2>${esc(data?.bot?.firstName||"MAGNUS")}</h2><p>@${esc(data?.bot?.username||"bot")}</p></div><span class="admin-live">${data?.bot?.webhookActive?"Webhook активен":"Webhook не настроен"}</span></div><div class="admin-bot-meta"><div><small>ОЖИДАЮТ ОБРАБОТКИ</small><b>${Number(data?.bot?.webhookPending||0)}</b></div><div><small>КОМАНД В МЕНЮ</small><b>${data?.bot?.commands?.length||0}</b></div></div>${data?.bot?.lastError?`<p class="admin-bot-warning">${esc(data.bot.lastError)}</p>`:""}</div>
+ <div class="admin-settings-card admin-bot-settings"><span>НАСТРОЙКИ БОТА</span><h2>Сообщения и оформление</h2><p>Изменения сохраняются в облачной базе. Приветствие применяется к новым сообщениям /start, описание и кнопка — к профилю и меню Telegram.</p>
+ <label>Приветствие при запуске <textarea data-bot-setting="welcomeMessage" maxlength="3500" rows="4">${esc(settings.welcomeMessage||"")}</textarea><small>До 3500 символов. Переносы строк сохраняются.</small></label>
+ <label>Описание бота <textarea data-bot-setting="description" maxlength="512" rows="3">${esc(settings.description||"")}</textarea><small>Показывается в профиле бота · до 512 символов.</small></label>
+ <label>Краткое описание <input data-bot-setting="shortDescription" maxlength="120" value="${esc(settings.shortDescription||"")}" /><small>Короткая подпись профиля · до 120 символов.</small></label>
+ <label>Текст кнопки меню <input data-bot-setting="menuButtonText" maxlength="64" value="${esc(settings.menuButtonText||"")}" /><small>До 64 символов.</small></label>
+ <div class="admin-settings-actions"><button class="orange-button" data-admin-action="save-bot-settings">Сохранить и применить ${icon("arrow")}</button><span>Команды: /start и /help. Админ-команда скрыта из меню.</span></div>
+ </div>
+ <div class="admin-command-list"><span>КОМАНДЫ БОТА</span>${(data?.bot?.commands||[]).map(item=>`<div><b>/${esc(item.command)}</b><span>${esc(item.description)}</span></div>`).join("")||`<p>Команды ещё не настроены.</p>`}</div></section>`}
  </main>`;
 }
 
@@ -575,7 +591,24 @@ function toast(message) {
 function bindEvents() {
   document.querySelectorAll("[data-admin-tab]").forEach(el=>el.addEventListener("click",()=>{adminTab=el.dataset.adminTab;render();}));
   document.querySelectorAll("[data-admin-refresh]").forEach(el=>el.addEventListener("click",()=>{if(adminAccess.isAdmin)loadAdminDashboard();else loadAdminAccess(true);}));
-  document.querySelectorAll("[data-admin-action]").forEach(el=>el.addEventListener("click",()=>{if(el.dataset.adminAction==="configure-bot"){el.disabled=true;el.textContent="Настраиваем…";callAdminApi("configureBot",{},(error,result)=>{toast(error?.message||result?.message||"Настройка завершена.");loadAdminDashboard();});}}));
+  document.querySelectorAll("[data-admin-action]").forEach(el=>el.addEventListener("click",()=>{
+    if(el.dataset.adminAction==="save-bot-settings"){
+      const payload={};
+      document.querySelectorAll("[data-bot-setting]").forEach(field=>{payload[field.dataset.botSetting]=field.value.trim();});
+      if(Object.values(payload).some(value=>!value)){toast("Заполни все поля настроек бота.");return;}
+      el.disabled=true;el.textContent="Сохраняем…";
+      const called=callAdminApi("saveBotSettings",payload,(error,result)=>{
+        el.disabled=false;el.textContent="Сохранить и применить";
+        if(error||!result?.ok){toast(error?.message||result?.message||"Не удалось сохранить настройки.");return;}
+        toast(result.message||"Настройки сохранены.");
+        loadAdminDashboard();
+      });
+      if(!called){el.disabled=false;el.textContent="Сохранить и применить";toast("Открой панель из Telegram, чтобы сохранить настройки.");}
+    }else if(el.dataset.adminAction==="configure-bot"){
+      el.disabled=true;el.textContent="Применяем…";
+      callAdminApi("configureBot",{},(error,result)=>{toast(error?.message||result?.message||"Настройка завершена.");loadAdminDashboard();});
+    }
+  }));
   document.querySelectorAll("[data-review-status]").forEach(el=>el.addEventListener("click",()=>{const card=el.closest("[data-admin-submission]"),comment=card?.querySelector("[data-review-comment]")?.value||"",grade=card?.querySelector("[data-review-grade]")?.value??"";el.disabled=true;callAdminApi("reviewSubmission",{studentId:el.dataset.studentId,submissionId:el.dataset.submissionId,status:el.dataset.reviewStatus,comment,grade},(error,result)=>{if(error||!result?.ok){toast(error?.message||result?.message||"Не удалось сохранить проверку.");loadAdminDashboard();return;}toast(result.notificationSent?"Проверка сохранена, уведомление отправлено.":"Проверка сохранена. Бот не смог доставить уведомление.");loadAdminDashboard();});}));
   document.querySelectorAll("[data-go]").forEach(el => el.addEventListener("click", () => { currentPage = el.dataset.go; searchValue=""; if(currentPage==="admin")loadAdminDashboard(); render(); window.scrollTo({top:0,behavior:"smooth"}); }));
   document.querySelectorAll("[data-faculty]").forEach(el => el.addEventListener("click", () => { selectedFaculty=faculties.find(f=>f.id===el.dataset.faculty)||faculties[0]; currentPage="facultyDetail"; render(); window.scrollTo({top:0,behavior:"smooth"}); }));
