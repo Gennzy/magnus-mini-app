@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Telegram Serverless local credentials
+.tgcloud/
+
+# Local environment files
+.env
+.env.*
+!.env.example
