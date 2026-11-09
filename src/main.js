@@ -69,6 +69,9 @@ let adminAccess = { loading: true, isAdmin: false, role: null };
 let adminDashboard = null, adminTab = "overview", adminLoading = false, adminError = "";
 let adminAuditEntries = [], adminAuditLoading = false, adminAuditError = "";
 let adminStudents = [], adminStudentsLoading = false, adminStudentsError = "";
+let adminPaymentOrders = [], adminPaymentOrdersLoading = false, adminPaymentOrdersError = "";
+let adminPaymentOrderSummary = { paidOrders: 0, paidStars: 0, pendingOrders: 0 };
+let studentPaymentHistory = [], studentPaymentHistoryLoading = false, studentPaymentHistoryError = "";
 let adminPaymentPlans = [], adminPaymentPlansLoading = false, adminPaymentPlansError = "";
 let adminStudentSelected = "", adminStudentDetail = null, adminStudentDetailLoading = false, adminStudentDetailError = "";
 let currentPage = new URLSearchParams(window.location.search).get("admin") === "1" ? "admin" : "home";
@@ -247,6 +250,31 @@ function loadPaymentPlans(){
   if(currentPage==="profile")render();
  });
 }
+function loadStudentPaymentHistory(){
+  if(!telegramUser?.id||studentPaymentHistoryLoading)return;
+  studentPaymentHistoryLoading=true;studentPaymentHistoryError="";
+  const called=callPaymentApi("history",{},(error,result)=>{
+    studentPaymentHistoryLoading=false;
+    if(error||!result?.ok){studentPaymentHistory=[];studentPaymentHistoryError=error?.message||result?.message||"Не удалось загрузить историю оплат.";}
+    else{studentPaymentHistory=Array.isArray(result.orders)?result.orders:[];studentPaymentHistoryError="";}
+    if(currentPage==="profile")render();
+  });
+  if(!called){studentPaymentHistoryLoading=false;studentPaymentHistoryError="История доступна при открытии MAGNUS через Telegram.";if(currentPage==="profile")render();}
+}
+function paymentStatusLabel(status){return status==="paid"?"Оплачено":status==="pending"?"Ожидает оплаты":status==="processing"?"Обрабатывается":status==="invoice_failed"?"Счёт не создан":"Не завершено";}
+function studentPaymentHistorySection(){
+  if(!telegramUser?.id)return "";
+  const rows=studentPaymentHistory.map(order=>{
+    const timestamp=order.paidAt||order.createdAt;
+    const date=timestamp?new Date(timestamp*1000).toLocaleString("ru-RU",{dateStyle:"medium",timeStyle:"short"}):"Дата не указана";
+    const amount=Number(order.amount)>0?Number(order.amount)+" ⭐":"—";
+    const state=order.status==="paid"?"paid":"";
+    return "<article class=profile-payment-row><div><b>"+esc(order.planTitle||order.planId||"Учебный доступ")+"</b><small>"+esc(date)+" · заказ "+esc(String(order.id||"").slice(-8))+"</small></div><strong>"+esc(amount)+"</strong><span class=profile-payment-status "+state+">"+esc(paymentStatusLabel(order.status))+"</span></article>";
+  }).join("");
+  const content=studentPaymentHistoryLoading&&!studentPaymentHistory.length?"<div class=profile-payment-empty>Загружаем историю…</div>":studentPaymentHistoryError?"<div class=profile-payment-empty>"+esc(studentPaymentHistoryError)+"</div>":rows||"<div class=profile-payment-empty>Покупок пока нет.</div>";
+  return "<section class=profile-payment-history><div class=profile-plans-heading><span class=subtle-label>ПЛАТЕЖИ</span><h2>История оплат</h2><p>Заказы этого Telegram-аккаунта.</p></div><div class=profile-payment-list>"+content+"</div><button class=profile-payment-refresh data-student-payment-refresh>Обновить историю</button></section>";
+}
+
 function purchaseSubscription(planId,button){
  if(!telegramUser?.id){toast("Оплата доступна только при открытии MAGNUS из Telegram.");return;}
  button.disabled=true;button.textContent="Создаём счёт…";
@@ -256,6 +284,7 @@ function purchaseSubscription(planId,button){
   tg.openInvoice(result.invoiceLink,(status)=>{
    button.disabled=false;button.textContent="Купить";
    if(status==="paid"){
+     loadStudentPaymentHistory();
     toast("Telegram подтвердил оплату. Обновляем доступ…");
     callCloudStudentData("load",{},(loadError,data)=>{
      if(!loadError&&data?.subscription)studentSubscription=data.subscription;
@@ -291,6 +320,7 @@ function loadAdminStudentDetail(studentId){
  });
  if(!called){adminStudentDetailLoading=false;adminStudentDetailError='Открой MAGNUS через Telegram, чтобы загрузить профиль.';if(currentPage==='admin')render();}
 }
+  loadAdminPaymentOrders();
 function loadAdminPaymentPlans(){
  adminPaymentPlansLoading=true;adminPaymentPlansError='';
  if(currentPage==='admin')render();
@@ -302,11 +332,32 @@ function loadAdminPaymentPlans(){
  });
  if(!called){adminPaymentPlansLoading=false;adminPaymentPlansError='Открой панель из Telegram.';if(currentPage==='admin')render();}
 }
+function loadAdminPaymentOrders(){
+  adminPaymentOrdersLoading=true;adminPaymentOrdersError="";
+  const called=callAdminApi("paymentOrders",{},(error,result)=>{
+    adminPaymentOrdersLoading=false;
+    if(error||!result?.ok){adminPaymentOrders=[];adminPaymentOrdersError=error?.message||result?.message||"Не удалось загрузить платежи.";}
+    else{adminPaymentOrders=Array.isArray(result.orders)?result.orders:[];adminPaymentOrderSummary=result.summary||adminPaymentOrderSummary;adminPaymentOrdersError="";}
+    if(currentPage==="admin"&&adminTab==="payments")render();
+  });
+  if(!called){adminPaymentOrdersLoading=false;adminPaymentOrdersError="Платежи доступны при открытии панели из Telegram.";if(currentPage==="admin")render();}
+}
+function adminPaymentOrdersSection(){
+  const summary=adminPaymentOrderSummary;
+  const body=adminPaymentOrdersLoading&&!adminPaymentOrders.length?"<div class=admin-loading>Загружаем платежи…</div>":adminPaymentOrdersError?"<div class=admin-error>"+esc(adminPaymentOrdersError)+"</div>":adminPaymentOrders.length?adminPaymentOrders.map(order=>{
+    const date=order.createdAt?new Date(order.createdAt*1000).toLocaleString("ru-RU",{dateStyle:"medium",timeStyle:"short"}):"Дата не указана";
+    const charge=order.telegramChargeId?" · charge "+String(order.telegramChargeId).slice(-8):"";
+    const state=order.status==="paid"?"paid":"";
+    return "<article class=admin-order-row><div class=admin-order-main><b>"+esc(order.planTitle||order.planId)+"</b><small>Telegram ID "+esc(order.tgId)+" · "+esc(date)+"</small><small>Заказ "+esc(String(order.id||"").slice(-12))+esc(charge)+"</small></div><div class=admin-order-side><strong>"+esc(Number(order.amount)+" ⭐")+"</strong><span class=admin-order-status "+state+">"+esc(paymentStatusLabel(order.status))+"</span></div></article>";
+  }).join(""):"<div class=admin-empty>Заказов пока нет.</div>";
+  return "<section class=admin-payment-orders><div class=admin-section-head><div><span>ПЛАТЁЖНЫЙ РЕЕСТР</span><h2>Последние заказы</h2></div><button data-admin-payment-history-refresh>Обновить "+icon("refresh")+"</button></div><div class=admin-payment-summary><article><small>ПОДТВЕРЖДЕНО</small><b>"+Number(summary.paidOrders||0)+"</b></article><article><small>ПОЛУЧЕНО STARS</small><b>"+Number(summary.paidStars||0)+" ⭐</b></article><article><small>ОЖИДАЮТ</small><b>"+Number(summary.pendingOrders||0)+"</b></article></div><div class=admin-order-list>"+body+"</div><p class=admin-payment-footnote>Сводка рассчитана по последним 200 заказам. В сумму входят только подтверждённые оплаты.</p></section>";
+}
+
 function adminPaymentPlansPage(){
- if(adminPaymentPlansLoading)return '<section><div class="admin-loading">Загружаем тарифы…</div></section>';
- if(adminPaymentPlansError)return '<section><div class="admin-error">'+esc(adminPaymentPlansError)+'</div></section>';
+ if(adminPaymentPlansLoading)return '<section><div class="admin-loading">Загружаем тарифы…</div></section>'+adminPaymentOrdersSection();
+ if(adminPaymentPlansError)return '<section><div class="admin-error">'+esc(adminPaymentPlansError)+'</div></section>'+adminPaymentOrdersSection();
  const labels={ 'monthly-30d':'30 дней','quarterly-90d':'90 дней','annual-365d':'365 дней' };
- return `<section class="admin-payment-plans"><div class="admin-section-head"><div><span>TELEGRAM STARS · XTR</span><h2>Тарифы MAGNUS</h2></div><button data-admin-payment-refresh>Обновить ${icon('refresh')}</button></div><p class="admin-payment-intro">Укажи стоимость каждого тарифа в Telegram Stars. Цена 0 или выключенный переключатель скрывает тариф от студентов. Оплата цифрового доступа внутри Telegram принимается только в Stars.</p><div class="admin-payment-plan-list">${adminPaymentPlans.map(plan=>`<article class="admin-payment-plan"><div><span>${esc(labels[plan.planId]||plan.title)}</span><b>${plan.starsPrice?plan.starsPrice+' ⭐':'Цена не задана'}</b></div><label>Цена, Stars<input type="number" min="0" max="100000" step="1" value="${Number(plan.starsPrice)||0}" data-payment-price="${esc(plan.planId)}"></label><label class="admin-payment-toggle"><input type="checkbox" data-payment-enabled="${esc(plan.planId)}" ${plan.enabled?'checked':''}> Показывать студентам</label></article>`).join('')}</div><div class="admin-settings-actions"><button class="orange-button" data-admin-payment-save>Сохранить тарифы</button><small>Доступ включается только после подтверждённого successful_payment от Telegram.</small></div></section>`;
+ return `<section class="admin-payment-plans"><div class="admin-section-head"><div><span>TELEGRAM STARS · XTR</span><h2>Тарифы MAGNUS</h2></div><button data-admin-payment-refresh>Обновить ${icon('refresh')}</button></div><p class="admin-payment-intro">Укажи стоимость каждого тарифа в Telegram Stars. Цена 0 или выключенный переключатель скрывает тариф от студентов. Оплата цифрового доступа внутри Telegram принимается только в Stars.</p><div class="admin-payment-plan-list">${adminPaymentPlans.map(plan=>`<article class="admin-payment-plan"><div><span>${esc(labels[plan.planId]||plan.title)}</span><b>${plan.starsPrice?plan.starsPrice+' ⭐':'Цена не задана'}</b></div><label>Цена, Stars<input type="number" min="0" max="100000" step="1" value="${Number(plan.starsPrice)||0}" data-payment-price="${esc(plan.planId)}"></label><label class="admin-payment-toggle"><input type="checkbox" data-payment-enabled="${esc(plan.planId)}" ${plan.enabled?'checked':''}> Показывать студентам</label></article>`).join('')}</div><div class="admin-settings-actions"><button class="orange-button" data-admin-payment-save>Сохранить тарифы</button><small>Доступ включается только после подтверждённого successful_payment от Telegram.</small></div></section>`+adminPaymentOrdersSection();
 }
 function loadAdminAudit(){
  adminAuditLoading=true;adminAuditError='';
@@ -615,6 +666,7 @@ function profilePage() {
     </section>
     <section class="profile-subscription-card"><div><span>УЧЕБНЫЙ ДОСТУП</span><b>${subscriptionLabel}</b><small>${studentSubscription.status==='active'&&subscriptionUntil?'Действует до '+subscriptionUntil:'Информация о доступе обновляется из аккаунта'}</small></div><i class="profile-subscription-indicator ${studentSubscription.status==='active'?'active':''}"></i></section>
     <section class="profile-plans"><div class="profile-plans-heading"><span class="subtle-label">ПОДПИСКА</span><h2>Выбери срок обучения</h2><p>Оплата цифрового доступа проходит внутри Telegram через Stars.</p></div>${availableSubscriptionPlans.length?availableSubscriptionPlans.map(plan=>`<article class="profile-plan"><div><b>${esc(plan.days+' дней')}</b><small>${esc(plan.title)}</small></div><strong>${Number(plan.starsPrice)} ⭐</strong><button data-buy-plan="${esc(plan.planId)}">Купить</button></article>`).join(''):'<div class="profile-plans-empty">'+(paymentPlansLoading?'Загружаем тарифы…':paymentPlansError?'Не удалось загрузить тарифы. Попробуй обновить профиль.':'Сейчас нет доступных тарифов.')+'</div>'}</section>
+    ${studentPaymentHistorySection()}
     <div class="profile-content-heading"><div><span class="subtle-label">СОХРАНЁННОЕ</span><h2>Учебные материалы</h2></div><span>${cloudSyncReady?"Синхронизировано":"На устройстве"}</span></div>
     <div class="profile-stats">
       <div><b>${draftCount}</b><small>Черновики</small></div>
@@ -716,7 +768,7 @@ function adminStudentDetailPage(){
  const subscriptionStatus=subscription.status==='active'&&subscription.endsAt*1000>Date.now()?'Доступ активен':subscription.status==='expired'?'Срок истёк':subscription.status==='revoked'?'Отозван':'Нет доступа';
  const subscriptionEnd=subscription.endsAt?new Date(subscription.endsAt*1000).toLocaleString('ru-RU',{dateStyle:'medium',timeStyle:'short'}):'—';
  return `<section class="admin-student-detail"><button class="admin-back-button" data-admin-student-back>${icon('arrow-left')} К списку студентов</button><header class="admin-student-profile-head"><span class="admin-student-avatar large">${esc((student.firstName||'M').charAt(0).toUpperCase())}</span><div><span class="admin-eyebrow">ПРОФИЛЬ СТУДЕНТА</span><h2>${esc(name)}</h2><p>${student.username?'@'+esc(student.username)+' · ':''}Telegram ID ${esc(student.telegramId||'—')}</p><small>Последняя активность: ${esc(adminStudentLastSeen(student.updatedAt))}</small></div></header>
- <section class="admin-subscription-panel"><div class="admin-section-head"><div><span>УПРАВЛЕНИЕ ДОСТУПОМ</span><h2>Подписка и срок обучения</h2></div><span class="admin-subscription-status ${subscription.status==='active'&&subscription.endsAt*1000>Date.now()?'active':''}">${subscriptionStatus}</span></div><div class="admin-subscription-facts"><div><small>ТЕКУЩИЙ ТАРИФ</small><b>${esc(subscription.planId||'Не назначен')}</b></div><div><small>ДЕЙСТВУЕТ ДО</small><b>${esc(subscriptionEnd)}</b></div></div><div class="admin-subscription-actions"><label>Выдать или продлить доступ<select data-admin-subscription-days><option value="7">7 дней</option><option value="30" selected>30 дней</option><option value="90">90 дней</option><option value="365">365 дней</option></select></label><button class="orange-button" data-admin-subscription-grant data-student-id="${esc(student.telegramId)}">Выдать доступ</button><button class="admin-subscription-revoke" data-admin-subscription-revoke data-student-id="${esc(student.telegramId)}" ${subscription.status==='active'&&subscription.endsAt*1000>Date.now()?'':'disabled'}>Отозвать доступ</button></div><small class="admin-subscription-note">Ручное назначение доступа администратором. Платёжная интеграция пока не подключена.</small></section>
+ <section class="admin-subscription-panel"><div class="admin-section-head"><div><span>УПРАВЛЕНИЕ ДОСТУПОМ</span><h2>Подписка и срок обучения</h2></div><span class="admin-subscription-status ${subscription.status==='active'&&subscription.endsAt*1000>Date.now()?'active':''}">${subscriptionStatus}</span></div><div class="admin-subscription-facts"><div><small>ТЕКУЩИЙ ТАРИФ</small><b>${esc(subscription.planId||'Не назначен')}</b></div><div><small>ДЕЙСТВУЕТ ДО</small><b>${esc(subscriptionEnd)}</b></div></div><div class="admin-subscription-actions"><label>Выдать или продлить доступ<select data-admin-subscription-days><option value="7">7 дней</option><option value="30" selected>30 дней</option><option value="90">90 дней</option><option value="365">365 дней</option></select></label><button class="orange-button" data-admin-subscription-grant data-student-id="${esc(student.telegramId)}">Выдать доступ</button><button class="admin-subscription-revoke" data-admin-subscription-revoke data-student-id="${esc(student.telegramId)}" ${subscription.status==='active'&&subscription.endsAt*1000>Date.now()?'':'disabled'}>Отозвать доступ</button></div><small class="admin-subscription-note">Ручное назначение доступа администратором. Покупки через Telegram Stars фиксируются в платёжном реестре.</small></section>
  <div class="admin-student-metrics"><article><b>${Number(student.submissionsCount)||0}</b><span>Отправлено работ</span></article><article><b>${Number(student.pendingCount)||0}</b><span>Ожидают проверки</span></article><article><b>${Number(student.completedLessonsCount)||0}</b><span>Пройдено примеров</span></article><article><b>${Number(student.quizAttempts)||0}</b><span>Ответов в тестах</span></article></div>
  <div class="admin-student-activity-grid"><article><span>ИНТЕРЕСЫ</span><h3>Направления</h3><p>${facultiesList.length?facultiesList.map(esc).join(', '):'Пока не выбраны'}</p></article><article><span>УЧЕБНАЯ АКТИВНОСТЬ</span><h3>Сохранённые материалы</h3><p>${Number(detail.notesCount)||0} заметок · ${Number(detail.draftsCount)||0} черновиков</p></article></div>
  <div class="admin-section-head"><div><span>ИСТОРИЯ ОТПРАВЛЕНИЙ</span><h2>Работы студента</h2></div><span class="admin-count">${submissions.length}</span></div>${submissions.map(item=>adminStudentSubmission(item,student)).join('')||`<div class="admin-empty">Студент пока не отправлял работы.</div>`}
@@ -741,7 +793,7 @@ function adminPage(){
   shortDescription:"Обучение, учебные программы и задания в Telegram.",
   menuButtonText:"Открыть MAGNUS"
  };
- const tabs=[["overview","Обзор"],["students","Студенты"],["reviews","Работы"],["payments","Тарифы"],["bot","Бот"],["audit","Журнал"]];
+ const tabs=[["overview","Обзор"],["students","Студенты"],["reviews","Работы"],["payments","Оплаты"],["bot","Бот"],["audit","Журнал"]];
  return `<main class="screen inner-screen admin-screen"><header class="admin-header"><div><span class="admin-eyebrow">MAGNUS · CONTROL CENTER</span><h1>Управление</h1><p>${esc(data?.admin?.email||"Администратор")} · ${esc(data?.admin?.role||"admin")}</p></div><button class="admin-refresh" data-admin-refresh aria-label="Обновить данные">${icon("refresh")}</button></header>
  <nav class="admin-tabs" aria-label="Разделы панели">${tabs.map(([key,label])=>`<button class="${adminTab===key?"active":""}" data-admin-tab="${key}">${label}</button>`).join("")}</nav>
  ${adminLoading&&!data?`<div class="admin-loading">Загружаем данные MAGNUS…</div>`:""}${adminError?`<div class="admin-error" role="alert">${esc(adminError)}</div>`:""}
@@ -778,7 +830,9 @@ function bindEvents() {
   document.querySelectorAll("[data-admin-audit-refresh]").forEach(el=>el.addEventListener("click",loadAdminAudit));
   document.querySelectorAll("[data-admin-students-refresh]").forEach(el=>el.addEventListener("click",loadAdminStudents));
   document.querySelectorAll("[data-buy-plan]").forEach(button=>button.addEventListener("click",()=>purchaseSubscription(button.dataset.buyPlan,button)));
-  document.querySelectorAll("[data-admin-payment-refresh]").forEach(el=>el.addEventListener("click",loadAdminPaymentPlans));
+  document.querySelectorAll("[data-admin-payment-history-refresh]").forEach(el=>el.addEventListener("click",loadAdminPaymentOrders));
+document.querySelectorAll("[data-student-payment-refresh]").forEach(el=>el.addEventListener("click",loadStudentPaymentHistory));
+document.querySelectorAll("[data-admin-payment-refresh]").forEach(el=>el.addEventListener("click",loadAdminPaymentPlans));
   document.querySelectorAll("[data-admin-payment-save]").forEach(button=>button.addEventListener("click",()=>{
     const plans=adminPaymentPlans.map(plan=>({
       planId:plan.planId,
@@ -856,7 +910,7 @@ function bindEvents() {
     }
   }));
   document.querySelectorAll("[data-review-status]").forEach(el=>el.addEventListener("click",()=>{const card=el.closest("[data-admin-submission]"),comment=card?.querySelector("[data-review-comment]")?.value||"",grade=card?.querySelector("[data-review-grade]")?.value??"";el.disabled=true;callAdminApi("reviewSubmission",{studentId:el.dataset.studentId,submissionId:el.dataset.submissionId,status:el.dataset.reviewStatus,comment,grade},(error,result)=>{if(error||!result?.ok){toast(error?.message||result?.message||"Не удалось сохранить проверку.");loadAdminDashboard();return;}toast(result.notificationSent?"Проверка сохранена, уведомление отправлено.":"Проверка сохранена. Бот не смог доставить уведомление.");loadAdminDashboard();});}));
-  document.querySelectorAll("[data-go]").forEach(el => el.addEventListener("click", () => { currentPage = el.dataset.go; searchValue=""; if(currentPage==="admin")loadAdminDashboard(); render(); window.scrollTo({top:0,behavior:"smooth"}); }));
+  document.querySelectorAll("[data-go]").forEach(el => el.addEventListener("click", () => { currentPage = el.dataset.go; searchValue=""; if(currentPage==="admin")loadAdminDashboard(); if(currentPage==="profile")loadStudentPaymentHistory(); render(); window.scrollTo({top:0,behavior:"smooth"}); }));
   document.querySelectorAll("[data-faculty]").forEach(el => el.addEventListener("click", () => { selectedFaculty=faculties.find(f=>f.id===el.dataset.faculty)||faculties[0]; currentPage="facultyDetail"; render(); window.scrollTo({top:0,behavior:"smooth"}); }));
   document.querySelectorAll("[data-lesson-open]").forEach(el=>el.addEventListener("click",()=>{selectedLessonId=el.dataset.lessonOpen;quizChoice="";lessonTab="lesson";currentPage="lesson";render();window.scrollTo({top:0,behavior:"smooth"});}));
   document.querySelectorAll("[data-course]").forEach(el => el.addEventListener("click", (event) => {
