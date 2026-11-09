@@ -552,7 +552,7 @@ function adminPage(){
  const stats=data?.stats||{students:0,submissions:0,pending:0,reviewed:0};
  const items=data?.submissions||[];
  const settings=data?.botSettings||{
-  welcomeMessage:"Добро пожаловать в MAGNUS.\\n\\nУчебные программы, материалы и задания собраны в одном пространстве.",
+  welcomeMessage:"Добро пожаловать в MAGNUS.\n\nУчебные программы, материалы и задания собраны в одном пространстве.",
   description:"MAGNUS — образовательная платформа. Изучай темы, выполняй задания и отслеживай результаты.",
   shortDescription:"Обучение, учебные программы и задания в Telegram.",
   menuButtonText:"Открыть MAGNUS"
