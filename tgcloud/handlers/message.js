@@ -1,12 +1,13 @@
 import { api, db } from 'sdk';
 import { eq } from 'sdk/db';
-import { adminUsers } from '../schema.js';
+import { adminUsers, botSettings } from '../schema.js';
 
 const APP_URL = 'https://app9020486965.tgcloud.ai/';
 const BOT_COMMANDS = [
   { command: 'start', description: 'Открыть MAGNUS' },
   { command: 'help', description: 'Помощь и возможности' },
 ];
+const DEFAULT_WELCOME = 'Добро пожаловать в MAGNUS.\\n\\nУчебные программы, материалы и задания собраны в одном пространстве.';
 
 function menuKeyboard(admin = false) {
   return {
