@@ -273,11 +273,11 @@ function homePage() {
   return `<main class="screen home-screen">
     <section class="greeting-row"><div><div class="subtle-label">ЛИЧНЫЙ КАБИНЕТ</div><h1>Привет, ${esc(firstName)}!</h1><p>С чего начнём сегодня?</p></div></section>
     <section class="hero-card">
-      <div class="hero-copy"><span class="hero-eyebrow">ОБУЧЕНИЕ В MAGNUS</span><h2>Список факультетов<br>направление.</h2><p>Выбери факультет, посмотри программы и начни с первого урока.</p><button class="orange-button" data-go="faculties">Смотреть факультеты ${icon("arrow")}</button></div>
+      <div class="hero-copy"><span class="hero-eyebrow">ВЫБЕРИ НАПРАВЛЕНИЕ</span><h2>Найди своё<br>направление.</h2><p>Посмотри факультеты и ознакомительные программы.</p><button class="orange-button" data-go="faculties">Все факультеты ${icon("arrow")}</button></div>
       <div class="mascot-stage"><img src="/mascot/magnus-owl.svg" class="hero-mascot" alt="Совёнок MAGNUS" /></div>
     </section>
-    <section class="courses-section home-featured-course"><div class="section-title"><div><span class="subtle-label">СЛЕДУЮЩИЙ УРОК</span><h2>Продолжить обучение</h2></div><button class="text-link" data-go="study">Все курсы ${icon("arrow")}</button></div>${courseTile(courses[0],true)}</section>
-    <section class="quick-section"><div class="section-title"><div><span class="subtle-label">РАЗДЕЛЫ</span><h2>Быстрый доступ</h2></div><button class="text-link" data-go="faculties">Все разделы ${icon("arrow")}</button></div><div class="quick-grid">
+    <section class="courses-section home-featured-course"><div class="section-title"><div><span class="subtle-label">ОЗНАКОМИТЕЛЬНАЯ ПРОГРАММА</span><h2>Посмотреть пример курса</h2></div><button class="text-link" data-go="study">Все курсы ${icon("arrow")}</button></div>${courseTile(courses[0],true)}</section>
+    <section class="quick-section"><div class="section-title"><div><span class="subtle-label">НАВИГАЦИЯ</span><h2>Разделы MAGNUS</h2></div><button class="text-link" data-go="faculties">Все факультеты ${icon("arrow")}</button></div><div class="quick-grid">
       <button class="quick-item" data-go="faculties"><span class="quick-icon peach">${icon("faculty")}</span><b>Факультеты</b><small>Найди своё</small></button>
       <button class="quick-item" data-go="study"><span class="quick-icon lilac">${icon("study")}</span><b>Обучение</b><small>Расписание и курсы</small></button>
       <button class="quick-item" data-go="documents"><span class="quick-icon butter">${icon("docs")}</span><b>Документы</b><small>Сертификаты</small></button>
@@ -503,7 +503,7 @@ function profilePage() {
       <div class="profile-info"><small>ЛИЧНЫЙ КАБИНЕТ</small><h2>${esc(profileName)}</h2><p>${esc(profileCaption)}</p></div>
       <span class="profile-connection ${telegramConnected?"connected":""}">${telegramConnected?"TELEGRAM":"ГОСТЕВОЙ РЕЖИМ"}</span>
     </section>
-    <div class="profile-content-heading"><div><span class="subtle-label">ТВОИ МАТЕРИАЛЫ</span><h2>Личные данные</h2></div><span>Локально</span></div>
+    <div class="profile-content-heading"><div><span class="subtle-label">СОХРАНЁННОЕ</span><h2>Учебные материалы</h2></div><span>${cloudSyncReady?"Синхронизировано":"На устройстве"}</span></div>
     <div class="profile-stats">
       <div><b>${draftCount}</b><small>Черновики</small></div>
       <div><b>${noteCount}</b><small>Заметки</small></div>
@@ -518,7 +518,7 @@ function profilePage() {
       <button data-action="settings"><span class="menu-icon">⚙</span><span><b>Настройки</b><small>Внешний вид и предпочтения</small></span>${icon("arrow")}</button>
       <button data-action="notifications"><span class="menu-icon">♧</span><span><b>Уведомления</b><small>Важные события и напоминания</small></span>${icon("arrow")}</button>
       <button data-action="support"><span class="menu-icon">?</span><span><b>Поддержка</b><small>Помощь и обратная связь</small></span>${icon("arrow")}</button>
-      <button data-action="about"><span class="menu-icon">M</span><span><b>О MAGNUS</b><small>Пространство для знаний и развития</small></span>${icon("arrow")}</button>
+      <button data-action="about"><span class="menu-icon">${icon("faculty")}</span><span><b>О MAGNUS</b><small>Пространство для знаний и развития</small></span>${icon("arrow")}</button>
     </section>
   </main>`;
 }
