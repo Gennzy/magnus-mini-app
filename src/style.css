@@ -6615,3 +6615,69 @@ body { background:#f6f6f3;color:#252b2d; }
  .admin-message-compose .orange-button { width:100%; }
  .admin-outgoing-message-head { align-items:flex-start;flex-direction:column;gap:4px; }
 }
+
+/* Subscription and access management */
+.admin-student-access { color:#9a6845!important;font-weight:750; }
+.admin-student-access.active { color:#52775c!important; }
+.admin-subscription-panel {
+ margin:16px 0 20px;padding:15px;border:1px solid #e7e5df;
+ border-radius:12px;background:#fff;
+}
+.admin-subscription-panel .admin-section-head { margin:0 0 13px; }
+.admin-subscription-status {
+ display:inline-flex;align-items:center;padding:6px 9px;border-radius:20px;
+ background:#f3eee8;color:#8a684f;font-size:9px;font-weight:800;white-space:nowrap;
+}
+.admin-subscription-status.active { background:#edf4ee;color:#52775c; }
+.admin-subscription-facts {
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;
+}
+.admin-subscription-facts>div {
+ display:flex;flex-direction:column;gap:6px;min-width:0;padding:11px;
+ border:1px solid #eeece7;border-radius:9px;background:#faf9f6;
+}
+.admin-subscription-facts small { color:#899194;font-size:8px;font-weight:800;letter-spacing:.6px; }
+.admin-subscription-facts b { color:#3d474a;font-size:11px;overflow-wrap:anywhere; }
+.admin-subscription-actions {
+ display:flex;align-items:flex-end;flex-wrap:wrap;gap:8px;margin-top:12px;
+}
+.admin-subscription-actions>label {
+ display:flex;flex:1;min-width:145px;flex-direction:column;gap:6px;
+ color:#737e81;font-size:9px;font-weight:700;
+}
+.admin-subscription-actions select {
+ width:100%;height:38px;padding:0 10px;border:1px solid #e5e3dc;
+ border-radius:8px;background:#fff;color:#30383a;font:inherit;font-size:10px;
+}
+.admin-subscription-actions .orange-button {
+ min-height:38px;padding:8px 13px;border:0;border-radius:8px;
+ background:#e87525;color:#fff;font-size:10px;font-weight:800;
+}
+.admin-subscription-revoke {
+ min-height:38px;padding:8px 12px;border:1px solid #e7d9d1;
+ border-radius:8px;background:#fff;color:#a15c3a;font-size:10px;font-weight:750;
+}
+.admin-subscription-revoke:disabled { opacity:.4;cursor:not-allowed; }
+.admin-subscription-note {
+ display:block;margin-top:11px;color:#899194;font-size:9px;line-height:1.5;
+}
+.profile-subscription-card {
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ margin:0 0 18px;padding:14px 15px;border:1px solid #e7e5df;
+ border-radius:11px;background:#fff;
+}
+.profile-subscription-card>div { display:flex;flex-direction:column;gap:4px; }
+.profile-subscription-card>div>span { color:#899194;font-size:8px;font-weight:850;letter-spacing:.8px; }
+.profile-subscription-card>div>b { color:#30383a;font-size:13px; }
+.profile-subscription-card>div>small { color:#899194;font-size:9px; }
+.profile-subscription-indicator {
+ width:9px;height:9px;flex:none;border-radius:50%;background:#c5c5c0;
+}
+.profile-subscription-indicator.active { background:#6f9877;box-shadow:0 0 0 4px #edf4ee; }
+@media(max-width:650px) {
+ .admin-subscription-panel { padding:12px; }
+ .admin-subscription-actions { align-items:stretch;flex-direction:column; }
+ .admin-subscription-actions>label { min-width:0; }
+ .admin-subscription-actions .orange-button,.admin-subscription-revoke { width:100%; }
+ .admin-subscription-facts b { font-size:10px; }
+}
