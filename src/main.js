@@ -27,6 +27,10 @@ const courses = [
   { id:"brand", title:"Основы бренд-стратегии", category:"Маркетинг", lesson:"Урок 01 · Сила позиционирования", color:"course-brand", mark:"M" }
 ];
 
+const curriculum = {"ai":[["ai-01","Что такое искусственный интеллект","Введение",12,"ИИ — область информатики, в которой создают системы для задач, обычно требующих человеческого анализа: распознавания изображений, понимания текста и поиска закономерностей.","Не один алгоритм","ИИ включает разные подходы: от заданных человеком правил до моделей, которые находят закономерности в данных.","Границы возможностей","Результат зависит от задачи, данных и качества модели. Система может ошибаться, поэтому важные выводы нужно проверять.","Что точнее всего описывает современную систему ИИ?",["Универсальный разум","Система для определённых задач на основе алгоритмов и данных","Программа без ошибок"],1],["ai-02","Данные и машинное обучение","Теория",16,"Машинное обучение находит закономерности в примерах. Разработчик подготавливает данные и задаёт способ оценки результата.","Обучающая выборка","На этих примерах модель настраивает параметры. Данные должны отражать задачу и не содержать систематических перекосов.","Проверка модели","Отдельная тестовая выборка показывает, как модель работает на ранее не встречавшихся примерах.","Зачем разделять обучающую и тестовую выборки?",["Скрыть данные от разработчика","Проверить качество на новых для модели примерах","Увеличить размер модели"],1],["ai-03","Как оценивать ответы ИИ","Практика",14,"Даже убедительно сформулированный ответ модели может содержать неточности. Проверка результата — часть работы с ИИ.","Проверяйте факты","Сопоставляйте цифры, даты и цитаты с первоисточниками. Уверенный тон не является доказательством.","Учитывайте контекст","Модель может не знать важных деталей ситуации. Уточняйте ограничения и проверяйте выводы.","Как поступить с важным фактом из ответа ИИ?",["Использовать без проверки","Проверить по надёжному первоисточнику","Считать верным по тону"],1]],"mind":[["mind-01","Как внимание отбирает информацию","Введение",13,"Внимание выделяет важную информацию из множества сигналов. Мы не можем одинаково глубоко обрабатывать всё происходящее вокруг.","Избирательность","На выбор влияют цель, интерес, новизна и эмоциональная значимость стимула.","Переключение","Частые переключения требуют времени на возвращение к прежнему контексту и повышают вероятность ошибок.","Что происходит при частом переключении задач?",["Ничего не меняется","Тратится время на восстановление контекста","Качество всегда растёт"],1],["mind-02","Эмоции и принятие решений","Теория",15,"Эмоции участвуют в оценке ситуации. Они помогают замечать значимые события, но влияют на то, какие факторы мы замечаем.","Эмоциональный сигнал","Чувства могут указывать на важность события, риск или потребность — это информация, которую полезно учитывать.","Пауза перед выбором","При сильном возбуждении полезно назвать эмоцию, выписать факты и сравнить варианты.","Что помогает принять взвешенное решение при сильной эмоции?",["Игнорировать факты","Сделать паузу и оценить факты и варианты","Выбрать первый вариант"],1],["mind-03","Когнитивные искажения","Практика",17,"Когнитивные искажения — устойчивые способы упрощать обработку информации. Иногда они приводят к систематическим ошибкам.","Подтверждающее смещение","Мы охотнее замечаем сведения, которые поддерживают уже имеющееся мнение.","Эффект доступности","Яркий или недавний пример может казаться более распространённым, чем он есть.","Что помогает снизить подтверждающее смещение?",["Читать только согласные мнения","Искать данные против своей гипотезы","Не менять мнение"],1]],"brand":[["brand-01","Что такое позиционирование","Введение",12,"Позиционирование описывает место бренда в восприятии аудитории относительно альтернатив. Оно помогает понять, для кого существует продукт и чем отличается.","Аудитория","Сначала определяют группу людей, чью задачу продукт решает.","Отличие","Сильное отличие важно аудитории и подтверждается продуктом или опытом взаимодействия.","Что лежит в основе позиционирования?",["Только логотип","Потребность аудитории и значимое отличие","Количество рекламы"],1],["brand-02","Исследование целевой аудитории","Теория",16,"Исследование помогает понять реальные задачи, мотивы и барьеры людей. Оно опирается на наблюдения и данные, а не только на предположения.","Вопросы о поведении","Полезнее спрашивать о последнем реальном опыте покупки или использования, чем о гипотетических намерениях.","Проверка гипотез","Интервью помогают понять причины, количественные данные — оценить распространённость наблюдений.","Какой вопрос полезнее для интервью?",["Купили бы идеальный продукт?","Расскажите о последнем случае решения этой задачи","Вам нравится идея?"],1],["brand-03","Сообщение и доказательства бренда","Практика",14,"Коммуникация бренда должна ясно объяснять ценность предложения. Обещание убедительно, когда его подтверждают свойства продукта и опыт клиентов.","Одно главное сообщение","Сформулируйте мысль, которая отвечает аудитории: почему стоит обратить внимание на предложение.","Конкретные доказательства","Функции, условия, примеры и прозрачные цифры могут подтвердить обещание.","Что делает обещание бренда убедительнее?",["Необычная фраза","Проверяемое доказательство в продукте или опыте","Повтор обещания"],1]]};
+function courseLessons(courseId){return curriculum[courseId]||[];}
+function selectedLesson(){return courseLessons(selectedCourse.id).find(item=>item[0]===selectedLessonId)||courseLessons(selectedCourse.id)[0];}
+function courseCompletionCount(courseId){return courseLessons(courseId).filter(item=>completedLessons[item[0]]).length;}
 
 const assignments = [
   {
@@ -64,6 +68,7 @@ const assignments = [
 let currentPage = "home";
 let selectedFaculty = faculties[0];
 let selectedCourse = courses[0];
+let selectedLessonId = "ai-01";
 let lessonTab = "lesson";
 let quizChoice = "";
 let searchValue = "";
@@ -380,62 +385,29 @@ function studyPage() {
 
 
 function courseDetailPage() {
-  const c = selectedCourse;
-  const modules = [
-    ["01", "Знакомство с темой", "Введение"],
-    ["02", "Ключевые понятия", "Теория"],
-    ["03", "Разбираем на примерах", "Практика"],
-    ["04", "Проверяем понимание", "Мини-тест"],
-    ["05", "Итоговый разбор", "Закрепление"]
-  ];
-  return `<main class="screen inner-screen course-detail-screen">
-    <button class="back-button" data-go="study">${icon("back")} Все курсы</button>
-    <section class="course-detail-hero ${c.color}" data-course-art="${c.id}">
-      ${courseArtwork(c)}
-      <span class="course-detail-kicker">${esc(c.category)}</span>
-      <div class="course-detail-mark">${esc(c.mark)}</div>
-      <div class="course-detail-bottom"><span>ПРИМЕР ПРОГРАММЫ</span></div>
-    </section>
-    <div class="course-detail-title"><div class="kicker">ОПИСАНИЕ КУРСА</div><h1>${esc(c.title)}</h1><p>${esc(c.lesson)}. Содержание и структура приведены как пример.</p></div>
-    <section class="course-detail-summary"><span class="subtle-label">СТРУКТУРА</span><b>5 тематических блоков</b><p>Это предварительный план. Содержание уроков будет добавлено после утверждения программы.</p></section>
-    <section class="module-section"><div class="section-title"><div><span class="subtle-label">СОДЕРЖАНИЕ</span><h2>Темы курса</h2></div><span class="course-count">5 блоков</span></div>
-      <div class="module-list">${modules.map(([n,title,meta])=>`<div class="module-row"><span class="module-number">${n}</span><div><b>${esc(title)}</b><small>${esc(meta)}</small></div></div>`).join("")}</div>
-    </section>
-    <div class="course-detail-cta"><div><b>Ознакомительный урок</b><small>Учебный пример, не часть действующей программы.</small></div><button class="orange-button" data-action="open-lesson">Открыть пример ${icon("arrow")}</button></div>
-    <p class="demo-disclaimer">Демонстрационная программа. Фактические материалы, преподаватели и условия обучения будут опубликованы отдельно.</p>
-  </main>`;
+ const c=selectedCourse,lessons=courseLessons(c.id),completed=courseCompletionCount(c.id),progress=lessons.length?Math.round(completed/lessons.length*100):0;
+ return `<main class="screen inner-screen course-detail-screen"><button class="back-button" data-go="study">${icon("back")} Все курсы</button>
+ <section class="course-detail-hero ${c.color}">${courseArtwork(c)}<span class="course-detail-kicker">${esc(c.category)}</span><div class="course-detail-mark">${esc(c.mark)}</div><div class="course-detail-bottom"><span>ОЗНАКОМИТЕЛЬНАЯ ПРОГРАММА</span></div></section>
+ <div class="course-detail-title"><div class="kicker">УЧЕБНАЯ ПРОГРАММА · ПРИМЕР</div><h1>${esc(c.title)}</h1><p>Три занятия с материалами и вопросами для самопроверки.</p></div>
+ <section class="course-detail-summary"><span class="subtle-label">ТВОЙ РЕЗУЛЬТАТ</span><b>${completed} из ${lessons.length} занятий отмечено</b><div class="curriculum-progress"><span style="width:${progress}%"></span></div><p>Ознакомительный материал, не официальная учебная программа.</p></section>
+ <section class="module-section"><div class="section-title"><div><span class="subtle-label">СОДЕРЖАНИЕ</span><h2>Занятия</h2></div><span class="course-count">${lessons.length} урока</span></div><div class="module-list">${lessons.map((lesson,index)=>`<button class="module-row curriculum-lesson-row" data-lesson-open="${lesson[0]}"><span class="module-number">${completedLessons[lesson[0]]?"✓":String(index+1).padStart(2,"0")}</span><span class="curriculum-lesson-copy"><b>${esc(lesson[1])}</b><small>${esc(lesson[2])} · ${lesson[3]} минут</small></span><span class="curriculum-lesson-state">${completedLessons[lesson[0]]?"Пройдено":"Открыть"} ${icon("arrow")}</span></button>`).join("")}</div></section>
+ <p class="demo-disclaimer">Материалы созданы для знакомства с форматом MAGNUS. Они не заменяют полноценную программу с преподавателем.</p></main>`;
 }
 
 function lessonPage() {
-  const c = selectedCourse;
-  const quizResult = lessonQuizResults[c.id] ? JSON.parse(lessonQuizResults[c.id]) : null;
-  const lessonCompleted = Boolean(completedLessons[c.id]);
-  const tabContent = lessonTab === "notes"
-    ? `<div class="lesson-notes"><div class="lesson-notes-head"><label for="lesson-note">МОИ ЗАМЕТКИ</label><span>${icon("cloud")} АВТОСОХРАНЕНИЕ</span></div><textarea id="lesson-note" placeholder="Запишите важную мысль, пример или вопрос...">${esc(lessonNotes[c.id] || "")}</textarea><small>Заметки сохраняются автоматически на устройстве и отправляются в облако при доступности синхронизации.</small></div>`
-    : lessonTab === "materials"
-      ? `<div class="lesson-reading"><span class="subtle-label">КОНСПЕКТ · 4 МИН ЧТЕНИЯ</span><h3>Главная идея занятия</h3><p>Любая сложная тема становится понятнее, если разделить её на небольшие понятия, увидеть связь между ними и разобрать конкретный пример.</p><blockquote>Сначала наблюдение — затем гипотеза — после этого проверка.</blockquote><h3>На что обратить внимание</h3><ul><li>Определите ключевые понятия.</li><li>Найдите связь между причиной и следствием.</li><li>Проверьте вывод на примере.</li></ul></div>`
-      : `<div class="lesson-reading"><span class="subtle-label">УРОК 03 · 24 МИНУТЫ</span><h3>Разбираем на примерах</h3><p>В этом занятии мы переходим от теории к практике. Посмотрите на ситуацию, выделите основные факторы и попробуйте объяснить, почему результат получился именно таким.</p><div class="lesson-callout"><b>Цель занятия</b><span>Научиться применять ключевые понятия курса к реальным ситуациям.</span></div><p>После просмотра изучите конспект и ответьте на контрольный вопрос.</p></div>`;
-  return `<main class="screen inner-screen lesson-screen">
-    <button class="back-button" data-go="courseDetail">${icon("back")} К программе курса</button>
-    <div class="lesson-heading"><span class="subtle-label">${c.category.toUpperCase()} · ПРАКТИЧЕСКОЕ ЗАНЯТИЕ</span><h1>Разбираем<br><em>на примерах.</em></h1><p>${c.title}</p>
-      <div class="lesson-meta-row"><span><i class="meta-clock"></i>24 минуты</span><span><i class="meta-play"></i>Практика</span><span><i class="meta-file"></i>Конспект и тест</span></div>
-    </div>
-    <section class="lesson-player" aria-label="Видеоплеер — демонстрационный экран">
-      <div class="player-grain"></div><div class="player-orbit"></div><div class="player-brand">MAGNUS <span>LEARNING STUDIO</span></div>
-      <div class="player-center"><button class="player-play" type="button" data-action="course-start" aria-label="Видеоурок пока недоступен">▶</button><b>Видеоурок</b><small>Видео будет подключено позднее</small></div>
-      <div class="player-controls"><span>МАГНУС</span><span class="player-coming-soon">УЧЕБНОЕ ВИДЕО · 24 МИН</span><span>СКОРО</span></div>
-    </section>
-    <div class="lesson-tabs" role="tablist" aria-label="Материалы урока">${[["lesson","Урок"],["materials","Конспект"],["notes","Заметки"]].map(([id,label])=>`<button type="button" role="tab" id="lesson-tab-${id}" aria-controls="lesson-panel" aria-selected="${lessonTab===id}" tabindex="${lessonTab===id?"0":"-1"}" class="${lessonTab===id?"selected":""}" data-lesson-tab="${id}">${label}</button>`).join("")}</div>
-    <section class="lesson-content" id="lesson-panel" role="tabpanel" aria-labelledby="lesson-tab-${lessonTab}">${tabContent}</section>
-    <section class="lesson-quiz" aria-labelledby="lesson-quiz-title"><div class="kicker">ПРОВЕРЬ СЕБЯ</div><h2 id="lesson-quiz-title">Что помогает перейти от теории к пониманию?</h2><p>Выберите один вариант ответа.</p>
-      ${["Заучивание определений без примеров","Разбор конкретной ситуации и проверка вывода","Пропуск сложных понятий"].map((answer,i)=>`<button type="button" class="quiz-option ${quizChoice===String(i)?"chosen":""}" data-quiz="${i}" aria-pressed="${quizChoice===String(i)}"><span>${String.fromCharCode(65+i)}</span>${answer}${quizChoice===String(i)?'<b aria-hidden="true">✓</b>':""}</button>`).join("")}
-      ${quizChoice!==""?`<div class="quiz-feedback ${quizChoice==="1"?"correct":"incorrect"}" role="status" aria-live="polite">${quizChoice==="1"?"Верно! Пример помогает связать понятия с практикой.":"Попробуйте ещё раз: подумайте, что помогает применить знания на практике."}</div>`:""}
-      ${quizResult?`<div class="quiz-saved-result">Последний сохранённый результат: ${quizResult.correct?"верный ответ":"ответ пока неверный"} · попыток: ${quizResult.attempts}</div>`:""}
-    </section>
-    <div class="lesson-footer"><button class="lesson-finish" data-action="lesson-finish" ${lessonCompleted?"disabled":""}>${lessonCompleted?"Пример отмечен как пройденный":"Отметить пример пройденным"} ${lessonCompleted?"":icon("arrow")}</button><small>${lessonCompleted?"Отметка сохранена в твоём профиле. Это не завершение официальной учебной программы.":"Сохраняется только отметка об ознакомительном примере, не официальный прогресс курса."}</small></div>
-  </main>`;
+ const c=selectedCourse,lesson=selectedLesson();if(!lesson)return courseDetailPage();
+ const [id,title,type,duration,intro,h1,b1,h2,b2,question,options,answer]=lesson;
+ const quizResult=lessonQuizResults[id]?JSON.parse(lessonQuizResults[id]):null,lessonCompleted=Boolean(completedLessons[id]);
+ const tabContent=lessonTab==="notes"?`<div class="lesson-notes"><div class="lesson-notes-head"><label for="lesson-note">МОИ ЗАМЕТКИ</label><span>${icon("cloud")} АВТОСОХРАНЕНИЕ</span></div><textarea id="lesson-note" placeholder="Запишите важную мысль, пример или вопрос...">${esc(lessonNotes[id]||"")}</textarea><small>Заметки сохраняются на устройстве и синхронизируются с облаком, если оно доступно.</small></div>`:lessonTab==="materials"?`<div class="lesson-reading"><span class="subtle-label">КРАТКИЙ КОНСПЕКТ</span><h3>${esc(title)}</h3><h3>${esc(h1)}</h3><p>${esc(b1)}</p><h3>${esc(h2)}</h3><p>${esc(b2)}</p><blockquote>${esc(intro)}</blockquote></div>`:`<div class="lesson-reading"><span class="subtle-label">${esc(type.toUpperCase())} · ${duration} МИНУТ</span><h3>${esc(title)}</h3><p>${esc(intro)}</p><div class="lesson-callout"><b>Главная мысль</b><span>${esc(b1)}</span></div><p>Открой конспект, чтобы разобрать тему подробнее, затем проверь понимание материала.</p></div>`;
+ const lessons=courseLessons(c.id),index=lessons.findIndex(item=>item[0]===id),previous=lessons[index-1],next=lessons[index+1];
+ return `<main class="screen inner-screen lesson-screen"><button class="back-button" data-go="courseDetail">${icon("back")} К программе курса</button>
+ <div class="lesson-heading"><span class="subtle-label">${esc(c.category.toUpperCase())} · ЗАНЯТИЕ ${String(index+1).padStart(2,"0")} ИЗ ${lessons.length}</span><h1>${esc(title)}</h1><p>${esc(c.title)}</p><div class="lesson-meta-row"><span>${duration} минут</span><span>${esc(type)}</span><span>Конспект и тест</span></div></div>
+ <div class="lesson-tabs" role="tablist" aria-label="Материалы урока">${[["lesson","Урок"],["materials","Конспект"],["notes","Заметки"]].map(([key,label])=>`<button type="button" role="tab" id="lesson-tab-${key}" aria-controls="lesson-panel" aria-selected="${lessonTab===key}" tabindex="${lessonTab===key?"0":"-1"}" class="${lessonTab===key?"selected":""}" data-lesson-tab="${key}">${label}</button>`).join("")}</div>
+ <section class="lesson-content" id="lesson-panel" role="tabpanel" aria-labelledby="lesson-tab-${lessonTab}">${tabContent}</section>
+ <section class="lesson-quiz"><div class="kicker">ПРОВЕРЬ СЕБЯ</div><h2>${esc(question)}</h2><p>Выберите один вариант ответа.</p>${options.map((option,i)=>`<button type="button" class="quiz-option ${quizChoice===String(i)?"chosen":""}" data-quiz="${i}" aria-pressed="${quizChoice===String(i)}"><span>${String.fromCharCode(65+i)}</span>${esc(option)}${quizChoice===String(i)?"<b>✓</b>":""}</button>`).join("")}${quizChoice!==""?`<div class="quiz-feedback ${quizChoice===String(answer)?"correct":"incorrect"}" role="status">${quizChoice===String(answer)?"Верно. Ты правильно понял основную мысль.":"Пока неверно. Перечитай конспект и попробуй ещё раз."}</div>`:""}${quizResult?`<div class="quiz-saved-result">Последний результат: ${quizResult.correct?"верный ответ":"ответ неверный"} · попыток: ${quizResult.attempts}</div>`:""}</section>
+ <div class="lesson-footer"><button class="lesson-finish" data-action="lesson-finish" ${lessonCompleted?"disabled":""}>${lessonCompleted?"Занятие отмечено пройденным":"Отметить занятие пройденным"} ${lessonCompleted?"":icon("arrow")}</button><small>${lessonCompleted?"Отметка сохранена.":"Отметка означает, что ты ознакомился с материалом; это не подтверждение квалификации."}</small></div>
+ <div class="lesson-sequence">${previous?`<button data-lesson-open="${previous[0]}">← Предыдущее занятие</button>`:"<span>Первое занятие</span>"}${next?`<button data-lesson-open="${next[0]}">Следующее занятие →</button>`:`<button data-go="courseDetail">К программе курса →</button>`}</div></main>`;
 }
-
 
 function assignmentsPage() {
   const counts = {
@@ -579,10 +551,12 @@ function toast(message) {
 function bindEvents() {
   document.querySelectorAll("[data-go]").forEach(el => el.addEventListener("click", () => { currentPage = el.dataset.go; searchValue=""; render(); window.scrollTo({top:0,behavior:"smooth"}); }));
   document.querySelectorAll("[data-faculty]").forEach(el => el.addEventListener("click", () => { selectedFaculty=faculties.find(f=>f.id===el.dataset.faculty)||faculties[0]; currentPage="facultyDetail"; render(); window.scrollTo({top:0,behavior:"smooth"}); }));
+  document.querySelectorAll("[data-lesson-open]").forEach(el=>el.addEventListener("click",()=>{selectedLessonId=el.dataset.lessonOpen;quizChoice="";lessonTab="lesson";currentPage="lesson";render();window.scrollTo({top:0,behavior:"smooth"});}));
   document.querySelectorAll("[data-course]").forEach(el => el.addEventListener("click", (event) => {
     event.stopPropagation();
     const id = el.dataset.course;
     selectedCourse = courses.find(c => c.id === id) || courses[0];
+    selectedLessonId = courseLessons(selectedCourse.id)[0]?.[0] || "";
     currentPage = "courseDetail";
     render();
     window.scrollTo({top:0,behavior:"smooth"});
@@ -600,8 +574,8 @@ function bindEvents() {
   document.querySelectorAll("[data-lesson-tab]").forEach(el => el.addEventListener("click", () => { lessonTab=el.dataset.lessonTab; render(); }));
   document.querySelectorAll("[data-quiz]").forEach(el => el.addEventListener("click", () => {
     quizChoice=el.dataset.quiz;
-    const previous = lessonQuizResults[selectedCourse.id] ? JSON.parse(lessonQuizResults[selectedCourse.id]) : null;
-    lessonQuizResults[selectedCourse.id] = JSON.stringify({ choice: quizChoice, correct: quizChoice === "1", attempts: (previous?.attempts || 0) + 1, answeredAt: new Date().toISOString() });
+    const previous = lessonQuizResults[selectedLessonId] ? JSON.parse(lessonQuizResults[selectedLessonId]) : null;
+    lessonQuizResults[selectedLessonId] = JSON.stringify({ choice: quizChoice, correct: quizChoice === String(selectedLesson()?.[11]), attempts: (previous?.attempts || 0) + 1, answeredAt: new Date().toISOString() });
     storeLessonQuizResults();
     scheduleCloudStudentDataSync();
     render();
@@ -621,7 +595,7 @@ function bindEvents() {
         : "Не удалось сохранить черновик в памяти браузера.");
       return;
     }
-    if (el.dataset.action === "open-lesson") { currentPage="lesson"; lessonTab="lesson"; quizChoice=""; render(); window.scrollTo({top:0,behavior:"smooth"}); return; }
+    if (el.dataset.action === "open-lesson") { selectedLessonId=courseLessons(selectedCourse.id)[0]?.[0]||""; currentPage="lesson"; lessonTab="lesson"; quizChoice=""; render(); window.scrollTo({top:0,behavior:"smooth"}); return; }
     if (el.dataset.action === "interest") {
       if (interestedFaculties[selectedFaculty.id]) delete interestedFaculties[selectedFaculty.id];
       else interestedFaculties[selectedFaculty.id] = "saved";
@@ -632,7 +606,7 @@ function bindEvents() {
       return;
     }
     if (el.dataset.action === "lesson-finish") {
-      completedLessons[selectedCourse.id] = new Date().toISOString();
+      completedLessons[selectedLessonId] = new Date().toISOString();
       const saved = storeCompletedLessons();
       scheduleCloudStudentDataSync();
       render();
@@ -644,7 +618,7 @@ function bindEvents() {
   }));
   const noteField = document.querySelector("#lesson-note");
   noteField?.addEventListener("input", e => {
-    lessonNotes[selectedCourse.id] = e.target.value;
+    lessonNotes[selectedLessonId] = e.target.value;
     storeLessonNotes();
     scheduleCloudStudentDataSync();
   });
