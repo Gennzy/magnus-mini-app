@@ -5915,3 +5915,181 @@ body { background:#f6f6f3;color:#252b2d; }
   .home-screen .hero-mascot { animation:none; }
   .home-screen .quick-item { transition:none; }
 }
+
+
+/* Real content first: compact data blocks and plain schedule states */
+.home-screen .dashboard-overview {
+  padding:17px 18px;
+  border:1px solid #e6e4df;
+  border-radius:13px;
+  background:#fff;
+  box-shadow:none;
+}
+.home-screen .dashboard-overview .section-title { margin-bottom:12px; }
+.home-screen .dashboard-overview .section-title h2 { font-size:16px; }
+.dashboard-materials {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+}
+.dashboard-materials>div {
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  min-width:0;
+  padding:13px;
+  border:1px solid #ebe9e4;
+  border-radius:9px;
+  background:#f8f8f6;
+}
+.dashboard-materials>div>b {
+  color:#303638;
+  font-size:23px;
+  line-height:1;
+  font-weight:800;
+}
+.dashboard-materials>div>span {
+  color:#697276;
+  font-size:9px;
+}
+.home-screen .dashboard-overview-foot {
+  margin-top:12px;
+  padding-top:10px;
+  border-top:1px solid #eeece7;
+}
+.home-screen .dashboard-overview-foot span { color:#70797c;font-size:8px; }
+.home-screen .dashboard-overview-foot button { color:#a75d2c;font-size:8px; }
+.home-screen .dashboard-work-grid {
+  gap:12px;
+  margin-top:12px;
+}
+.home-screen .dashboard-panel {
+  border:1px solid #e6e4df;
+  border-radius:13px;
+  background:#fff;
+  box-shadow:none;
+}
+.dashboard-assignment-panel .section-title h2 { font-size:16px; }
+.dashboard-assignment-panel .section-title .text-link {
+  color:#9a5a31;
+  font-size:8px;
+}
+.home-screen .dashboard-next-card {
+  justify-content:center;
+  gap:10px;
+  min-height:180px;
+  padding:18px;
+  border:1px solid #e6e4df;
+  border-radius:13px;
+  background:#fff;
+  color:#303638;
+  box-shadow:none;
+}
+.home-screen .dashboard-next-card .subtle-label {
+  color:#727b7e;
+  font-size:8px;
+  letter-spacing:1px;
+}
+.home-screen .dashboard-next-card h3 {
+  margin:3px 0 0;
+  color:#303638;
+  font-size:15px;
+  font-weight:750;
+}
+.home-screen .dashboard-next-card p {
+  margin:0;
+  color:#727b7e;
+  font-size:9px;
+  line-height:1.55;
+}
+.home-screen .dashboard-next-card button {
+  align-self:flex-start;
+  min-height:35px;
+  margin-top:4px;
+  padding:8px 11px;
+  border:1px solid #e8ded3;
+  border-radius:8px;
+  background:#f8f4ef;
+  color:#9f582a;
+  box-shadow:none;
+  font-size:8px;
+}
+.home-screen .dashboard-next-card>small { display:none; }
+.schedule-empty-state {
+  padding:17px 0;
+  border-top:1px solid #e8e6e0;
+  border-bottom:1px solid #e8e6e0;
+  background:transparent;
+}
+.schedule-empty-state>b {
+  color:#333b3e;
+  font-size:12px;
+  font-weight:750;
+}
+.schedule-empty-state>p {
+  max-width:500px;
+  margin:6px 0 0;
+  color:#6f797c;
+  font-size:10px;
+  line-height:1.6;
+}
+.study-screen .schedule-section { margin-top:8px; }
+.study-screen .courses-section { margin-top:26px; }
+.study-screen .study-courses .section-title { margin-bottom:12px; }
+.study-screen .course-count {
+  color:#737b7e;
+  font-size:9px;
+}
+.assignment-empty>span { display:none; }
+.assignment-empty { box-shadow:none; }
+
+/* App-wide reduction of artificial gloss and pill-heavy decoration */
+.topbar {
+  background:#fff;
+  box-shadow:none;
+  backdrop-filter:none;
+}
+.bottom-nav {
+  background:#fff;
+  box-shadow:none;
+  backdrop-filter:none;
+}
+.icon-button,.avatar-button {
+  box-shadow:none;
+  border:1px solid #e8e6e0;
+}
+.course-card,.faculty-card,.assignment-card,
+.learning-overview,.dashboard-overview,.dashboard-panel,
+.assignment-instructions,.assignment-answer,.lesson-reading,
+.lesson-notes,.lesson-quiz,.profile-menu,.profile-sync-card {
+  box-shadow:none;
+}
+.course-card,.faculty-card,.assignment-card {
+  border-radius:13px;
+}
+.course-art-mark { text-shadow:none; }
+.art-orbit,.art-dots,.course-detail-orbit,.detail-banner-index {
+  display:none!important;
+}
+.schedule-calendar-card,.schedule-list,.schedule-empty,
+.calendar-day,.module-list,.course-progress-panel,
+.course-detail-cta,.faculty-method,.outcome-card,
+.detail-callout,.profile-stats {
+  box-shadow:none;
+}
+.quick-item,.filter-chip,.assignment-status,.course-meta span:first-child {
+  box-shadow:none;
+}
+.quick-item { border-radius:11px; }
+.quick-icon { box-shadow:none; }
+.text-link,.assignment-open { text-shadow:none; }
+.dashboard-demo-tag,.study-demo-label { display:none!important; }
+@media (max-width:650px) {
+  .home-screen .dashboard-overview { padding:14px; }
+  .dashboard-materials>div { padding:11px; }
+  .home-screen .dashboard-next-card { min-height:145px; }
+}
+@media (max-width:380px) {
+  .dashboard-materials { gap:7px; }
+  .dashboard-materials>div>span { font-size:8px; }
+}
