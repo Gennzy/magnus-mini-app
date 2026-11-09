@@ -71,7 +71,6 @@ let lessonTab = "lesson";
 let quizChoice = "";
 let searchValue = "";
 let activeFilter = "Все";
-let selectedDay = "Пт";
 let selectedAssignmentId = assignments[0].id;
 let activeAssignmentFilter = "Все";
 let assignmentDrafts = loadAssignmentDrafts();
@@ -254,7 +253,7 @@ function dashboardTasksPreview() {
   const laterAssignments = assignments.slice(1, 3);
   return `<section class="dashboard-work-grid">
     <div class="dashboard-panel dashboard-assignment-panel">
-      <div class="section-title"><div><span class="subtle-label">ПРОДОЛЖИТЬ КУРС</span><h2>Ближайшее задание</h2></div><button class="text-link" data-go="assignments">Все задания ${icon("arrow")}</button></div>
+      <div class="section-title"><div><span class="subtle-label">ЗАДАНИЯ</span><h2>Ближайшее задание</h2></div><button class="text-link" data-go="assignments">Все задания ${icon("arrow")}</button></div>
       <article class="dashboard-featured-task">
         <div class="featured-task-top"><span class="featured-task-kind">${esc(nextAssignment.type)}</span><span class="featured-task-due">${hasAssignmentDraft(nextAssignment.id) ? "Черновик сохранён" : "Срок · " + esc(nextAssignment.dueHint)}</span></div>
         <h3>${esc(nextAssignment.title)}</h3>
@@ -265,12 +264,10 @@ function dashboardTasksPreview() {
       <div class="dashboard-task-foot"><span>${assignments.length} учебных задания в списке</span><button data-go="assignments">Открыть центр заданий</button></div>
     </div>
     <div class="dashboard-next-card">
-      <span class="subtle-label">БЛИЖАЙШЕЕ ЗАНЯТИЕ</span>
-      <div class="next-date"><b>10</b><span>НОЯБРЯ<br>12:00</span></div>
-      <h3>Введение в искусственный интеллект</h3>
-      <p>Видеоурок · 18 минут</p>
-      <button data-go="study">Посмотреть расписание ${icon("arrow")}</button>
-      <small>Демонстрационное расписание</small>
+      <span class="subtle-label">РАСПИСАНИЕ</span>
+      <h3>Персональные занятия</h3>
+      <p>Расписание появится здесь после подключения учебной системы.</p>
+      <button data-go="study">Открыть обучение ${icon("arrow")}</button>
     </div>
   </section>`;
 }
@@ -335,26 +332,13 @@ function facultyDetailPage() {
 }
 
 
-const studyWeek = [
-  {day:"Пн",date:"09",items:[{time:"10:00",title:"Психология мышления",type:"Видеоурок",duration:"24 мин",color:"lavender"},{time:"16:30",title:"Практика: внимание",type:"Практическое задание",duration:"15 мин",color:"peach"}]},
-  {day:"Вт",date:"10",items:[{time:"12:00",title:"Введение в ИИ",type:"Видеоурок",duration:"18 мин",color:"blue"}]},
-  {day:"Ср",date:"11",items:[{time:"11:30",title:"Основы бренд-стратегии",type:"Чтение",duration:"20 мин",color:"yellow"}]},
-  {day:"Чт",date:"12",items:[{time:"15:00",title:"Психология мышления",type:"Мини-тест",duration:"8 мин",color:"lavender"}]},
-  {day:"Пт",date:"13",items:[{time:"10:00",title:"Введение в ИИ",type:"Следующий урок",duration:"18 мин",color:"blue"},{time:"17:00",title:"Свободное повторение",type:"Самостоятельная работа",duration:"20 мин",color:"mint"}]},
-  {day:"Сб",date:"14",items:[{time:"12:00",title:"Личный учебный час",type:"Повторение",duration:"30 мин",color:"peach"}]},
-  {day:"Вс",date:"15",items:[]}
-];
 function schedulePanel() {
-  const day = studyWeek.find(d=>d.day===selectedDay) || studyWeek[4];
   return `<section class="schedule-section">
-    <div class="section-title"><div><span class="subtle-label">ТВОЙ ПЛАН</span><h2>Расписание</h2></div><span class="schedule-period">9—15 ноября</span></div>
-    <div class="schedule-calendar-card">
-      <div class="schedule-calendar-head"><span>УЧЕБНАЯ НЕДЕЛЯ</span><b>9–15 ноября</b></div>
-      <div class="schedule-calendar">${studyWeek.map(d=>`<button class="calendar-day ${selectedDay===d.day?"selected":""}" data-day="${d.day}" aria-pressed="${selectedDay===d.day}"><small>${d.day}</small><b>${d.date}</b><i class="${d.items.length?"has-event":""}"></i></button>`).join("")}</div>
+    <div class="section-title"><div><span class="subtle-label">РАСПИСАНИЕ</span><h2>Учебные занятия</h2></div></div>
+    <div class="schedule-empty-state">
+      <b>Расписание пока не подключено</b>
+      <p>Здесь появятся даты, время и ссылки на занятия после подключения учебной системы.</p>
     </div>
-    <div class="schedule-day-heading"><b>${day.day}, ${day.date} ноября</b><span>${day.items.length?`${day.items.length} ${day.items.length===1?"занятие":"занятия"}`:"Свободный день"}</span></div>
-    ${day.items.length?`<div class="schedule-list">${day.items.map(item=>`<article class="schedule-item"><time>${item.time}</time><span class="schedule-dot ${item.color}"></span><div><b>${item.title}</b><small>${item.type} · ${item.duration}</small></div><span class="schedule-chevron">›</span></article>`).join("")}</div>`:`<div class="schedule-empty"><span>✦</span><b>Сегодня можно выдохнуть</b><small>Или посвятить время свободному чтению.</small></div>`}
-    <p class="schedule-note">Расписание демонстрационное. Персональные занятия появятся после подключения учебной системы.</p>
   </section>`;
 }
 
@@ -460,7 +444,7 @@ function assignmentsPage() {
         <div class="assignment-card-meta"><span class="assignment-due"><small>СРОК</small><b>${esc(a.due)}</b></span><span class="assignment-estimate"><small>ВРЕМЯ</small><b>${esc(a.estimate)}</b></span></div>
         <button class="assignment-open" data-assignment-open="${a.id}">Открыть задание ${icon("arrow")}</button>
       </article>`).join("")}
-      ${filtered.length ? "" : `<div class="assignment-empty"><span>✦</span><b>${activeAssignmentFilter==="Черновики"?"Черновиков пока нет":"Все задания уже разобраны"}</b><p>${activeAssignmentFilter==="Черновики"?"Начни с любого задания — текст ответа сохранится здесь.":"В этой категории пока нет заданий."}</p><button data-assignment-filter="Все">Показать все задания</button></div>`}
+      ${filtered.length ? "" : `<div class="assignment-empty"><b>${activeAssignmentFilter==="Черновики"?"Черновиков пока нет":"Все задания уже разобраны"}</b><p>${activeAssignmentFilter==="Черновики"?"Начни с любого задания — текст ответа сохранится здесь.":"В этой категории пока нет заданий."}</p><button data-assignment-filter="Все">Показать все задания</button></div>`}
     </div>
     <p class="assignment-demo-note">Задания и сроки демонстрационные. Черновики сохраняются на устройстве; отправка преподавателю и проверка пока не подключены.</p>
   </main>`;
@@ -584,7 +568,6 @@ function bindEvents() {
     activeAssignmentFilter = el.dataset.assignmentFilter;
     render();
   }));
-  document.querySelectorAll("[data-day]").forEach(el => el.addEventListener("click", () => { selectedDay=el.dataset.day; render(); }));
   document.querySelectorAll("[data-lesson-tab]").forEach(el => el.addEventListener("click", () => { lessonTab=el.dataset.lessonTab; render(); }));
   document.querySelectorAll("[data-quiz]").forEach(el => el.addEventListener("click", () => { quizChoice=el.dataset.quiz; render(); }));
 
