@@ -6261,3 +6261,19 @@ body { background:#f6f6f3;color:#252b2d; }
 .lesson-sequence button { min-height:36px;padding:8px 10px;border:1px solid #e8ded3;border-radius:8px;background:#fff;color:#9f582a;font-size:10px;font-weight:750; }
 .lesson-sequence>span { color:#858d8f;font-size:10px; }
 @media(max-width:420px) { .curriculum-lesson-row { gap:8px;padding:10px; } .curriculum-lesson-state { font-size:8px; } .lesson-sequence button { font-size:9px;padding:7px; } }
+
+
+/* Assignment submission flow */
+.assignment-submit-row { display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px;padding-top:16px;border-top:1px solid #ece8e1; }
+.assignment-submit-row p { max-width:330px;margin:0;color:#788184;font-size:10px;line-height:1.55; }
+.assignment-submit-button { min-height:42px;padding:0 17px;border:0;border-radius:9px;background:#e87525;color:#fff;font-size:11px;font-weight:750;white-space:nowrap; }
+.assignment-submit-button:disabled { background:#d9d6d0;color:#85817b;cursor:not-allowed; }
+.assignment-history { margin-top:28px; }
+.submission-record { margin-top:10px;padding:14px;border:1px solid #e9e6df;border-radius:11px;background:#fff; }
+.submission-record>div { display:flex;justify-content:space-between;gap:12px;align-items:center; }
+.submission-record>div b { color:#343c3f;font-size:11px; }
+.submission-record>div span,.submission-record>small { color:#858d8f;font-size:9px; }
+.submission-record p { margin:12px 0;max-height:150px;overflow:auto;color:#50595c;font-size:11px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere; }
+.submission-record>small { display:block;padding-top:9px;border-top:1px solid #efede8; }
+.assignment-status.is-submitted { background:#edf3ef;color:#4d7058; }
+@media(max-width:420px) { .assignment-submit-row { align-items:stretch;flex-direction:column; } .assignment-submit-button { width:100%; } .submission-record>div { align-items:flex-start;flex-direction:column;gap:4px; } }
