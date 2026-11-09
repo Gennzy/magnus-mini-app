@@ -22,9 +22,9 @@ const faculties = [
 ];
 
 const courses = [
-  { id:"ai", title:"Введение в искусственный интеллект", category:"Технологии", lesson:"Урок 04 · Нейросети вокруг нас", progress:68, time:"2 ч 40 мин", color:"course-ai", mark:"AI" },
-  { id:"mind", title:"Психология мышления", category:"Психология", lesson:"Урок 02 · Как мы принимаем решения", progress:32, time:"1 ч 15 мин", color:"course-mind", mark:"ψ" },
-  { id:"brand", title:"Основы бренд-стратегии", category:"Маркетинг", lesson:"Урок 01 · Сила позиционирования", progress:12, time:"45 мин", color:"course-brand", mark:"M" }
+  { id:"ai", title:"Введение в искусственный интеллект", category:"Технологии", lesson:"Урок 04 · Нейросети вокруг нас", color:"course-ai", mark:"AI" },
+  { id:"mind", title:"Психология мышления", category:"Психология", lesson:"Урок 02 · Как мы принимаем решения", color:"course-mind", mark:"ψ" },
+  { id:"brand", title:"Основы бренд-стратегии", category:"Маркетинг", lesson:"Урок 01 · Сила позиционирования", color:"course-brand", mark:"M" }
 ];
 
 
@@ -34,8 +34,7 @@ const assignments = [
     title:"Практическая работа: разбор кейса",
     course:"Введение в искусственный интеллект",
     type:"Практика",
-    due:"10 ноября",
-    dueHint:"Завтра",
+    due:"Не установлен",
     estimate:"20–30 минут",
     description:"Разберите короткий сценарий использования искусственного интеллекта и объясните, какую задачу технология решает, какие данные ей нужны и где может возникнуть ошибка.",
     requirements:["Опишите задачу своими словами.","Назовите один возможный риск или ограничение.","Предложите способ проверить результат."]
@@ -45,8 +44,7 @@ const assignments = [
     title:"Рефлексия: как мы принимаем решения",
     course:"Психология мышления",
     type:"Короткий ответ",
-    due:"12 ноября",
-    dueHint:"Через 3 дня",
+    due:"Не установлен",
     estimate:"10–15 минут",
     description:"Вспомните повседневное решение, которое вы недавно приняли. Кратко опишите, какие факторы повлияли на выбор и какую роль сыграли эмоции или привычки.",
     requirements:["Опишите ситуацию в 2–3 предложениях.","Выделите два фактора, повлиявших на решение.","Сформулируйте один вывод."]
@@ -56,8 +54,7 @@ const assignments = [
     title:"Мини-анализ узнаваемого бренда",
     course:"Основы бренд-стратегии",
     type:"Анализ",
-    due:"14 ноября",
-    dueHint:"Суббота",
+    due:"Не установлен",
     estimate:"25–30 минут",
     description:"Выберите знакомый бренд и опишите, какое первое впечатление он создаёт, кому адресовано его предложение и что помогает отличить его от конкурентов.",
     requirements:["Укажите выбранный бренд.","Опишите его аудиторию.","Назовите один элемент позиционирования."]
@@ -149,9 +146,9 @@ function courseArtwork(c) {
 }
 
 function courseTile(c, compact=false) {
-  return `<article class="course-card ${compact?"compact":""}" data-course="${c.id}" tabindex="0" role="button" aria-label="Открыть курс: ${c.title}">
+  return `<article class="course-card ${compact?"compact":""}">
     <div class="course-art ${c.color}" data-course-art="${c.id}">${courseArtwork(c)}<span class="course-art-mark">${c.mark}</span></div>
-    <div class="course-details"><div class="course-meta"><span>${c.category}</span><span>${c.time}</span></div><h3>${c.title}</h3><p>${c.lesson}</p><div class="progress-line" role="progressbar" aria-label="Прогресс курса ${esc(c.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${c.progress}"><span style="width:${c.progress}%"></span></div><div class="progress-caption"><span>${c.progress}% пройдено</span><button data-course="${c.id}">Продолжить ${icon("arrow")}</button></div></div>
+    <div class="course-details"><div class="course-meta"><span>${esc(c.category)}</span><span>Пример курса</span></div><h3>${esc(c.title)}</h3><p>${esc(c.lesson)}</p><div class="course-card-footer"><span>Ознакомительная программа</span><button data-course="${c.id}">Подробнее ${icon("arrow")}</button></div></div>
   </article>`;
 }
 
@@ -255,7 +252,7 @@ function dashboardTasksPreview() {
     <div class="dashboard-panel dashboard-assignment-panel">
       <div class="section-title"><div><span class="subtle-label">ЗАДАНИЯ</span><h2>Ближайшее задание</h2></div><button class="text-link" data-go="assignments">Все задания ${icon("arrow")}</button></div>
       <article class="dashboard-featured-task">
-        <div class="featured-task-top"><span class="featured-task-kind">${esc(nextAssignment.type)}</span><span class="featured-task-due">${hasAssignmentDraft(nextAssignment.id) ? "Черновик сохранён" : "Срок · " + esc(nextAssignment.dueHint)}</span></div>
+        <div class="featured-task-top"><span class="featured-task-kind">${esc(nextAssignment.type)}</span><span class="featured-task-due">${hasAssignmentDraft(nextAssignment.id) ? "Черновик сохранён" : "Пример задания"}</span></div>
         <h3>${esc(nextAssignment.title)}</h3>
         <p>${esc(nextAssignment.course)}</p>
         <div class="featured-task-bottom"><span>${icon("clock")}${esc(nextAssignment.estimate)}</span><button data-assignment-open="${nextAssignment.id}">${hasAssignmentDraft(nextAssignment.id) ? "Продолжить" : "Открыть задание"} ${icon("arrow")}</button></div>
@@ -354,35 +351,29 @@ function studyPage() {
 function courseDetailPage() {
   const c = selectedCourse;
   const modules = [
-    ["01", "Знакомство с темой", "Введение · 12 мин", "done"],
-    ["02", "Ключевые понятия", "Теория · 18 мин", "done"],
-    ["03", "Разбираем на примерах", "Практика · 24 мин", "current"],
-    ["04", "Проверяем понимание", "Мини-тест · 8 мин", "locked"],
-    ["05", "Итоговый разбор", "Закрепление · 15 мин", "locked"]
+    ["01", "Знакомство с темой", "Введение"],
+    ["02", "Ключевые понятия", "Теория"],
+    ["03", "Разбираем на примерах", "Практика"],
+    ["04", "Проверяем понимание", "Мини-тест"],
+    ["05", "Итоговый разбор", "Закрепление"]
   ];
   return `<main class="screen inner-screen course-detail-screen">
-    <button class="back-button" data-go="study">${icon("back")} Моё обучение</button>
+    <button class="back-button" data-go="study">${icon("back")} Все курсы</button>
     <section class="course-detail-hero ${c.color}" data-course-art="${c.id}">
       ${courseArtwork(c)}
-      <div class="course-detail-orbit"></div>
-      <span class="course-detail-kicker">${c.category.toUpperCase()} · MAGNUS</span>
-      <div class="course-detail-mark">${c.mark}</div>
-      <div class="course-detail-bottom"><span>ОБРАЗОВАТЕЛЬНАЯ ПРОГРАММА</span><b>${c.time}</b></div>
+      <span class="course-detail-kicker">${esc(c.category)}</span>
+      <div class="course-detail-mark">${esc(c.mark)}</div>
+      <div class="course-detail-bottom"><span>ПРИМЕР ПРОГРАММЫ</span></div>
     </section>
-    <div class="course-detail-title"><div class="kicker">ТВОЙ КУРС</div><h1>${c.title}</h1><p>${c.lesson}. Учись в удобном темпе и возвращайся к материалам, когда захочешь.</p></div>
-    <section class="course-progress-panel">
-      <div><span class="subtle-label">ТВОЙ ПРОГРЕСС</span><strong>${c.progress}%</strong></div>
-      <div class="progress-line"><span style="width:${c.progress}%"></span></div>
-      <small>${Math.round(c.progress/100*5)} из 5 учебных блоков завершено</small>
+    <div class="course-detail-title"><div class="kicker">ОПИСАНИЕ КУРСА</div><h1>${esc(c.title)}</h1><p>${esc(c.lesson)}. Содержание и структура приведены как пример.</p></div>
+    <section class="course-detail-summary"><span class="subtle-label">СТРУКТУРА</span><b>5 тематических блоков</b><p>Это предварительный план. Содержание уроков будет добавлено после утверждения программы.</p></section>
+    <section class="module-section"><div class="section-title"><div><span class="subtle-label">СОДЕРЖАНИЕ</span><h2>Темы курса</h2></div><span class="course-count">5 блоков</span></div>
+      <div class="module-list">${modules.map(([n,title,meta])=>`<div class="module-row"><span class="module-number">${n}</span><div><b>${esc(title)}</b><small>${esc(meta)}</small></div></div>`).join("")}</div>
     </section>
-    <section class="module-section"><div class="section-title"><div><span class="subtle-label">ПРОГРАММА</span><h2>Путь обучения</h2></div><span class="course-count">5 блоков</span></div>
-      <div class="module-list">${modules.map(([n,title,meta,state])=>`<div class="module-row ${state}"><span class="module-number">${state==="done"?"✓":n}</span><div><b>${title}</b><small>${meta}</small></div><span class="module-state">${state==="done"?"Пройдено":state==="current"?"Сейчас":"Скоро"}</span></div>`).join("")}</div>
-    </section>
-    <div class="course-detail-cta"><div><b>Продолжим с интересного?</b><small>Следующий блок уже ждёт тебя.</small></div><button class="orange-button" data-action="open-lesson">Открыть урок ${icon("arrow")}</button></div>
-    <p class="demo-disclaimer">Демонстрационный экран: учебные материалы и сохранение прогресса будут подключены на следующем этапе.</p>
+    <div class="course-detail-cta"><div><b>Ознакомительный урок</b><small>Учебный пример, не часть действующей программы.</small></div><button class="orange-button" data-action="open-lesson">Открыть пример ${icon("arrow")}</button></div>
+    <p class="demo-disclaimer">Демонстрационная программа. Фактические материалы, преподаватели и условия обучения будут опубликованы отдельно.</p>
   </main>`;
 }
-
 
 function lessonPage() {
   const c = selectedCourse;
