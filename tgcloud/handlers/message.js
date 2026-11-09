@@ -4,10 +4,10 @@ import { adminUsers } from '../schema.js';
 
 const APP_URL = 'https://app9020486965.tgcloud.ai/';
 
-function menuKeyboard() {
+function menuKeyboard(admin = false) {
   return {
     inline_keyboard: [[
-      { text: 'Открыть MAGNUS', web_app: { url: APP_URL } },
+      { text: 'Открыть MAGNUS', web_app: { url: admin ? APP_URL + "?admin=1" : APP_URL } },
     ]],
   };
 }
@@ -39,7 +39,7 @@ export default async function (message) {
     await api.sendMessage({
       chat_id: message.chat.id,
       text: 'MAGNUS · Панель управления\n\nУправление учебными отправками, проверкой работ и настройками бота.',
-      reply_markup: menuKeyboard(),
+      reply_markup: menuKeyboard(true),
     });
     return;
   }
