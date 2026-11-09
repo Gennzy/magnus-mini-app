@@ -405,27 +405,27 @@ function courseDetailPage() {
 function lessonPage() {
   const c = selectedCourse;
   const tabContent = lessonTab === "notes"
-    ? `<div class="lesson-notes"><label for="lesson-note">МОИ ЗАМЕТКИ</label><textarea id="lesson-note" placeholder="Запишите важную мысль, пример или вопрос...">${esc(lessonNotes[c.id] || "")}</textarea><small>Заметки автоматически сохраняются на этом устройстве.</small></div>`
+    ? `<div class="lesson-notes"><div class="lesson-notes-head"><label for="lesson-note">МОИ ЗАМЕТКИ</label><span>${icon("cloud")} АВТОСОХРАНЕНИЕ</span></div><textarea id="lesson-note" placeholder="Запишите важную мысль, пример или вопрос...">${esc(lessonNotes[c.id] || "")}</textarea><small>Заметки сохраняются автоматически на устройстве и отправляются в облако при доступности синхронизации.</small></div>`
     : lessonTab === "materials"
       ? `<div class="lesson-reading"><span class="subtle-label">КОНСПЕКТ · 4 МИН ЧТЕНИЯ</span><h3>Главная идея занятия</h3><p>Любая сложная тема становится понятнее, если разделить её на небольшие понятия, увидеть связь между ними и разобрать конкретный пример.</p><blockquote>Сначала наблюдение — затем гипотеза — после этого проверка.</blockquote><h3>На что обратить внимание</h3><ul><li>Определите ключевые понятия.</li><li>Найдите связь между причиной и следствием.</li><li>Проверьте вывод на примере.</li></ul></div>`
       : `<div class="lesson-reading"><span class="subtle-label">УРОК 03 · 24 МИНУТЫ</span><h3>Разбираем на примерах</h3><p>В этом занятии мы переходим от теории к практике. Посмотрите на ситуацию, выделите основные факторы и попробуйте объяснить, почему результат получился именно таким.</p><div class="lesson-callout"><b>Цель занятия</b><span>Научиться применять ключевые понятия курса к реальным ситуациям.</span></div><p>После просмотра изучите конспект и ответьте на контрольный вопрос.</p></div>`;
   return `<main class="screen inner-screen lesson-screen">
     <button class="back-button" data-go="courseDetail">${icon("back")} К программе курса</button>
-    <div class="lesson-heading"><span class="subtle-label">${c.category.toUpperCase()} · УРОК 03</span><h1>Разбираем<br><em>на примерах.</em></h1><p>${c.title}</p>
+    <div class="lesson-heading"><span class="subtle-label">${c.category.toUpperCase()} · ПРАКТИЧЕСКОЕ ЗАНЯТИЕ</span><h1>Разбираем<br><em>на примерах.</em></h1><p>${c.title}</p>
       <div class="lesson-meta-row"><span><i class="meta-clock"></i>24 минуты</span><span><i class="meta-play"></i>Практика</span><span><i class="meta-file"></i>Конспект и тест</span></div>
     </div>
-    <section class="lesson-player" aria-label="Демонстрационная область видеозанятия">
+    <section class="lesson-player" aria-label="Видеоплеер — демонстрационный экран">
       <div class="player-grain"></div><div class="player-orbit"></div><div class="player-brand">MAGNUS <span>LEARNING STUDIO</span></div>
-      <div class="player-center"><div class="player-play">▶</div><b>Видеоурок</b><small>Демонстрационный экран</small></div>
-      <div class="player-controls"><span>00:00</span><div class="player-track"><i></i></div><span>24:00</span><span>⋯</span></div>
+      <div class="player-center"><button class="player-play" type="button" data-action="course-start" aria-label="Видеоурок пока недоступен">▶</button><b>Видеоурок</b><small>Видео будет подключено позднее</small></div>
+      <div class="player-controls"><span>МАГНУС</span><span class="player-coming-soon">УЧЕБНОЕ ВИДЕО · 24 МИН</span><span>СКОРО</span></div>
     </section>
-    <div class="lesson-tabs">${[["lesson","Урок"],["materials","Конспект"],["notes","Заметки"]].map(([id,label])=>`<button class="${lessonTab===id?"selected":""}" data-lesson-tab="${id}" aria-pressed="${lessonTab===id}">${label}</button>`).join("")}</div>
-    <section class="lesson-content">${tabContent}</section>
-    <section class="lesson-quiz"><div class="kicker">ПРОВЕРЬ СЕБЯ</div><h2>Что помогает перейти от теории к пониманию?</h2><p>Выберите один вариант ответа.</p>
-      ${["Заучивание определений без примеров","Разбор конкретной ситуации и проверка вывода","Пропуск сложных понятий"].map((answer,i)=>`<button class="quiz-option ${quizChoice===String(i)?"chosen":""}" data-quiz="${i}" aria-pressed="${quizChoice===String(i)}"><span>${String.fromCharCode(65+i)}</span>${answer}${quizChoice===String(i)?'<b>✓</b>':""}</button>`).join("")}
-      ${quizChoice!==""?`<div class="quiz-feedback ${quizChoice==="1"?"correct":"incorrect"}">${quizChoice==="1"?"Верно! Пример помогает связать понятия с практикой.":"Попробуйте ещё раз: подумайте, что помогает применить знания на практике."}</div>`:""}
+    <div class="lesson-tabs" role="tablist" aria-label="Материалы урока">${[["lesson","Урок"],["materials","Конспект"],["notes","Заметки"]].map(([id,label])=>`<button type="button" role="tab" id="lesson-tab-${id}" aria-controls="lesson-panel" aria-selected="${lessonTab===id}" tabindex="${lessonTab===id?"0":"-1"}" class="${lessonTab===id?"selected":""}" data-lesson-tab="${id}">${label}</button>`).join("")}</div>
+    <section class="lesson-content" id="lesson-panel" role="tabpanel" aria-labelledby="lesson-tab-${lessonTab}">${tabContent}</section>
+    <section class="lesson-quiz" aria-labelledby="lesson-quiz-title"><div class="kicker">ПРОВЕРЬ СЕБЯ</div><h2 id="lesson-quiz-title">Что помогает перейти от теории к пониманию?</h2><p>Выберите один вариант ответа.</p>
+      ${["Заучивание определений без примеров","Разбор конкретной ситуации и проверка вывода","Пропуск сложных понятий"].map((answer,i)=>`<button type="button" class="quiz-option ${quizChoice===String(i)?"chosen":""}" data-quiz="${i}" aria-pressed="${quizChoice===String(i)}"><span>${String.fromCharCode(65+i)}</span>${answer}${quizChoice===String(i)?'<b aria-hidden="true">✓</b>':""}</button>`).join("")}
+      ${quizChoice!==""?`<div class="quiz-feedback ${quizChoice==="1"?"correct":"incorrect"}" role="status" aria-live="polite">${quizChoice==="1"?"Верно! Пример помогает связать понятия с практикой.":"Попробуйте ещё раз: подумайте, что помогает применить знания на практике."}</div>`:""}
     </section>
-    <div class="lesson-footer"><button class="lesson-finish" data-action="lesson-finish">Отметить урок завершённым ${icon("arrow")}</button><small>Демо-режим · отметка не сохраняется на сервере</small></div>
+    <div class="lesson-footer"><button class="lesson-finish" data-action="lesson-finish">Отметить в демо-режиме ${icon("arrow")}</button><small>Видео и завершение урока пока не связаны с учебной системой.</small></div>
   </main>`;
 }
 
