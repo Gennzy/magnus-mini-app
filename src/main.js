@@ -373,7 +373,8 @@ function courseDetailPage() {
   ];
   return `<main class="screen inner-screen course-detail-screen">
     <button class="back-button" data-go="study">${icon("back")} Моё обучение</button>
-    <section class="course-detail-hero ${c.color}">
+    <section class="course-detail-hero ${c.color}" data-course-art="${c.id}">
+      ${courseArtwork(c)}
       <div class="course-detail-orbit"></div>
       <span class="course-detail-kicker">${c.category.toUpperCase()} · MAGNUS</span>
       <div class="course-detail-mark">${c.mark}</div>
