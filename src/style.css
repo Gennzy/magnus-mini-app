@@ -6357,3 +6357,48 @@ body { background:#f6f6f3;color:#252b2d; }
  .admin-review-actions button { flex:1;padding:8px 6px; }
  .admin-live { max-width:100px;text-align:center;line-height:1.4; }
 }
+
+/* Bot settings editor in administrator workspace */
+.admin-bot-settings>label {
+ display:flex;
+ flex-direction:column;
+ gap:6px;
+ margin-top:16px;
+ color:#596467;
+ font-size:10px;
+ font-weight:750;
+}
+.admin-bot-settings textarea,
+.admin-bot-settings input {
+ width:100%;
+ min-width:0;
+ padding:11px 12px;
+ border:1px solid #e4e2dc;
+ border-radius:8px;
+ background:#fff;
+ color:#30383a;
+ font:inherit;
+ font-size:11px;
+ font-weight:500;
+ line-height:1.55;
+ outline:none;
+}
+.admin-bot-settings textarea { min-height:88px; resize:vertical; }
+.admin-bot-settings textarea:focus,
+.admin-bot-settings input:focus { border-color:#d5a17c; box-shadow:0 0 0 2px #e8752512; }
+.admin-bot-settings label>small { color:#899194; font-size:9px; font-weight:500; }
+.admin-settings-actions {
+ display:flex;
+ align-items:center;
+ flex-wrap:wrap;
+ gap:12px;
+ margin-top:20px;
+ padding-top:15px;
+ border-top:1px solid #eeece7;
+}
+.admin-settings-actions>span { color:#7a8385; font-size:9px; line-height:1.5; }
+.admin-settings-actions button:disabled { opacity:.65; cursor:wait; }
+@media(max-width:650px) {
+ .admin-settings-actions { align-items:stretch; flex-direction:column; }
+ .admin-settings-actions .orange-button { justify-content:center; width:100%; }
+}
