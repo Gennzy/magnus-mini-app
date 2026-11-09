@@ -3,6 +3,11 @@ import { eq } from 'sdk/db';
 import { adminUsers } from '../schema.js';
 
 const APP_URL = 'https://app9020486965.tgcloud.ai/';
+const BOT_COMMANDS = [
+  { command: 'start', description: 'Открыть MAGNUS' },
+  { command: 'help', description: 'Помощь и возможности' },
+  { command: 'admin', description: 'Панель управления' },
+];
 
 function menuKeyboard(admin = false) {
   return {
@@ -42,6 +47,15 @@ export default async function (message) {
       reply_markup: menuKeyboard(true),
     });
     return;
+  }
+
+  if (command === '/start') {
+    try {
+      await api.setMyCommands({ commands: BOT_COMMANDS });
+      await api.setChatMenuButton({ menu_button: { type: 'web_app', text: 'Открыть MAGNUS', web_app: { url: APP_URL } } });
+    } catch (error) {
+      console.warn('MAGNUS: не удалось обновить меню бота.', error);
+    }
   }
 
   const welcome = command === '/help'
