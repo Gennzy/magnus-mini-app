@@ -93,3 +93,20 @@ export const paymentOrders = table('payment_orders', {
   createdAt: integer('created_at').notNull(),
   paidAt: integer('paid_at').notNull(),
 });
+
+// Открытый шаг обращения в поддержку по команде /paysupport.
+export const supportSessions = table('support_sessions', {
+  tgId: text('tg_id').primaryKey(),
+  openedAt: integer('opened_at').notNull(),
+});
+
+// Входящие обращения по вопросам оплаты.
+export const supportRequests = table('support_requests', {
+  id: text('id').primaryKey(),
+  tgId: text('tg_id').notNull(),
+  username: text('username').notNull(),
+  displayName: text('display_name').notNull(),
+  messageText: text('message_text').notNull(),
+  status: text('status').notNull(),
+  createdAt: integer('created_at').notNull(),
+});
