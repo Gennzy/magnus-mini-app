@@ -345,7 +345,10 @@ function schedulePanel() {
   const day = studyWeek.find(d=>d.day===selectedDay) || studyWeek[4];
   return `<section class="schedule-section">
     <div class="section-title"><div><span class="subtle-label">ТВОЙ ПЛАН</span><h2>Расписание</h2></div><span class="schedule-period">9—15 ноября</span></div>
-    <div class="schedule-calendar">${studyWeek.map(d=>`<button class="calendar-day ${selectedDay===d.day?"selected":""}" data-day="${d.day}"><small>${d.day}</small><b>${d.date}</b><i class="${d.items.length?"has-event":""}"></i></button>`).join("")}</div>
+    <div class="schedule-calendar-card">
+      <div class="schedule-calendar-head"><span>УЧЕБНАЯ НЕДЕЛЯ</span><b>9–15 ноября</b></div>
+      <div class="schedule-calendar">${studyWeek.map(d=>`<button class="calendar-day ${selectedDay===d.day?"selected":""}" data-day="${d.day}" aria-pressed="${selectedDay===d.day}"><small>${d.day}</small><b>${d.date}</b><i class="${d.items.length?"has-event":""}"></i></button>`).join("")}</div>
+    </div>
     <div class="schedule-day-heading"><b>${day.day}, ${day.date} ноября</b><span>${day.items.length?`${day.items.length} ${day.items.length===1?"занятие":"занятия"}`:"Свободный день"}</span></div>
     ${day.items.length?`<div class="schedule-list">${day.items.map(item=>`<article class="schedule-item"><time>${item.time}</time><span class="schedule-dot ${item.color}"></span><div><b>${item.title}</b><small>${item.type} · ${item.duration}</small></div><span class="schedule-chevron">›</span></article>`).join("")}</div>`:`<div class="schedule-empty"><span>✦</span><b>Сегодня можно выдохнуть</b><small>Или посвятить время свободному чтению.</small></div>`}
     <p class="schedule-note">Расписание демонстрационное. Персональные занятия появятся после подключения учебной системы.</p>
@@ -404,7 +407,9 @@ function lessonPage() {
       : `<div class="lesson-reading"><span class="subtle-label">УРОК 03 · 24 МИНУТЫ</span><h3>Разбираем на примерах</h3><p>В этом занятии мы переходим от теории к практике. Посмотрите на ситуацию, выделите основные факторы и попробуйте объяснить, почему результат получился именно таким.</p><div class="lesson-callout"><b>Цель занятия</b><span>Научиться применять ключевые понятия курса к реальным ситуациям.</span></div><p>После просмотра изучите конспект и ответьте на контрольный вопрос.</p></div>`;
   return `<main class="screen inner-screen lesson-screen">
     <button class="back-button" data-go="courseDetail">${icon("back")} К программе курса</button>
-    <div class="lesson-heading"><span class="subtle-label">${c.category.toUpperCase()} · УРОК 03</span><h1>Разбираем<br><em>на примерах.</em></h1><p>${c.title} · 24 минуты</p></div>
+    <div class="lesson-heading"><span class="subtle-label">${c.category.toUpperCase()} · УРОК 03</span><h1>Разбираем<br><em>на примерах.</em></h1><p>${c.title}</p>
+      <div class="lesson-meta-row"><span><i class="meta-clock"></i>24 минуты</span><span><i class="meta-play"></i>Практика</span><span><i class="meta-file"></i>Конспект и тест</span></div>
+    </div>
     <section class="lesson-player" aria-label="Демонстрационная область видеозанятия">
       <div class="player-grain"></div><div class="player-orbit"></div><div class="player-brand">MAGNUS <span>LEARNING STUDIO</span></div>
       <div class="player-center"><div class="player-play">▶</div><b>Видеоурок</b><small>Демонстрационный экран</small></div>
