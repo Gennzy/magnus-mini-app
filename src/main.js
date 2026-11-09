@@ -249,15 +249,15 @@ function homePage() {
       <div class="mascot-stage"><span class="floating-token token-one">✦</span><span class="floating-token token-two">M</span><span class="floating-token token-three">+</span><img src="/mascot/magnus-owl.svg" class="hero-mascot" alt="Совёнок MAGNUS" /></div>
       <div class="hero-index"><span>01</span><span>ОБУЧЕНИЕ НАЧИНАЕТСЯ С ИНТЕРЕСА</span></div>
     </section>
-    ${dashboardOverview()}
-    ${dashboardTasksPreview()}
+    <section class="courses-section home-featured-course"><div class="section-title"><div><span class="subtle-label">ТВОЙ СЛЕДУЮЩИЙ ШАГ</span><h2>Продолжить обучение</h2></div><button class="text-link" data-go="study">Все курсы ${icon("arrow")}</button></div>${courseTile(courses[0],true)}</section>
     <section class="quick-section"><div class="section-title"><div><span class="subtle-label">ТВОЁ ПРОСТРАНСТВО</span><h2>Быстрый доступ</h2></div><button class="text-link" data-go="faculties">Все разделы ${icon("arrow")}</button></div><div class="quick-grid">
       <button class="quick-item" data-go="faculties"><span class="quick-icon peach">${icon("faculty")}</span><b>Факультеты</b><small>Найди своё</small></button>
       <button class="quick-item" data-go="study"><span class="quick-icon lilac">${icon("study")}</span><b>Обучение</b><small>Твои курсы</small></button>
       <button class="quick-item" data-go="documents"><span class="quick-icon butter">${icon("docs")}</span><b>Документы</b><small>Достижения</small></button>
       <button class="quick-item" data-go="profile"><span class="quick-icon mint">${icon("profile")}</span><b>Профиль</b><small>Твой аккаунт</small></button>
     </div></section>
-    <section class="courses-section"><div class="section-title"><div><span class="subtle-label">НЕ ОСТАНАВЛИВАЙСЯ</span><h2>Продолжить обучение</h2></div><button class="text-link" data-go="study">Все курсы ${icon("arrow")}</button></div>${courseTile(courses[0],true)}</section>
+    ${dashboardOverview()}
+    ${dashboardTasksPreview()}
     <section class="mascot-note"><div class="note-avatar"><img src="/mascot/magnus-owl.svg" alt="" /></div><div><span class="subtle-label">МАЛЕНЬКОЕ НАПОМИНАНИЕ</span><p>Большие открытия начинаются с маленького шага. Выбери то, что интересно именно тебе.</p></div><span class="note-star">✦</span></section>
   </main>`;
 }
