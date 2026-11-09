@@ -230,7 +230,6 @@ function scheduleCloudStudentDataSync() {
       interestedFaculties,
       lessonQuizResults,
       completedLessons,
-      assignmentSubmissions
     }, (error) => {
       if (error) console.warn("MAGNUS: не удалось синхронизировать учебные данные.", error);
     });
@@ -268,11 +267,10 @@ function initializeCloudStudentData() {
   });
 }
 
-function hasAssignmentDraft(id) {
-  return Boolean(String(assignmentDrafts[id] || "").trim());
-}
+function hasAssignmentDraft(id) { return Boolean(String(assignmentDrafts[id] || "").trim()); }
+function hasAssignmentSubmission(id) { return Boolean((assignmentSubmissions[id] || []).length); }
 function assignmentStatusText(id) {
-  return hasAssignmentDraft(id) ? "Черновик сохранён" : "К выполнению";
+  return hasAssignmentSubmission(id) ? "Ответ отправлен" : hasAssignmentDraft(id) ? "Черновик сохранён" : "К выполнению";
 }
 
 function dashboardOverview() {
@@ -420,15 +418,18 @@ function assignmentsPage() {
   const counts = {
     all: assignments.length,
     pending: assignments.filter(a => !hasAssignmentDraft(a.id)).length,
-    drafts: assignments.filter(a => hasAssignmentDraft(a.id)).length
+    drafts: assignments.filter(a => hasAssignmentDraft(a.id) && !hasAssignmentSubmission(a.id)).length,
+    submitted: assignments.filter(a => hasAssignmentSubmission(a.id)).length
   };
   const filters = [
     { label:"Все", count:counts.all },
     { label:"Нужно выполнить", count:counts.pending },
-    { label:"Черновики", count:counts.drafts }
+    { label:"Черновики", count:counts.drafts },
+    { label:"Отправлено", count:counts.submitted }
   ];
   const filtered = assignments.filter(a => {
-    if (activeAssignmentFilter === "Черновики") return hasAssignmentDraft(a.id);
+    if (activeAssignmentFilter === "Черновики") return hasAssignmentDraft(a.id) && !hasAssignmentSubmission(a.id);
+    if (activeAssignmentFilter === "Отправлено") return hasAssignmentSubmission(a.id);
     if (activeAssignmentFilter === "Нужно выполнить") return !hasAssignmentDraft(a.id);
     return true;
   });
@@ -450,7 +451,7 @@ function assignmentsPage() {
       </article>`).join("")}
       ${filtered.length ? "" : `<div class="assignment-empty"><b>${activeAssignmentFilter==="Черновики"?"Черновиков пока нет":"Все задания уже разобраны"}</b><p>${activeAssignmentFilter==="Черновики"?"Начни с любого задания — текст ответа сохранится здесь.":"В этой категории пока нет заданий."}</p><button data-assignment-filter="Все">Показать все задания</button></div>`}
     </div>
-    <p class="assignment-demo-note">Задания и сроки демонстрационные. Черновики сохраняются на устройстве; отправка преподавателю и проверка пока не подключены.</p>
+    <p class="assignment-demo-note">Отправленные ответы сохраняются в облаке MAGNUS. Преподавательская проверка и оценки пока не подключены.</p>
   </main>`;
 }
 
