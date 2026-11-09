@@ -119,9 +119,38 @@ function heading(kicker, title, desc="") {
   return `<div class="page-heading"><div class="kicker">${kicker}</div><h1>${title}</h1>${desc?`<p>${desc}</p>`:""}</div>`;
 }
 
+function courseArtwork(c) {
+  const drawings = {
+    ai: `<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M38 78 78 42l42 26 42-38M78 42l5 75 37-49 32 54M38 78l45 39 79 17 37-65M120 68l32-30 40 29" stroke-width="2.2" opacity=".72"/>
+      <path d="m66 99 17-57 37 26 42-38" stroke-width="1" opacity=".45"/>
+      <circle cx="38" cy="78" r="9" fill="currentColor" fill-opacity=".18" stroke-width="2.5"/>
+      <circle cx="78" cy="42" r="7" fill="currentColor" fill-opacity=".18" stroke-width="2.5"/>
+      <circle cx="120" cy="68" r="10" fill="currentColor" fill-opacity=".22" stroke-width="2.5"/>
+      <circle cx="162" cy="30" r="7" fill="currentColor" fill-opacity=".18" stroke-width="2.5"/>
+      <circle cx="202" cy="61" r="8" fill="currentColor" fill-opacity=".18" stroke-width="2.5"/>
+      <circle cx="83" cy="117" r="8" fill="currentColor" fill-opacity=".18" stroke-width="2.5"/>
+      <circle cx="157" cy="122" r="6" fill="currentColor" fill-opacity=".18" stroke-width="2.5"/>
+    </g>`,
+    mind: `<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M120 25c-19-17-46-5-47 18-25 2-36 27-22 46-13 24 2 47 25 47 8 20 31 22 44 8 14 14 36 12 44-8 23 0 38-23 25-47 14-19 3-44-22-46-1-23-28-35-47-18Z" stroke-width="3" opacity=".88"/>
+      <path d="M120 28v109M119 52c-20-18-39-2-29 17-18 13-11 34 8 35-4 17 9 25 21 20M121 52c20-18 39-2 29 17 18 13 11 34-8 35 4 17-9 25-21 20" stroke-width="2" opacity=".7"/>
+      <circle cx="91" cy="69" r="5" fill="currentColor" fill-opacity=".2"/><circle cx="149" cy="69" r="5" fill="currentColor" fill-opacity=".2"/>
+      <circle cx="98" cy="104" r="4" fill="currentColor" fill-opacity=".2"/><circle cx="142" cy="104" r="4" fill="currentColor" fill-opacity=".2"/>
+    </g>`,
+    brand: `<g fill="none" stroke="currentColor" stroke-linejoin="round">
+      <path d="m120 13 19 39 42-14-14 42 40 20-40 20 14 42-42-14-19 39-20-39-41 14 14-42-40-20 40-20-14-42 41 14 20-39Z" stroke-width="2.2" opacity=".7"/>
+      <path d="m120 43 15 30 33 5-24 24 6 34-30-16-30 16 6-34-24-24 33-5 15-30Z" stroke-width="2.6"/>
+      <circle cx="120" cy="102" r="19" stroke-width="2.2"/>
+      <path d="M120 90v24m-12-12h24" stroke-width="2.4" stroke-linecap="round"/>
+    </g>`
+  };
+  return `<svg class="course-art-illustration" viewBox="0 0 240 190" fill="none" aria-hidden="true">${drawings[c.id] || drawings.ai}</svg>`;
+}
+
 function courseTile(c, compact=false) {
   return `<article class="course-card ${compact?"compact":""}" data-course="${c.id}" tabindex="0" role="button" aria-label="Открыть курс: ${c.title}">
-    <div class="course-art ${c.color}"><span class="course-art-mark">${c.mark}</span><span class="art-orbit"></span><span class="art-dots">✦　·　✧</span></div>
+    <div class="course-art ${c.color}" data-course-art="${c.id}">${courseArtwork(c)}<span class="course-art-mark">${c.mark}</span><span class="art-orbit"></span><span class="art-dots">✦　·　✧</span></div>
     <div class="course-details"><div class="course-meta"><span>${c.category}</span><span>${c.time}</span></div><h3>${c.title}</h3><p>${c.lesson}</p><div class="progress-line"><span style="width:${c.progress}%"></span></div><div class="progress-caption"><span>${c.progress}% пройдено</span><button data-course="${c.id}">Продолжить ${icon("arrow")}</button></div></div>
   </article>`;
 }
@@ -263,7 +292,7 @@ function homePage() {
 }
 
 function facultyArt(f) {
-  return `<div class="faculty-art ${f.color}"><span>${f.symbol}</span><b class="faculty-art-orbit"></b><b class="faculty-art-dot"></b><i>${f.num}</i></div>`;
+  return `<div class="faculty-art ${f.color}" data-faculty-art="${f.id}"><span>${f.symbol}</span><b class="faculty-art-orbit"></b><b class="faculty-art-dot"></b><i>${f.num}</i></div>`;
 }
 function facultiesPage() {
   const filters = ["Все","Психология","Технологии","Бизнес","Гуманитарные"];
