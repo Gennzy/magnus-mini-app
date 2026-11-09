@@ -1228,3 +1228,174 @@ button:focus-visible, [tabindex="0"]:focus-visible, input:focus-visible, textare
   .home-screen .hero-copy h2 { font-size: 26px; }
   .home-screen .hero-mascot { width: 165%; }
 }
+
+
+/* Shared visual language for faculty, study, and course screens */
+.inner-screen .page-heading { padding-top: 18px; }
+.inner-screen .page-heading .kicker,
+.inner-screen .kicker { color: #b96831; }
+.inner-screen .page-heading p { color: #687074; }
+.faculty-grid { gap: 15px; }
+.faculty-card {
+  grid-template-columns: 104px minmax(0,1fr);
+  min-height: 130px;
+  gap: 15px;
+  padding: 12px;
+  border-radius: 20px;
+  background: linear-gradient(145deg,#fff 0%,#fdfcf9 100%);
+}
+.faculty-art {
+  height: 105px;
+  border-radius: 15px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+}
+.faculty-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(145deg,rgba(255,255,255,.18),transparent 56%,rgba(30,25,20,.06));
+  pointer-events: none;
+}
+.faculty-art span {
+  font-size: 42px;
+  filter: drop-shadow(0 5px 8px rgba(60,45,35,.12));
+}
+.faculty-card-copy small { font-size: 7px; letter-spacing: 1.15px; }
+.faculty-card-copy b { font-size: 15px; line-height: 1.2; }
+.faculty-card-copy > span { color: #60676a; font-size: 10px; }
+.faculty-card-copy i { margin-top: 8px; }
+.detail-banner {
+  border-radius: 25px;
+  min-height: 245px;
+  padding: 30px;
+  box-shadow: 0 15px 36px rgba(48,38,30,.08), inset 0 1px 0 rgba(255,255,255,.34);
+}
+.detail-banner h1 { letter-spacing: -1.9px; }
+.detail-banner p { font-size: 12px; line-height: 1.7; color: #4d4a48; }
+.detail-symbol { font-size: clamp(105px,18vw,165px); }
+.detail-banner-index {
+  position: absolute;
+  right: 24px;
+  bottom: 17px;
+  color: rgba(68,56,49,.55);
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 1.7px;
+}
+.faculty-intro { padding-top: 37px; gap: 38px; }
+.faculty-intro h2 { letter-spacing: -1.5px; }
+.faculty-intro > p { color: #62696c; }
+.detail-topics { gap: 48px; }
+.detail-topics ol { border-top-color: #e5e1db; }
+.detail-topics li { min-height: 56px; border-bottom-color: #e5e1db; }
+.outcome-card {
+  border-radius: 18px;
+  min-height: 135px;
+  padding: 17px;
+  background: linear-gradient(145deg,#fff,#fcfaf7);
+}
+.outcome-card > b { font-size: 12px; }
+.faculty-method {
+  border-radius: 21px;
+  padding: 21px;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(244,122,25,.18),transparent 38%),
+    linear-gradient(125deg,#252829,#171a1b);
+  box-shadow: 0 13px 30px rgba(25,27,28,.12);
+}
+.detail-callout {
+  border-radius: 19px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(39,33,27,.045);
+}
+.learning-overview {
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 9px 26px rgba(38,34,28,.045);
+}
+.overview-head h2 { font-size: 18px; }
+.week-pill { border: 1px solid #f4dfcf; padding: 8px 12px; }
+.week-chart { height: 155px; }
+.bar-value { width: 27px; border-radius: 9px 9px 5px 5px; }
+.stats-row { gap: 14px; }
+.stat-card { border-radius: 19px; padding: 18px; min-height: 116px; }
+.stat-card.dark-stat {
+  background:
+    radial-gradient(circle at 100% 0%,rgba(244,122,25,.2),transparent 45%),
+    linear-gradient(145deg,#26292a,#17191a);
+  border-color: #292b2c;
+  box-shadow: 0 10px 24px rgba(24,25,25,.12);
+}
+.study-courses { margin-top: 32px; }
+.study-courses .course-card {
+  border-radius: 20px;
+  box-shadow: 0 8px 22px rgba(38,34,28,.045);
+}
+.course-detail-hero {
+  min-height: 225px;
+  border-radius: 25px;
+  box-shadow: 0 16px 34px rgba(29,30,30,.14), inset 0 1px 0 rgba(255,255,255,.12);
+}
+.course-detail-mark {
+  font-size: 108px;
+  right: 12%;
+  top: 18px;
+  filter: drop-shadow(0 13px 18px rgba(0,0,0,.18));
+}
+.course-detail-title h1 { letter-spacing: -1.9px; }
+.course-progress-panel {
+  border-radius: 20px;
+  padding: 21px;
+  box-shadow: 0 8px 25px rgba(39,34,28,.045);
+}
+.course-progress-panel strong { font-size: 25px; }
+.module-list {
+  padding: 5px 19px;
+  border-radius: 20px;
+  box-shadow: 0 7px 21px rgba(39,34,28,.04);
+}
+.module-row { padding: 16px 0; }
+.module-number { width: 34px; height: 34px; font-size: 11px; }
+.module-row.current {
+  margin: 0 -9px;
+  padding-left: 9px;
+  padding-right: 9px;
+  background: linear-gradient(90deg,#fff8f1,transparent);
+}
+.course-detail-cta {
+  border-radius: 20px;
+  padding: 21px;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(244,122,25,.2),transparent 40%),
+    linear-gradient(125deg,#252829,#17191a);
+  box-shadow: 0 12px 29px rgba(25,27,28,.13);
+}
+@media (max-width: 650px) {
+  .inner-screen .page-heading { padding-top: 8px; }
+  .faculty-grid { gap: 11px; }
+  .faculty-card {
+    grid-template-columns: 91px minmax(0,1fr);
+    min-height: 112px;
+    padding: 10px;
+    gap: 12px;
+    border-radius: 17px;
+  }
+  .faculty-art { height: 92px; }
+  .faculty-card-copy b { font-size: 14px; }
+  .detail-banner { min-height: 205px; padding: 20px; border-radius: 21px; }
+  .detail-banner h1 { font-size: 34px; }
+  .detail-symbol { font-size: 100px; }
+  .detail-banner-index { right: 17px; bottom: 12px; }
+  .faculty-intro { gap: 10px; padding: 24px 2px 12px; }
+  .detail-topics { gap: 20px; }
+  .outcome-card { min-height: 78px; padding: 12px 14px; }
+  .learning-overview { padding: 15px; }
+  .week-chart { height: 128px; }
+  .stat-card { min-height: 104px; padding: 13px; }
+  .course-detail-hero { min-height: 205px; border-radius: 21px; }
+  .course-detail-mark { font-size: 82px; }
+  .course-progress-panel { padding: 16px; }
+  .module-list { padding: 4px 13px; }
+  .module-row { padding: 13px 0; }
+  .course-detail-cta { padding: 16px; }
+}
