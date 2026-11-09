@@ -72,6 +72,7 @@ let selectedAssignmentId = assignments[0].id;
 let activeAssignmentFilter = "Все";
 let assignmentDrafts = loadAssignmentDrafts();
 let lessonNotes = loadLessonNotes();
+let interestedFaculties = loadInterestedFaculties();
 let toastTimer;
 let cloudSyncTimer;
 let cloudSyncReady = false;
@@ -190,6 +191,12 @@ function loadLessonNotes() {
 function storeLessonNotes() {
   return writeStudentStorage("lessonNotes", lessonNotes);
 }
+function loadInterestedFaculties() {
+  return readStudentStorage("interestedFaculties");
+}
+function storeInterestedFaculties() {
+  return writeStudentStorage("interestedFaculties", interestedFaculties);
+}
 function callCloudStudentData(action, payload, callback) {
   const serverless = tg?.Serverless;
   if (typeof serverless?.call !== "function") return false;
@@ -205,7 +212,8 @@ function scheduleCloudStudentDataSync() {
   cloudSyncTimer = window.setTimeout(() => {
     callCloudStudentData("save", {
       assignmentDrafts,
-      lessonNotes
+      lessonNotes,
+      interestedFaculties
     }, (error) => {
       if (error) console.warn("MAGNUS: не удалось синхронизировать учебные данные.", error);
     });
@@ -220,14 +228,17 @@ function initializeCloudStudentData() {
     }
     const localAssignments = Object.keys(assignmentDrafts).length > 0;
     const localNotes = Object.keys(lessonNotes).length > 0;
+    const localInterests = Object.keys(interestedFaculties).length > 0;
     assignmentDrafts = { ...(result.assignmentDrafts || {}), ...assignmentDrafts };
     lessonNotes = { ...(result.lessonNotes || {}), ...lessonNotes };
+    interestedFaculties = { ...(result.interestedFaculties || {}), ...interestedFaculties };
     storeAssignmentDrafts();
     storeLessonNotes();
+    storeInterestedFaculties();
     cloudSyncReady = true;
     render();
     // Если локальные данные старше облачных, объединённый результат также отправляем в облако.
-    if (localAssignments || localNotes) scheduleCloudStudentDataSync();
+    if (localAssignments || localNotes || localInterests) scheduleCloudStudentDataSync();
   });
 }
 
@@ -329,7 +340,7 @@ function facultyDetailPage() {
     <section class="detail-topics"><div><span class="subtle-label">ПЕРВЫЕ ШАГИ</span><h2>Что будем<br><em>изучать?</em></h2></div><ol>${f.topics.map((t,i)=>`<li><span>0${i+1}</span>${t}</li>`).join("")}</ol></section>
     <section class="faculty-outcomes"><div class="section-title"><div><span class="subtle-label">РЕЗУЛЬТАТ ОБУЧЕНИЯ</span><h2>Что ты освоишь</h2></div><span class="outcome-count">03 НАВЫКА</span></div><div class="outcome-grid">${outcomes.map((t,i)=>`<article class="outcome-card"><span>0${i+1}</span><b>${t}</b></article>`).join("")}</div></section>
     <section class="faculty-method"><div class="method-mark">${f.symbol}</div><div><span class="subtle-label">ФОРМАТ ОБУЧЕНИЯ</span><h3>${format}</h3><p>Теория, примеры и практические задания по темам курса.</p></div></section>
-    <div class="detail-callout"><div><b>Рассматриваешь это направление?</b><p>Отметь интерес к факультету. Эта отметка пока сохраняется только в демо-режиме.</p></div><button class="orange-button" data-action="interest">Мне интересно ${icon("arrow")}</button></div>
+    <div class="detail-callout"><div><b>Рассматриваешь это направление?</b><p>${interestedFaculties[f.id] ? "Направление сохранено в твоих интересах." : "Сохрани направление, чтобы вернуться к нему позже."}</p></div><button class="orange-button" data-action="interest">${interestedFaculties[f.id] ? "Убрать из интересов" : "Сохранить интерес"} ${icon("arrow")}</button></div>
     <p class="demo-disclaimer">Информация о направлениях носит ознакомительный характер. Состав программ, преподаватели и условия обучения будут опубликованы отдельно.</p>
   </main>`;
 }
@@ -583,8 +594,17 @@ function bindEvents() {
       return;
     }
     if (el.dataset.action === "open-lesson") { currentPage="lesson"; lessonTab="lesson"; quizChoice=""; render(); window.scrollTo({top:0,behavior:"smooth"}); return; }
-    const actions = {"lesson-finish":"Урок отмечен в демонстрационном режиме. Сохранение прогресса подключим позже.",notifications:"Новых уведомлений пока нет.",course:"Раздел курсов пока демонстрационный.", "course-start":"Учебный плеер подключим на следующем этапе.",interest:"Интерес сохранён в демо-режиме.",settings:"Настройки появятся в следующем обновлении.",support:"Раздел поддержки скоро будет доступен.",about:"MAGNUS — пространство для знаний, открытий и развития."};
-    toast(actions[el.dataset.action] || "Скоро будет доступно.");
+    if (el.dataset.action === "interest") {
+      if (interestedFaculties[selectedFaculty.id]) delete interestedFaculties[selectedFaculty.id];
+      else interestedFaculties[selectedFaculty.id] = "saved";
+      const saved = storeInterestedFaculties();
+      scheduleCloudStudentDataSync();
+      render();
+      toast(saved ? (interestedFaculties[selectedFaculty.id] ? "Направление сохранено." : "Направление убрано из интересов.") : "Не удалось сохранить интерес на устройстве.");
+      return;
+    }
+    const actions = {"lesson-finish":"Завершение урока пока не сохраняется.",notifications:"Система уведомлений пока не подключена.",course:"Раздел курсов пока демонстрационный.", "course-start":"Видеоурок пока недоступен.",settings:"Настройки появятся в следующем обновлении.",support:"Раздел поддержки скоро будет доступен.",about:"MAGNUS — пространство для знаний, открытий и развития."};
+    toast(actions[el.dataset.action] || "Это действие пока недоступно.");
   }));
   const noteField = document.querySelector("#lesson-note");
   noteField?.addEventListener("input", e => {
