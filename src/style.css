@@ -1680,3 +1680,170 @@ button, a, input, textarea { touch-action: manipulation; }
   .lesson-heading h1 { font-size: 35px; }
   .nav-item { font-size: 8px; }
 }
+
+
+/* MAGNUS signature artwork for faculties and learning cards */
+.course-art {
+  isolation: isolate;
+  color: rgba(255,255,255,.94);
+}
+.course-art::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  width: 78%;
+  aspect-ratio: 1;
+  right: -20%;
+  top: -32%;
+  border: 1px solid rgba(255,255,255,.19);
+  border-radius: 50%;
+  box-shadow: 0 0 0 13px rgba(255,255,255,.035), 0 0 0 27px rgba(255,255,255,.025);
+}
+.course-art-illustration {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: rgba(255,255,255,.93);
+  opacity: .83;
+  filter: drop-shadow(0 8px 10px rgba(0,0,0,.13));
+  transform: scale(1.02);
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .35s ease;
+}
+.course-card:hover .course-art-illustration {
+  transform: scale(1.08) rotate(-2deg);
+  opacity: 1;
+}
+.course-art-mark {
+  position: absolute;
+  z-index: 3;
+  left: 12px;
+  bottom: 10px;
+  display: inline-grid;
+  min-width: 27px;
+  height: 25px;
+  padding: 0 7px;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.23);
+  border-radius: 8px;
+  background: rgba(13,19,22,.26);
+  color: rgba(255,255,255,.94);
+  font-size: 10px !important;
+  line-height: 1;
+  letter-spacing: .5px;
+  text-shadow: none;
+  backdrop-filter: blur(8px);
+}
+.course-card.compact .course-art-mark { font-size: 9px !important; }
+.art-orbit { display: none; }
+.art-dots {
+  z-index: 3;
+  top: 11px;
+  left: 12px;
+  color: rgba(255,255,255,.72);
+  font-size: 9px;
+  letter-spacing: 5px;
+}
+.course-art.course-ai {
+  background:
+    radial-gradient(circle at 78% 25%,rgba(106,190,210,.38),transparent 38%),
+    linear-gradient(145deg,#254b5c,#142a35 70%,#101b22);
+}
+.course-art.course-mind {
+  background:
+    radial-gradient(circle at 56% 42%,rgba(206,157,235,.34),transparent 44%),
+    linear-gradient(145deg,#674c78,#392d49 70%,#201d2a);
+}
+.course-art.course-brand {
+  background:
+    radial-gradient(circle at 72% 32%,rgba(255,205,125,.42),transparent 42%),
+    linear-gradient(145deg,#a66a3c,#633b2b 68%,#32231e);
+}
+.faculty-art {
+  isolation: isolate;
+  border: 1px solid rgba(255,255,255,.42);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 5px 12px rgba(47,39,31,.06);
+}
+.faculty-art::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+.faculty-art > span {
+  position: relative;
+  z-index: 2;
+  font-size: 41px;
+  text-shadow: 0 6px 13px rgba(50,38,31,.13);
+  filter: drop-shadow(0 2px 3px rgba(255,255,255,.2));
+}
+.faculty-art-orbit {
+  z-index: 1;
+  width: 125px;
+  height: 125px;
+  bottom: -72px;
+  left: auto;
+  right: -31px;
+  border-color: rgba(255,255,255,.55);
+  transform: scaleY(.42) rotate(-24deg);
+}
+.faculty-art-dot { z-index: 3; }
+.faculty-art[data-faculty-art="psychology"]::before {
+  width: 92px; height: 92px; right: -18px; top: -24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%,rgba(255,255,255,.45),rgba(125,103,181,.08) 62%,transparent 68%);
+  border: 1px solid rgba(255,255,255,.28);
+  box-shadow: 0 0 0 10px rgba(255,255,255,.1);
+}
+.faculty-art[data-faculty-art="management"]::before {
+  width: 72px; height: 118px; right: 7px; top: -24px;
+  border-radius: 45px;
+  transform: rotate(38deg);
+  background: linear-gradient(145deg,rgba(255,255,255,.38),rgba(255,255,255,.025));
+  border: 1px solid rgba(255,255,255,.3);
+}
+.faculty-art[data-faculty-art="it"]::before {
+  inset: 0;
+  opacity: .28;
+  background-image: linear-gradient(rgba(255,255,255,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.55) 1px,transparent 1px);
+  background-size: 17px 17px;
+  mask-image: radial-gradient(ellipse at 55% 42%,#000 0%,transparent 76%);
+}
+.faculty-art[data-faculty-art="economics"]::before {
+  width: 105px; height: 105px; right: -29px; top: -31px;
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 50%;
+  box-shadow: 0 0 0 10px rgba(255,255,255,.12),0 0 0 21px rgba(255,255,255,.08);
+}
+.faculty-art[data-faculty-art="marketing"]::before {
+  width: 90px; height: 90px; right: -22px; top: -20px;
+  border-radius: 24px;
+  transform: rotate(34deg);
+  background: linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.025));
+  border: 1px solid rgba(255,255,255,.35);
+}
+.faculty-art[data-faculty-art="humanities"]::before {
+  width: 61px; height: 94px; right: 12px; top: -14px;
+  border: 1px solid rgba(255,255,255,.48);
+  border-radius: 7px 19px 7px 7px;
+  transform: rotate(16deg);
+  background: linear-gradient(145deg,rgba(255,255,255,.35),rgba(255,255,255,.04));
+  box-shadow: -8px 7px 0 -1px rgba(255,255,255,.13);
+}
+.faculty-art[data-faculty-art="psychology"] > span { font-size: 38px; }
+.faculty-art[data-faculty-art="it"] > span { font-size: 37px; }
+.faculty-art[data-faculty-art="economics"] > span { font-size: 42px; }
+@media (max-width: 650px) {
+  .course-art-illustration { transform: scale(1.08); }
+  .course-card:hover .course-art-illustration { transform: scale(1.1); }
+  .course-art-mark { left: 9px; bottom: 8px; min-width: 24px; height: 22px; }
+  .art-dots { left: 9px; top: 9px; font-size: 8px; }
+  .faculty-art > span { font-size: 36px; }
+  .faculty-art-orbit { width: 108px; height: 108px; right: -30px; bottom: -65px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .course-art-illustration { transition: none; }
+}
