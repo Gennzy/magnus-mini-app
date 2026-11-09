@@ -993,3 +993,238 @@ button:focus-visible, [tabindex="0"]:focus-visible, input:focus-visible, textare
 @media (prefers-reduced-motion: reduce) {
   button, .quick-item, .course-card, .faculty-card, .assignment-card { transition: none; }
 }
+
+
+/* Home page art direction: a clearer learning journey */
+.home-screen { padding-top: 29px; }
+.home-screen .greeting-row { margin-bottom: 25px; }
+.home-screen .greeting-row .subtle-label { color: #777b7d; }
+.home-screen .greeting-row p { color: #73797c; }
+.home-screen .hero-card {
+  min-height: 312px;
+  grid-template-columns: minmax(0, 1fr) 45%;
+  padding: 34px 36px 43px;
+  border-radius: 29px;
+  background:
+    radial-gradient(ellipse at 76% 48%, rgba(244,122,25,.15), transparent 36%),
+    linear-gradient(118deg, #202324 0%, #171a1b 58%, #20201e 100%);
+  box-shadow: 0 24px 55px rgba(25,27,28,.17), inset 0 1px 0 rgba(255,255,255,.09);
+}
+.home-screen .hero-card::before {
+  content: "";
+  position: absolute;
+  width: 410px;
+  height: 410px;
+  right: 2%;
+  top: -62%;
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 50%;
+  box-shadow: 0 0 0 28px rgba(255,255,255,.018), 0 0 0 58px rgba(255,255,255,.014);
+  pointer-events: none;
+}
+.home-screen .hero-glow {
+  width: 440px;
+  height: 440px;
+  right: 1%;
+  top: -12%;
+  background: radial-gradient(circle, rgba(244,122,25,.22) 0%, rgba(244,122,25,.06) 34%, transparent 70%);
+}
+.home-screen .hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  min-height: 27px;
+  padding: 0 11px;
+  border: 1px solid rgba(248,160,90,.22);
+  border-radius: 99px;
+  background: rgba(244,122,25,.09);
+  color: #ffb477;
+  font-size: 8px;
+  letter-spacing: 1.55px;
+}
+.home-screen .hero-copy h2 {
+  max-width: 430px;
+  font-size: clamp(34px, 4.5vw, 47px);
+  line-height: 1.04;
+  letter-spacing: -2.2px;
+  margin: 17px 0 12px;
+}
+.home-screen .hero-copy p {
+  color: #c3c5c4;
+  font-size: 12px;
+  line-height: 1.7;
+  max-width: 290px;
+  margin-bottom: 21px;
+}
+.home-screen .mascot-stage {
+  min-height: 250px;
+  isolation: isolate;
+}
+.home-screen .mascot-stage::before {
+  content: "";
+  position: absolute;
+  width: min(92%, 258px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 32%, #51443a 0%, #312c28 56%, #242323 72%);
+  border: 1px solid rgba(255,255,255,.09);
+  box-shadow: 0 20px 48px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.09);
+  z-index: 0;
+}
+.home-screen .mascot-stage::after {
+  content: "";
+  position: absolute;
+  width: min(103%, 290px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(244,122,25,.24);
+  box-shadow: 0 0 0 9px rgba(244,122,25,.035);
+  z-index: 0;
+}
+.home-screen .hero-mascot {
+  width: min(112%, 305px);
+  height: 270px;
+  filter: drop-shadow(0 17px 19px rgba(0,0,0,.38));
+}
+.home-screen .floating-token {
+  z-index: 3;
+  backdrop-filter: blur(10px);
+  background: rgba(49,42,36,.8);
+  border-color: rgba(255,184,126,.32);
+}
+.home-screen .hero-index {
+  border-color: rgba(255,255,255,.14);
+  color: #a7a9a8;
+  letter-spacing: 1.5px;
+}
+.home-screen .hero-index span:first-child { color: #ffad6b; }
+.home-featured-course { margin-top: 25px; }
+.home-featured-course .course-card {
+  border-radius: 21px;
+  border-color: #e9e6df;
+  box-shadow: 0 9px 25px rgba(38,33,27,.055);
+}
+.home-featured-course .course-art { min-height: 158px; }
+.home-featured-course .course-details { padding: 18px 20px; }
+.home-featured-course .course-details h3 { font-size: 15px; }
+.home-featured-course .course-details p { font-size: 10px; }
+.home-screen .quick-section { margin-top: 29px; }
+.home-screen .quick-item {
+  position: relative;
+  overflow: hidden;
+  min-height: 126px;
+  border-radius: 19px;
+  padding: 17px;
+}
+.home-screen .quick-item::after {
+  content: "";
+  position: absolute;
+  width: 84px;
+  height: 84px;
+  right: -37px;
+  bottom: -43px;
+  border: 1px solid rgba(244,122,25,.10);
+  border-radius: 50%;
+  box-shadow: 0 0 0 11px rgba(244,122,25,.025);
+  pointer-events: none;
+}
+.home-screen .quick-icon { width: 39px; height: 39px; margin-bottom: 14px; }
+.home-screen .dashboard-overview {
+  margin-top: 30px;
+  padding: 21px;
+  border-radius: 22px;
+  background: linear-gradient(145deg,#fff 0%,#fffdfa 100%);
+  box-shadow: 0 10px 28px rgba(43,36,28,.05);
+}
+.home-screen .dashboard-overview .section-title h2 { font-size: 18px; }
+.home-screen .dashboard-demo-tag {
+  border: 1px solid #f5e2d3;
+  background: #fff8f1;
+  color: #a65a2a;
+}
+.home-screen .dashboard-metric {
+  min-height: 94px;
+  padding: 14px;
+  border: 1px solid #efeee9;
+  border-radius: 16px;
+  background: linear-gradient(145deg,#faf9f6,#f6f5f1);
+}
+.home-screen .metric-ring { width: 50px; height: 50px; }
+.home-screen .dashboard-metric b { font-size: 22px; }
+.home-screen .dashboard-metric small { font-size: 10px; color: #62696c; }
+.home-screen .dashboard-work-grid { gap: 14px; margin-top: 15px; }
+.home-screen .dashboard-panel {
+  padding: 20px;
+  border-radius: 21px;
+}
+.home-screen .dashboard-panel .section-title h2 { font-size: 18px; }
+.home-screen .dashboard-task { padding: 15px 0; }
+.home-screen .dashboard-task-copy b { font-size: 11px; }
+.home-screen .dashboard-task-copy small,
+.home-screen .dashboard-task-copy span { font-size: 9px; }
+.home-screen .dashboard-task > button {
+  width: 33px; height: 33px; border-radius: 11px;
+  background: #fff4e9; color: #c96720;
+}
+.home-screen .dashboard-next-card {
+  min-height: 100%;
+  padding: 21px;
+  border-radius: 21px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(244,122,25,.22), transparent 42%),
+    linear-gradient(145deg,#252728,#171a1b);
+  box-shadow: 0 12px 28px rgba(24,25,25,.13);
+}
+.home-screen .dashboard-next-card::after {
+  width: 190px; height: 190px; right: -85px; top: 40px;
+  border-color: rgba(255,255,255,.15);
+}
+.home-screen .next-date {
+  padding: 12px 15px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 15px;
+  background: rgba(255,255,255,.055);
+}
+.home-screen .next-date b { font-size: 39px; color: #ffb477; }
+.home-screen .dashboard-next-card h3 { font-size: 15px; line-height: 1.45; }
+.home-screen .dashboard-next-card p { font-size: 10px; color: #c2c4c4; }
+.home-screen .dashboard-next-card button { min-height: 39px; border-radius: 99px; }
+.home-screen .mascot-note { margin-top: 22px; }
+
+@media (max-width: 650px) {
+  .home-screen { padding-top: 20px; }
+  .home-screen .greeting-row { margin-bottom: 19px; }
+  .home-screen .hero-card {
+    min-height: 264px;
+    grid-template-columns: minmax(0, 1fr) 38%;
+    padding: 22px 16px 38px;
+    border-radius: 23px;
+  }
+  .home-screen .hero-copy h2 { font-size: 29px; line-height: 1.12; letter-spacing: -1.1px; margin: 13px 0 9px; }
+  .home-screen .hero-copy p { font-size: 11px; line-height: 1.55; margin-bottom: 16px; }
+  .home-screen .hero-eyebrow { font-size: 7px; letter-spacing: 1px; min-height: 24px; padding: 0 8px; }
+  .home-screen .mascot-stage { min-height: 205px; margin-right: -5px; }
+  .home-screen .mascot-stage::before { width: 94%; }
+  .home-screen .mascot-stage::after { width: 103%; }
+  .home-screen .hero-mascot { width: 155%; height: 205px; }
+  .home-screen .hero-index { left: 16px; right: 16px; }
+  .home-featured-course { margin-top: 22px; }
+  .home-featured-course .course-art,
+  .home-featured-course .course-card.compact .course-art { min-height: 137px; }
+  .home-featured-course .course-details { padding: 12px 11px; }
+  .home-featured-course .course-details h3 { font-size: 12px; }
+  .home-screen .quick-section { margin-top: 24px; }
+  .home-screen .quick-item { min-height: 112px; padding: 13px 12px; border-radius: 16px; }
+  .home-screen .quick-icon { width: 35px; height: 35px; margin-bottom: 9px; }
+  .home-screen .dashboard-overview { margin-top: 23px; padding: 15px; border-radius: 19px; }
+  .home-screen .dashboard-metric { min-height: 78px; padding: 10px; }
+  .home-screen .metric-ring { width: 42px; height: 42px; }
+  .home-screen .dashboard-metric b { font-size: 19px; }
+  .home-screen .dashboard-metric small { font-size: 9px; }
+  .home-screen .dashboard-panel { padding: 15px; }
+  .home-screen .dashboard-next-card { padding: 17px; min-height: 205px; }
+}
+@media (max-width: 380px) {
+  .home-screen .hero-card { grid-template-columns: minmax(0,1fr) 34%; padding-left: 14px; padding-right: 12px; }
+  .home-screen .hero-copy h2 { font-size: 26px; }
+  .home-screen .hero-mascot { width: 165%; }
+}
