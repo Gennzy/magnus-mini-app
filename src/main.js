@@ -487,19 +487,21 @@ function bindEvents() {
 }
 
 function triggerStartupHaptic() {
-  try {
-    const haptic = tg?.HapticFeedback;
-    if (typeof haptic?.impactOccurred === "function") {
-      haptic.impactOccurred("medium");
-      return;
-    }
-  } catch {
-    // Telegram или устройство могут не поддерживать тактильную отдачу.
+  const haptic = tg?.HapticFeedback;
+  if (typeof haptic?.impactOccurred === "function") {
+    // Три мягких импульса создают более длинный, плавный тактильный отклик.
+    const pulse = (style) => {
+      try { haptic.impactOccurred(style); } catch { /* Стиль может не поддерживаться устройством. */ }
+    };
+    pulse("soft");
+    window.setTimeout(() => pulse("medium"), 145);
+    window.setTimeout(() => pulse("soft"), 315);
+    return;
   }
   try {
-    window.navigator?.vibrate?.(45);
+    window.navigator?.vibrate?.([65, 55, 85, 55, 105]);
   } catch {
-    // Вибрация браузера необязательна и зависит от устройства.
+    // Поддержка вибрации зависит от браузера и устройства.
   }
 }
 
@@ -522,7 +524,7 @@ function showStartupScreen() {
     if (!splash) return;
     splash.classList.add("is-hidden");
     window.setTimeout(() => splash.remove(), 420);
-  }, 1100);
+  }, 1650);
 }
 
 render();
