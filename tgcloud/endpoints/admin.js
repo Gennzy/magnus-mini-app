@@ -1,6 +1,7 @@
 import { db, api } from 'sdk';
 import { eq, desc } from 'sdk/db';
-import { adminUsers, studentData, botSettings, adminAuditLog, adminMessages, studentSubscriptions } from '../schema.js';
+import { adminUsers, studentData, botSettings, adminAuditLog, adminMessages, studentSubscriptions, subscriptionPlans, paymentOrders } from '../schema.js';
+import { DEFAULT_SUBSCRIPTION_PLANS, normalizePlan } from '../lib/subscriptionPlans.js';
 
 const APP_URL = 'https://app9020486965.tgcloud.ai/';
 const BOT_COMMANDS = [
@@ -138,6 +139,48 @@ export default async function (input, ctx) {
 
   const admin = await db.select().from(adminUsers).where(eq(adminUsers.tgId, tgId)).get();
   if (!admin?.active) return { ok: false, code: 'FORBIDDEN', message: 'Нет доступа к панели MAGNUS.' };
+
+  if (input?.action === 'paymentPlans') {
+    const saved = await db.select().from(subscriptionPlans).all();
+    const byId = new Map(saved.map(row => [row.planId, row]));
+    return {
+      ok: true,
+      plans: DEFAULT_SUBSCRIPTION_PLANS.map(plan => normalizePlan(byId.get(plan.planId) || plan)),
+    };
+  }
+
+  if (input?.action === 'savePaymentPlans') {
+    if (!Array.isArray(input.plans) || input.plans.length !== DEFAULT_SUBSCRIPTION_PLANS.length) {
+      return { ok: false, code: 'INVALID_PLANS', message: 'Не удалось распознать список тарифов.' };
+    }
+    const now = Math.floor(Date.now() / 1000);
+    const allowed = new Map(DEFAULT_SUBSCRIPTION_PLANS.map(plan => [plan.planId, plan]));
+    const saved = [];
+    for (const item of input.plans) {
+      const fallback = allowed.get(String(item?.planId || ''));
+      const starsPrice = Number(item?.starsPrice);
+      if (!fallback || !Number.isInteger(starsPrice) || starsPrice < 0 || starsPrice > 100000) {
+        return { ok: false, code: 'INVALID_PRICE', message: 'Цена должна быть целым числом от 0 до 100 000 Stars.' };
+      }
+      const enabled = Boolean(item.enabled) && starsPrice > 0 ? 1 : 0;
+      const record = {
+        planId: fallback.planId, title: fallback.title, description: fallback.description,
+        days: fallback.days, starsPrice, enabled, updatedAt: now, updatedBy: tgId,
+      };
+      await db.insert(subscriptionPlans).values(record).onConflictDoUpdate({
+        target: subscriptionPlans.planId,
+        set: { title: record.title, description: record.description, days: record.days, starsPrice, enabled, updatedAt: now, updatedBy: tgId },
+      }).run();
+      saved.push(normalizePlan(record));
+    }
+    await writeAuditSafely({
+      action: 'payment.plans.updated', actorTgId: tgId, actorEmail: admin.email,
+      targetType: 'subscription_plans', targetId: 'all',
+      summary: 'Обновлены цены и доступность тарифов Telegram Stars',
+      details: { plans: saved.map(plan => ({ planId: plan.planId, starsPrice: plan.starsPrice, enabled: plan.enabled })) },
+    });
+    return { ok: true, plans: saved, message: 'Тарифы сохранены.' };
+  }
 
   if (input?.action === 'auditLog') {
     const entries = await db.select().from(adminAuditLog)
