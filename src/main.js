@@ -623,6 +623,13 @@ function adminStudentCard(student){
 function adminStudentSubmission(item,student){
  return adminSubmissionCard({...item,studentId:student.telegramId,studentName:adminStudentName(student)},false);
 }
+function adminStudentMessageCard(item){
+ const date=item.createdAt?new Date(item.createdAt*1000).toLocaleString('ru-RU',{dateStyle:'medium',timeStyle:'short'}):'Дата не указана';
+ const delivered=item.status==='delivered';
+ const status=delivered?'Доставлено':item.status==='sending'?'Отправляется':'Не доставлено';
+ const error=item.errorMessage?'<small>'+esc(item.errorMessage)+'</small>':'';
+ return `<article class="admin-outgoing-message ${delivered?'is-delivered':'is-failed'}"><div class="admin-outgoing-message-head"><b>${status}</b><time>${esc(date)}</time></div><p>${esc(item.messageText||'')}</p>${error}<footer>${esc(item.adminEmail||'Администратор')}</footer></article>`;
+}
 function adminStudentDetailPage(){
  if(adminStudentDetailLoading)return `<section class="admin-student-detail"><button class="admin-back-button" data-admin-student-back>${icon('arrow-left')} К списку студентов</button><div class="admin-loading">Загружаем профиль студента…</div></section>`;
  if(adminStudentDetailError||!adminStudentDetail)return `<section class="admin-student-detail"><button class="admin-back-button" data-admin-student-back>${icon('arrow-left')} К списку студентов</button><div class="admin-error" role="alert">${esc(adminStudentDetailError||'Профиль не найден.')}</div></section>`;
@@ -630,10 +637,14 @@ function adminStudentDetailPage(){
  const facultiesList=(detail.interestedFaculties||[]).map(id=>faculties.find(item=>item.id===id)?.name||id);
  const lessonName=id=>Object.values(curriculum).flat().find(item=>item[0]===id)?.[1]||id;
  const submissions=Array.isArray(detail.submissions)?detail.submissions:[];
+ const messages=Array.isArray(detail.messages)?detail.messages:[];
  return `<section class="admin-student-detail"><button class="admin-back-button" data-admin-student-back>${icon('arrow-left')} К списку студентов</button><header class="admin-student-profile-head"><span class="admin-student-avatar large">${esc((student.firstName||'M').charAt(0).toUpperCase())}</span><div><span class="admin-eyebrow">ПРОФИЛЬ СТУДЕНТА</span><h2>${esc(name)}</h2><p>${student.username?'@'+esc(student.username)+' · ':''}Telegram ID ${esc(student.telegramId||'—')}</p><small>Последняя активность: ${esc(adminStudentLastSeen(student.updatedAt))}</small></div></header>
  <div class="admin-student-metrics"><article><b>${Number(student.submissionsCount)||0}</b><span>Отправлено работ</span></article><article><b>${Number(student.pendingCount)||0}</b><span>Ожидают проверки</span></article><article><b>${Number(student.completedLessonsCount)||0}</b><span>Пройдено примеров</span></article><article><b>${Number(student.quizAttempts)||0}</b><span>Ответов в тестах</span></article></div>
  <div class="admin-student-activity-grid"><article><span>ИНТЕРЕСЫ</span><h3>Направления</h3><p>${facultiesList.length?facultiesList.map(esc).join(', '):'Пока не выбраны'}</p></article><article><span>УЧЕБНАЯ АКТИВНОСТЬ</span><h3>Сохранённые материалы</h3><p>${Number(detail.notesCount)||0} заметок · ${Number(detail.draftsCount)||0} черновиков</p></article></div>
  <div class="admin-section-head"><div><span>ИСТОРИЯ ОТПРАВЛЕНИЙ</span><h2>Работы студента</h2></div><span class="admin-count">${submissions.length}</span></div>${submissions.map(item=>adminStudentSubmission(item,student)).join('')||`<div class="admin-empty">Студент пока не отправлял работы.</div>`}
+ <section class="admin-student-messaging"><div class="admin-section-head"><div><span>ЛИЧНАЯ СВЯЗЬ</span><h2>Сообщения студенту</h2></div><span class="admin-count">${messages.length}</span></div>
+ <div class="admin-message-compose"><textarea data-admin-student-message maxlength="3500" rows="3" placeholder="Напиши сообщение студенту…"></textarea><div><small>Сообщение будет отправлено от имени бота MAGNUS в Telegram.</small><button class="orange-button" data-admin-student-send data-student-id="${esc(student.telegramId)}">Отправить</button></div></div>
+ <div class="admin-message-history">${messages.map(adminStudentMessageCard).join('')||'<div class="admin-empty">История сообщений пока пуста.</div>'}</div></section>
  <div class="admin-student-learning"><div class="admin-section-head"><div><span>УЧЕБНЫЕ РЕЗУЛЬТАТЫ</span><h2>Примеры и тесты</h2></div></div><p><b>Отмеченные примеры:</b> ${(detail.completedLessonIds||[]).length?detail.completedLessonIds.map(lessonName).map(esc).join(', '):'Нет отметок'}</p><p><b>Тесты с сохранённым ответом:</b> ${(detail.quizLessonIds||[]).length?detail.quizLessonIds.map(lessonName).map(esc).join(', '):'Нет сохранённых ответов'}</p><small>Это данные демонстрационных уроков MAGNUS, не официальная успеваемость.</small></div></section>`;
 }
 function adminStudentsPage(){
@@ -690,6 +701,21 @@ function bindEvents() {
   document.querySelectorAll("[data-admin-students-refresh]").forEach(el=>el.addEventListener("click",loadAdminStudents));
   document.querySelectorAll("[data-admin-student]").forEach(el=>el.addEventListener("click",()=>loadAdminStudentDetail(el.dataset.adminStudent)));
   document.querySelectorAll("[data-admin-student-back]").forEach(el=>el.addEventListener("click",()=>{adminStudentSelected="";adminStudentDetail=null;adminStudentDetailError="";render();}));
+  document.querySelectorAll("[data-admin-student-send]").forEach(button=>button.addEventListener("click",()=>{
+    const field=document.querySelector("[data-admin-student-message]");
+    const message=(field?.value||"").trim();
+    if(!message){toast("Напиши сообщение перед отправкой.");return;}
+    if(message.length>3500){toast("Максимальная длина — 3500 символов.");return;}
+    const studentId=button.dataset.studentId;
+    button.disabled=true;button.textContent="Отправляем…";
+    const called=callAdminApi("sendStudentMessage",{studentId,message},(error,result)=>{
+      if(error||!result?.ok){button.disabled=false;button.textContent="Отправить";toast(error?.message||result?.message||"Не удалось отправить сообщение.");return;}
+      if(field)field.value="";
+      toast(result.message||"Результат отправки сохранён.");
+      loadAdminStudentDetail(studentId);
+    });
+    if(!called){button.disabled=false;button.textContent="Отправить";toast("Открой панель из Telegram, чтобы отправить сообщение.");}
+  }));
   document.querySelectorAll("[data-admin-student-search]").forEach(input=>input.addEventListener("input",()=>{
     const query=input.value.trim().toLowerCase();let visible=0;
     document.querySelectorAll("[data-admin-student-row]").forEach(row=>{const match=(row.dataset.search||"").includes(query);row.hidden=!match;if(match)visible++;});
