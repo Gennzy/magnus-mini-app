@@ -154,35 +154,41 @@ function courseTile(c, compact=false) {
 
 
 
-function loadAssignmentDrafts() {
+const studentStorageScope = telegramUser?.id
+  ? `telegram-${String(telegramUser.id)}`
+  : "guest";
+
+function studentStorageKey(kind) {
+  return `magnus.${studentStorageScope}.${kind}`;
+}
+
+function readStudentStorage(kind) {
   try {
-    return JSON.parse(window.localStorage.getItem("magnus.assignmentDrafts") || "{}") || {};
+    const value = JSON.parse(window.localStorage.getItem(studentStorageKey(kind)) || "{}");
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
   } catch {
     return {};
   }
+}
+function writeStudentStorage(kind, value) {
+  try {
+    window.localStorage.setItem(studentStorageKey(kind), JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+}
+function loadAssignmentDrafts() {
+  return readStudentStorage("assignmentDrafts");
 }
 function storeAssignmentDrafts() {
-  try {
-    window.localStorage.setItem("magnus.assignmentDrafts", JSON.stringify(assignmentDrafts));
-    return true;
-  } catch {
-    return false;
-  }
+  return writeStudentStorage("assignmentDrafts", assignmentDrafts);
 }
 function loadLessonNotes() {
-  try {
-    return JSON.parse(window.localStorage.getItem("magnus.lessonNotes") || "{}") || {};
-  } catch {
-    return {};
-  }
+  return readStudentStorage("lessonNotes");
 }
 function storeLessonNotes() {
-  try {
-    window.localStorage.setItem("magnus.lessonNotes", JSON.stringify(lessonNotes));
-    return true;
-  } catch {
-    return false;
-  }
+  return writeStudentStorage("lessonNotes", lessonNotes);
 }
 function callCloudStudentData(action, payload, callback) {
   const serverless = tg?.Serverless;
