@@ -6520,3 +6520,98 @@ body { background:#f6f6f3;color:#252b2d; }
  .admin-student-main>small { font-size:8px; }
  .admin-student-counts { display:none; }
 }
+
+/* Direct Telegram messages from a student profile */
+.admin-student-messaging {
+ margin-top:22px;
+ padding:15px;
+ border:1px solid #e7e5df;
+ border-radius:12px;
+ background:#fff;
+}
+.admin-student-messaging .admin-section-head { margin:0 0 13px; }
+.admin-message-compose {
+ padding:12px;
+ border:1px solid #ebe8e2;
+ border-radius:10px;
+ background:#faf9f6;
+}
+.admin-message-compose textarea {
+ display:block;
+ width:100%;
+ min-height:88px;
+ padding:10px 11px;
+ border:1px solid #e4e2dc;
+ border-radius:8px;
+ background:#fff;
+ color:#30383a;
+ font:inherit;
+ font-size:11px;
+ line-height:1.55;
+ resize:vertical;
+ outline:none;
+}
+.admin-message-compose textarea:focus { border-color:#d5a17c; }
+.admin-message-compose>div {
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:12px;
+ margin-top:10px;
+}
+.admin-message-compose>div>small { color:#899194;font-size:9px;line-height:1.5; }
+.admin-message-compose .orange-button {
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ min-height:36px;
+ padding:8px 14px;
+ border:0;
+ border-radius:8px;
+ background:#e87525;
+ color:#fff;
+ font-size:10px;
+ font-weight:800;
+ white-space:nowrap;
+}
+.admin-message-compose .orange-button:disabled { opacity:.6;cursor:wait; }
+.admin-message-history { margin-top:12px; }
+.admin-outgoing-message {
+ margin-top:8px;
+ padding:12px;
+ border:1px solid #e7e5df;
+ border-radius:9px;
+ background:#fff;
+}
+.admin-outgoing-message.is-delivered { border-left:3px solid #77947c; }
+.admin-outgoing-message.is-failed { border-left:3px solid #c58b6a; }
+.admin-outgoing-message-head {
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+}
+.admin-outgoing-message-head>b { color:#5d7662;font-size:9px;font-weight:800; }
+.admin-outgoing-message.is-failed .admin-outgoing-message-head>b { color:#a15c3a; }
+.admin-outgoing-message-head>time { color:#899194;font-size:9px; }
+.admin-outgoing-message>p {
+ margin:9px 0;
+ color:#3d474a;
+ font-size:11px;
+ line-height:1.6;
+ white-space:pre-wrap;
+ overflow-wrap:anywhere;
+}
+.admin-outgoing-message>small { display:block;color:#a15c3a;font-size:9px;line-height:1.5; }
+.admin-outgoing-message>footer {
+ padding-top:8px;
+ border-top:1px solid #f0eee9;
+ color:#899194;
+ font-size:9px;
+}
+@media(max-width:650px) {
+ .admin-student-messaging { padding:12px; }
+ .admin-message-compose>div { align-items:stretch;flex-direction:column; }
+ .admin-message-compose .orange-button { width:100%; }
+ .admin-outgoing-message-head { align-items:flex-start;flex-direction:column;gap:4px; }
+}
