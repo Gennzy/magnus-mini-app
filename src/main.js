@@ -69,6 +69,7 @@ let adminAccess = { loading: true, isAdmin: false, role: null };
 let adminDashboard = null, adminTab = "overview", adminLoading = false, adminError = "";
 let adminAuditEntries = [], adminAuditLoading = false, adminAuditError = "";
 let adminStudents = [], adminStudentsLoading = false, adminStudentsError = "";
+let adminPaymentPlans = [], adminPaymentPlansLoading = false, adminPaymentPlansError = "";
 let adminStudentSelected = "", adminStudentDetail = null, adminStudentDetailLoading = false, adminStudentDetailError = "";
 let currentPage = new URLSearchParams(window.location.search).get("admin") === "1" ? "admin" : "home";
 let selectedFaculty = faculties[0];
@@ -251,6 +252,23 @@ function loadAdminStudentDetail(studentId){
   if(currentPage==='admin'&&adminTab==='students')render();
  });
  if(!called){adminStudentDetailLoading=false;adminStudentDetailError='Открой MAGNUS через Telegram, чтобы загрузить профиль.';if(currentPage==='admin')render();}
+}
+function loadAdminPaymentPlans(){
+ adminPaymentPlansLoading=true;adminPaymentPlansError='';
+ if(currentPage==='admin')render();
+ const called=callAdminApi('paymentPlans',{},(error,result)=>{
+  adminPaymentPlansLoading=false;
+  if(error||!result?.ok){adminPaymentPlans=[];adminPaymentPlansError=error?.message||result?.message||'Не удалось загрузить тарифы.';}
+  else{adminPaymentPlans=Array.isArray(result.plans)?result.plans:[];adminPaymentPlansError='';}
+  if(currentPage==='admin'&&adminTab==='payments')render();
+ });
+ if(!called){adminPaymentPlansLoading=false;adminPaymentPlansError='Открой панель из Telegram.';if(currentPage==='admin')render();}
+}
+function adminPaymentPlansPage(){
+ if(adminPaymentPlansLoading)return '<section><div class="admin-loading">Загружаем тарифы…</div></section>';
+ if(adminPaymentPlansError)return '<section><div class="admin-error">'+esc(adminPaymentPlansError)+'</div></section>';
+ const labels={ 'monthly-30d':'30 дней','quarterly-90d':'90 дней','annual-365d':'365 дней' };
+ return `<section class="admin-payment-plans"><div class="admin-section-head"><div><span>TELEGRAM STARS · XTR</span><h2>Тарифы MAGNUS</h2></div><button data-admin-payment-refresh>Обновить ${icon('refresh')}</button></div><p class="admin-payment-intro">Укажи стоимость каждого тарифа в Telegram Stars. Цена 0 или выключенный переключатель скрывает тариф от студентов. Оплата цифрового доступа внутри Telegram принимается только в Stars.</p><div class="admin-payment-plan-list">${adminPaymentPlans.map(plan=>`<article class="admin-payment-plan"><div><span>${esc(labels[plan.planId]||plan.title)}</span><b>${plan.starsPrice?plan.starsPrice+' ⭐':'Цена не задана'}</b></div><label>Цена, Stars<input type="number" min="0" max="100000" step="1" value="${Number(plan.starsPrice)||0}" data-payment-price="${esc(plan.planId)}"></label><label class="admin-payment-toggle"><input type="checkbox" data-payment-enabled="${esc(plan.planId)}" ${plan.enabled?'checked':''}> Показывать студентам</label></article>`).join('')}</div><div class="admin-settings-actions"><button class="orange-button" data-admin-payment-save>Сохранить тарифы</button><small>Доступ включается только после подтверждённого successful_payment от Telegram.</small></div></section>`;
 }
 function loadAdminAudit(){
  adminAuditLoading=true;adminAuditError='';
@@ -680,11 +698,11 @@ function adminPage(){
   shortDescription:"Обучение, учебные программы и задания в Telegram.",
   menuButtonText:"Открыть MAGNUS"
  };
- const tabs=[["overview","Обзор"],["students","Студенты"],["reviews","Работы"],["bot","Бот"],["audit","Журнал"]];
+ const tabs=[["overview","Обзор"],["students","Студенты"],["reviews","Работы"],["payments","Тарифы"],["bot","Бот"],["audit","Журнал"]];
  return `<main class="screen inner-screen admin-screen"><header class="admin-header"><div><span class="admin-eyebrow">MAGNUS · CONTROL CENTER</span><h1>Управление</h1><p>${esc(data?.admin?.email||"Администратор")} · ${esc(data?.admin?.role||"admin")}</p></div><button class="admin-refresh" data-admin-refresh aria-label="Обновить данные">${icon("refresh")}</button></header>
  <nav class="admin-tabs" aria-label="Разделы панели">${tabs.map(([key,label])=>`<button class="${adminTab===key?"active":""}" data-admin-tab="${key}">${label}</button>`).join("")}</nav>
  ${adminLoading&&!data?`<div class="admin-loading">Загружаем данные MAGNUS…</div>`:""}${adminError?`<div class="admin-error" role="alert">${esc(adminError)}</div>`:""}
- ${adminTab==="overview"?`<section><div class="admin-stat-grid"><article><span>СТУДЕНТЫ</span><b>${stats.students}</b><small>Аккаунтов с учебными данными</small></article><article><span>ОТПРАВКИ</span><b>${stats.submissions}</b><small>Ответов в истории</small></article><article class="needs-review"><span>ОЖИДАЮТ ПРОВЕРКИ</span><b>${stats.pending}</b><small>Нужны действия преподавателя</small></article><article><span>РАССМОТРЕНО</span><b>${stats.reviewed}</b><small>Проверено или возвращено</small></article></div><div class="admin-section-head"><div><span>ПОСЛЕДНИЕ СОБЫТИЯ</span><h2>Учебные работы</h2></div><button data-admin-tab="reviews">Все работы ${icon("arrow")}</button></div>${items.slice(0,4).map(item=>adminSubmissionCard(item,false)).join("")||`<div class="admin-empty">Отправленных работ пока нет.</div>`}</section>`:adminTab==="reviews"?`<section><div class="admin-section-head"><div><span>ПРОВЕРКА</span><h2>Работы студентов</h2></div><span class="admin-count">${items.length}</span></div>${items.map(item=>adminSubmissionCard(item,true)).join("")||`<div class="admin-empty">Пока нет отправленных работ.</div>`}</section>`:adminTab==="students"?adminStudentsPage():adminTab==="audit"?adminAuditPage():`<section><div class="admin-bot-card"><div class="admin-bot-top"><span class="admin-bot-icon">M</span><div><span>TELEGRAM BOT</span><h2>${esc(data?.bot?.firstName||"MAGNUS")}</h2><p>@${esc(data?.bot?.username||"bot")}</p></div><span class="admin-live">${data?.bot?.webhookActive?"Webhook активен":"Webhook не настроен"}</span></div><div class="admin-bot-meta"><div><small>ОЖИДАЮТ ОБРАБОТКИ</small><b>${Number(data?.bot?.webhookPending||0)}</b></div><div><small>КОМАНД В МЕНЮ</small><b>${data?.bot?.commands?.length||0}</b></div></div>${data?.bot?.lastError?`<p class="admin-bot-warning">${esc(data.bot.lastError)}</p>`:""}</div>
+ ${adminTab==="overview"?`<section><div class="admin-stat-grid"><article><span>СТУДЕНТЫ</span><b>${stats.students}</b><small>Аккаунтов с учебными данными</small></article><article><span>ОТПРАВКИ</span><b>${stats.submissions}</b><small>Ответов в истории</small></article><article class="needs-review"><span>ОЖИДАЮТ ПРОВЕРКИ</span><b>${stats.pending}</b><small>Нужны действия преподавателя</small></article><article><span>РАССМОТРЕНО</span><b>${stats.reviewed}</b><small>Проверено или возвращено</small></article></div><div class="admin-section-head"><div><span>ПОСЛЕДНИЕ СОБЫТИЯ</span><h2>Учебные работы</h2></div><button data-admin-tab="reviews">Все работы ${icon("arrow")}</button></div>${items.slice(0,4).map(item=>adminSubmissionCard(item,false)).join("")||`<div class="admin-empty">Отправленных работ пока нет.</div>`}</section>`:adminTab==="reviews"?`<section><div class="admin-section-head"><div><span>ПРОВЕРКА</span><h2>Работы студентов</h2></div><span class="admin-count">${items.length}</span></div>${items.map(item=>adminSubmissionCard(item,true)).join("")||`<div class="admin-empty">Пока нет отправленных работ.</div>`}</section>`:adminTab==="students"?adminStudentsPage():adminTab==="payments"?adminPaymentPlansPage():adminTab==="audit"?adminAuditPage():`<section><div class="admin-bot-card"><div class="admin-bot-top"><span class="admin-bot-icon">M</span><div><span>TELEGRAM BOT</span><h2>${esc(data?.bot?.firstName||"MAGNUS")}</h2><p>@${esc(data?.bot?.username||"bot")}</p></div><span class="admin-live">${data?.bot?.webhookActive?"Webhook активен":"Webhook не настроен"}</span></div><div class="admin-bot-meta"><div><small>ОЖИДАЮТ ОБРАБОТКИ</small><b>${Number(data?.bot?.webhookPending||0)}</b></div><div><small>КОМАНД В МЕНЮ</small><b>${data?.bot?.commands?.length||0}</b></div></div>${data?.bot?.lastError?`<p class="admin-bot-warning">${esc(data.bot.lastError)}</p>`:""}</div>
  <div class="admin-settings-card admin-bot-settings"><span>НАСТРОЙКИ БОТА</span><h2>Сообщения и оформление</h2><p>Изменения сохраняются в облачной базе. Приветствие применяется к новым сообщениям /start, описание и кнопка — к профилю и меню Telegram.</p>
  <label>Приветствие при запуске <textarea data-bot-setting="welcomeMessage" maxlength="3500" rows="4">${esc(settings.welcomeMessage||"")}</textarea><small>До 3500 символов. Переносы строк сохраняются.</small></label>
  <label>Описание бота <textarea data-bot-setting="description" maxlength="512" rows="3">${esc(settings.description||"")}</textarea><small>Показывается в профиле бота · до 512 символов.</small></label>
@@ -712,10 +730,26 @@ function toast(message) {
 }
 
 function bindEvents() {
-  document.querySelectorAll("[data-admin-tab]").forEach(el=>el.addEventListener("click",()=>{adminTab=el.dataset.adminTab;if(adminTab==="students")loadAdminStudents();else if(adminTab==="audit")loadAdminAudit();else render();}));
+  document.querySelectorAll("[data-admin-tab]").forEach(el=>el.addEventListener("click",()=>{adminTab=el.dataset.adminTab;if(adminTab==="students")loadAdminStudents();else if(adminTab==="payments")loadAdminPaymentPlans();else if(adminTab==="audit")loadAdminAudit();else render();}));
   document.querySelectorAll("[data-admin-refresh]").forEach(el=>el.addEventListener("click",()=>{if(adminAccess.isAdmin)loadAdminDashboard();else loadAdminAccess(true);}));
   document.querySelectorAll("[data-admin-audit-refresh]").forEach(el=>el.addEventListener("click",loadAdminAudit));
   document.querySelectorAll("[data-admin-students-refresh]").forEach(el=>el.addEventListener("click",loadAdminStudents));
+  document.querySelectorAll("[data-admin-payment-refresh]").forEach(el=>el.addEventListener("click",loadAdminPaymentPlans));
+  document.querySelectorAll("[data-admin-payment-save]").forEach(button=>button.addEventListener("click",()=>{
+    const plans=adminPaymentPlans.map(plan=>({
+      planId:plan.planId,
+      starsPrice:Number(document.querySelector('[data-payment-price="'+plan.planId+'"]')?.value||0),
+      enabled:Boolean(document.querySelector('[data-payment-enabled="'+plan.planId+'"]')?.checked),
+    }));
+    if(plans.some(plan=>!Number.isInteger(plan.starsPrice)||plan.starsPrice<0||plan.starsPrice>100000)){toast("Цена должна быть целым числом от 0 до 100 000 Stars.");return;}
+    button.disabled=true;button.textContent="Сохраняем…";
+    const called=callAdminApi("savePaymentPlans",{plans},(error,result)=>{
+      button.disabled=false;button.textContent="Сохранить тарифы";
+      if(error||!result?.ok){toast(error?.message||result?.message||"Не удалось сохранить тарифы.");return;}
+      adminPaymentPlans=Array.isArray(result.plans)?result.plans:plans;render();toast(result.message||"Тарифы сохранены.");
+    });
+    if(!called){button.disabled=false;button.textContent="Сохранить тарифы";toast("Открой панель из Telegram.");}
+  }));
   document.querySelectorAll("[data-admin-student]").forEach(el=>el.addEventListener("click",()=>loadAdminStudentDetail(el.dataset.adminStudent)));
   document.querySelectorAll("[data-admin-student-back]").forEach(el=>el.addEventListener("click",()=>{adminStudentSelected="";adminStudentDetail=null;adminStudentDetailError="";render();}));
   document.querySelectorAll("[data-admin-subscription-grant]").forEach(button=>button.addEventListener("click",()=>{
