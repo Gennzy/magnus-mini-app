@@ -1,5 +1,5 @@
 import { api, db } from 'sdk';
-import { eq } from 'sdk/db';
+import { eq, desc } from 'sdk/db';
 import { paymentOrders, studentData, studentSubscriptions, subscriptionPlans } from '../schema.js';
 import { DEFAULT_SUBSCRIPTION_PLANS, normalizePlan } from '../lib/subscriptionPlans.js';
 
@@ -17,6 +17,22 @@ export default async function (input, ctx) {
   if (input?.action === 'plans') {
     const plans = await loadPlans();
     return { ok: true, plans: plans.filter(plan => plan.enabled) };
+  }
+
+  if (input?.action === 'history') {
+    const orders = await db.select().from(paymentOrders)
+      .where(eq(paymentOrders.tgId, tgId)).orderBy(desc(paymentOrders.createdAt)).limit(30).all();
+    const savedPlans = await db.select().from(subscriptionPlans).all();
+    const planTitles = new Map(savedPlans.map(row => [row.planId, row.title]));
+    return {
+      ok: true,
+      orders: orders.map(order => ({
+        id: order.id, planId: order.planId,
+        planTitle: planTitles.get(order.planId) || DEFAULT_SUBSCRIPTION_PLANS.find(plan => plan.planId === order.planId)?.title || order.planId,
+        amount: Number(order.amount) || 0, currency: order.currency, status: order.status,
+        createdAt: Number(order.createdAt) || 0, paidAt: Number(order.paidAt) || 0,
+      })),
+    };
   }
 
   if (input?.action === 'createInvoice') {
