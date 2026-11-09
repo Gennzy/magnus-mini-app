@@ -16,3 +16,14 @@ export const adminUsers = table("admin_users", {
   linkedAt: integer("linked_at").notNull(),
   active: integer("active").notNull().default(1),
 });
+
+// Настройки Telegram-бота редактируются владельцем из админ-панели.
+export const botSettings = table('bot_settings', {
+  key: text('key').primaryKey(),
+  welcomeMessage: text('welcome_message').notNull(),
+  description: text('description').notNull(),
+  shortDescription: text('short_description').notNull(),
+  menuButtonText: text('menu_button_text').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+  updatedBy: text('updated_by').notNull(),
+});
