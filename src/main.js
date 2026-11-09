@@ -65,7 +65,9 @@ const assignments = [
   }
 ];
 
-let currentPage = "home";
+let adminAccess = { loading: true, isAdmin: false, role: null };
+let adminDashboard = null, adminTab = "overview", adminLoading = false, adminError = "";
+let currentPage = new URLSearchParams(window.location.search).get("admin") === "1" ? "admin" : "home";
 let selectedFaculty = faculties[0];
 let selectedCourse = courses[0];
 let selectedLessonId = "ai-01";
@@ -220,6 +222,9 @@ function callCloudStudentData(action, payload, callback) {
   return true;
 }
 
+function callAdminApi(action,payload,callback){const serverless=tg?.Serverless;if(typeof serverless?.call!=="function")return false;serverless.call("admin",{action,...payload},(error,result)=>{if(typeof callback==="function")callback(error,result);});return true;}
+function loadAdminAccess(openPanel=false){callAdminApi("status",{},(error,result)=>{adminAccess={loading:false,isAdmin:!error&&Boolean(result?.isAdmin),role:result?.role||null};if(openPanel&&adminAccess.isAdmin)loadAdminDashboard();if(currentPage==="admin"||currentPage==="profile")render();});}
+function loadAdminDashboard(){adminLoading=true;adminError="";if(currentPage==="admin")render();callAdminApi("overview",{},(error,result)=>{adminLoading=false;if(error||!result?.ok){adminError=error?.message||result?.message||"Не удалось загрузить панель управления.";adminDashboard=null;}else{adminDashboard=result;adminError="";}if(currentPage==="admin")render();});}
 function scheduleCloudStudentDataSync() {
   if (!cloudSyncReady) return;
   window.clearTimeout(cloudSyncTimer);
@@ -459,9 +464,10 @@ function assignmentDetailPage() {
   const a=assignments.find(item=>item.id===selectedAssignmentId)||assignments[0];
   const draft=assignmentDrafts[a.id]||"",saved=hasAssignmentDraft(a.id),submissions=assignmentSubmissions[a.id]||[];
   const latest=submissions[submissions.length-1];
+  const latestStatus=latest?.status==="reviewed"?"Проверено":latest?.status==="revision"?"Нужны доработки":latest?"Получено":"К выполнению";
   return `<main class="screen inner-screen assignment-detail-screen">
     <button class="back-button" data-go="assignments">${icon("back")} Все задания</button>
-    <section class="assignment-detail-hero"><div class="assignment-detail-top"><span class="assignment-kind">${esc(a.type)} · MAGNUS</span><span class="assignment-status ${saved?"has-draft":""}" id="assignment-detail-status">${latest?"Отправлено":saved?"Черновик сохранён":"К выполнению"}</span></div><h1>${esc(a.title)}</h1><p>${esc(a.course)}</p><div class="assignment-detail-meta"><span><small>СРОК СДАЧИ</small><b>${esc(a.due)}</b></span><span><small>ОЦЕНКА ВРЕМЕНИ</small><b>${esc(a.estimate)}</b></span></div></section>
+    <section class="assignment-detail-hero"><div class="assignment-detail-top"><span class="assignment-kind">${esc(a.type)} · MAGNUS</span><span class="assignment-status ${saved?"has-draft":""}" id="assignment-detail-status">${latestStatus}</span></div><h1>${esc(a.title)}</h1><p>${esc(a.course)}</p><div class="assignment-detail-meta"><span><small>СРОК СДАЧИ</small><b>${esc(a.due)}</b></span><span><small>ОЦЕНКА ВРЕМЕНИ</small><b>${esc(a.estimate)}</b></span></div></section>
     <section class="assignment-instructions"><span class="subtle-label">ЧТО НУЖНО СДЕЛАТЬ</span><p>${esc(a.description)}</p><h2>План выполнения</h2><ol>${a.requirements.map((r,i)=>`<li><span>0${i+1}</span>${esc(r)}</li>`).join("")}</ol></section>
     <section class="assignment-answer"><div class="assignment-answer-head"><div><span class="subtle-label">ТВОЙ ОТВЕТ</span><h2>Рабочее поле</h2></div><span class="assignment-draft-mark" id="assignment-draft-mark">${saved?"ЧЕРНОВИК ЕСТЬ":"НОВЫЙ ОТВЕТ"}</span></div>
       <textarea id="assignment-answer" aria-label="Текст ответа на задание" maxlength="12000" placeholder="Начни писать ответ здесь...">${esc(draft)}</textarea>
@@ -469,7 +475,7 @@ function assignmentDetailPage() {
       <div class="assignment-save-row"><small>Черновик можно редактировать до отправки. После отправки ответ сохранится в истории.</small><button class="orange-button" data-action="save-assignment-draft">Сохранить черновик</button></div>
       <div class="assignment-submit-row"><p>Отправка сохранит ответ в облаке MAGNUS. Сейчас автоматическая или преподавательская проверка не подключена.</p><button class="assignment-submit-button" data-action="submit-assignment" ${draft.trim().length<30?"disabled":""}>Отправить ответ</button></div>
     </section>
-    ${submissions.length?`<section class="assignment-history"><div class="section-title"><div><span class="subtle-label">ИСТОРИЯ</span><h2>Отправленные ответы</h2></div><span class="course-count">${submissions.length}</span></div>${submissions.slice().reverse().map((item,index)=>`<article class="submission-record"><div><b>Попытка ${submissions.length-index}</b><span>${new Date(item.submittedAt).toLocaleString("ru-RU",{dateStyle:"medium",timeStyle:"short"})}</span></div><p>${esc(item.answer)}</p><small>Получено сервером · проверка преподавателем не проводилась</small></article>`).join("")}</section>`:""}
+    ${submissions.length?`<section class="assignment-history"><div class="section-title"><div><span class="subtle-label">ИСТОРИЯ</span><h2>Отправленные ответы</h2></div><span class="course-count">${submissions.length}</span></div>${submissions.slice().reverse().map((item,index)=>`<article class="submission-record"><div><b>Попытка ${submissions.length-index}</b><span>${new Date(item.submittedAt).toLocaleString("ru-RU",{dateStyle:"medium",timeStyle:"short"})}</span></div><p>${esc(item.answer)}</p><small>${item.status==="reviewed"?"Проверено преподавателем":item.status==="revision"?"Нужны доработки":"Получено сервером"}${item.grade===null||item.grade===undefined?"":` · оценка ${item.grade}/100`}</small>${item.comment?`<div class="submission-comment">${esc(item.comment)}</div>`:""}</article>`).join("")}</section>`:""}
     <p class="assignment-demo-note">Отправленные ответы доступны в облачной истории этого аккаунта. Преподавательская проверка, оценки и обратная связь будут подключены отдельно.</p>
   </main>`;
 }
@@ -518,7 +524,8 @@ function profilePage() {
       <div><b>${quizCount}</b><small>Результаты тестов</small></div>
       <div><b>${telegramConnected?"Да":"—"}</b><small>Telegram</small></div>
     </div>
-    <section class="profile-sync-card">
+    ${adminAccess.isAdmin?`<button class="profile-admin-link" data-go="admin"><span>УПРАВЛЕНИЕ MAGNUS</span><b>Открыть панель администратора ${icon("arrow")}</b></button>`:""}
+  <section class="profile-sync-card">
       <span class="profile-sync-icon">${icon("cloud")}</span>
       <div><b>${cloudSyncReady?"Облачная синхронизация активна":"Сохранение учебных материалов"}</b><p>${cloudSyncReady?"Черновики и заметки синхронизируются с облачным хранилищем.":"Черновики и заметки сохраняются на этом устройстве. Облачное подключение пока не подтверждено."}</p></div>
       <span class="profile-sync-state ${cloudSyncReady?"active":""}">${cloudSyncReady?"ОНЛАЙН":"ЛОКАЛЬНО"}</span>
@@ -532,8 +539,25 @@ function profilePage() {
   </main>`;
 }
 
+function adminSubmissionCard(item,reviewable){
+ const status=item.status==="reviewed"?"Проверено":item.status==="revision"?"На доработке":"Ожидает проверки";
+ const date=item.submittedAt?new Date(item.submittedAt).toLocaleString("ru-RU",{dateStyle:"medium",timeStyle:"short"}):"Дата не указана";
+ return `<article class="admin-submission" data-admin-submission="${esc(item.id)}"><div class="admin-submission-head"><div><span>${esc(item.studentName||"Студент")} · ID ${esc(item.studentId||"—")}</span><h3>${esc(assignments.find(a=>a.id===item.assignmentId)?.title||item.assignmentId)}</h3></div><span class="admin-review-status ${item.status==="reviewed"?"done":item.status==="revision"?"revision":""}">${status}</span></div><time>${date}</time><p class="admin-answer-text">${esc(item.answer||"")}</p>
+ ${reviewable?`<div class="admin-review-fields"><label>Комментарий<textarea data-review-comment placeholder="Обратная связь студенту…">${esc(item.comment||"")}</textarea></label><label>Оценка<input data-review-grade type="number" min="0" max="100" step="1" placeholder="0–100" value="${item.grade??""}"></label></div><div class="admin-review-actions"><button data-review-status="revision" data-student-id="${esc(item.studentId)}" data-submission-id="${esc(item.id)}">На доработку</button><button data-review-status="reviewed" data-student-id="${esc(item.studentId)}" data-submission-id="${esc(item.id)}">Принять работу</button></div>`:item.comment?`<p class="admin-existing-comment">${esc(item.comment)}</p>`:""}</article>`;
+}
+function adminPage(){
+ if(!adminAccess.isAdmin)return `<main class="screen inner-screen admin-screen"><div class="admin-access-state"><span class="admin-eyebrow">MAGNUS · CONTROL</span><h1>Панель управления</h1><p>${adminAccess.loading?"Проверяем права доступа…":"Для этого аккаунта пока не подключены права администратора."}</p><button class="orange-button" data-admin-refresh>Проверить доступ</button></div></main>`;
+ const data=adminDashboard,stats=data?.stats||{students:0,submissions:0,pending:0,reviewed:0},items=data?.submissions||[];
+ const tabs=[["overview","Обзор"],["reviews","Работы"],["bot","Бот"]];
+ return `<main class="screen inner-screen admin-screen"><header class="admin-header"><div><span class="admin-eyebrow">MAGNUS · CONTROL CENTER</span><h1>Управление</h1><p>${esc(data?.admin?.email||"Администратор")} · ${esc(data?.admin?.role||"admin")}</p></div><button class="admin-refresh" data-admin-refresh aria-label="Обновить данные">${icon("refresh")}</button></header>
+ <nav class="admin-tabs" aria-label="Разделы панели">${tabs.map(([key,label])=>`<button class="${adminTab===key?"active":""}" data-admin-tab="${key}">${label}</button>`).join("")}</nav>
+ ${adminLoading&&!data?`<div class="admin-loading">Загружаем данные MAGNUS…</div>`:""}${adminError?`<div class="admin-error" role="alert">${esc(adminError)}</div>`:""}
+ ${adminTab==="overview"?`<section><div class="admin-stat-grid"><article><span>СТУДЕНТЫ</span><b>${stats.students}</b><small>Аккаунтов с учебными данными</small></article><article><span>ОТПРАВКИ</span><b>${stats.submissions}</b><small>Ответов в истории</small></article><article class="needs-review"><span>ОЖИДАЮТ ПРОВЕРКИ</span><b>${stats.pending}</b><small>Нужны действия преподавателя</small></article><article><span>РАССМОТРЕНО</span><b>${stats.reviewed}</b><small>Проверено или возвращено</small></article></div><div class="admin-section-head"><div><span>ПОСЛЕДНИЕ СОБЫТИЯ</span><h2>Учебные работы</h2></div><button data-admin-tab="reviews">Все работы ${icon("arrow")}</button></div>${items.slice(0,4).map(item=>adminSubmissionCard(item,false)).join("")||`<div class="admin-empty">Отправленных работ пока нет.</div>`}</section>`:adminTab==="reviews"?`<section><div class="admin-section-head"><div><span>ПРОВЕРКА</span><h2>Работы студентов</h2></div><span class="admin-count">${items.length}</span></div>${items.map(item=>adminSubmissionCard(item,true)).join("")||`<div class="admin-empty">Пока нет отправленных работ.</div>`}</section>`:`<section><div class="admin-bot-card"><div class="admin-bot-top"><span class="admin-bot-icon">M</span><div><span>TELEGRAM BOT</span><h2>${esc(data?.bot?.firstName||"MAGNUS")}</h2><p>@${esc(data?.bot?.username||"bot")}</p></div><span class="admin-live">${data?.bot?.webhookActive?"Webhook активен":"Webhook не настроен"}</span></div><div class="admin-bot-meta"><div><small>ОЖИДАЮТ ОБРАБОТКИ</small><b>${Number(data?.bot?.webhookPending||0)}</b></div><div><small>КОМАНД В МЕНЮ</small><b>${data?.bot?.commands?.length||0}</b></div></div>${data?.bot?.lastError?`<p class="admin-bot-warning">${esc(data.bot.lastError)}</p>`:""}</div><div class="admin-settings-card"><span>БЫСТРАЯ НАСТРОЙКА</span><h2>Команды и меню бота</h2><p>Установить /start, /help и /admin, обновить описание и кнопку открытия Mini App в меню Telegram.</p><button class="orange-button" data-admin-action="configure-bot">Настроить бота ${icon("arrow")}</button></div><div class="admin-command-list"><span>КОМАНДЫ БОТА</span>${(data?.bot?.commands||[]).map(item=>`<div><b>/${esc(item.command)}</b><span>${esc(item.description)}</span></div>`).join("")||`<p>Команды ещё не настроены.</p>`}</div></section>`}
+ </main>`;
+}
+
 function render() {
-  const pages = {home:homePage,faculties:facultiesPage,facultyDetail:facultyDetailPage,study:studyPage,courseDetail:courseDetailPage,lesson:lessonPage,assignments:assignmentsPage,assignmentDetail:assignmentDetailPage,documents:documentsPage,profile:profilePage};
+  const pages = {home:homePage,faculties:facultiesPage,facultyDetail:facultyDetailPage,study:studyPage,courseDetail:courseDetailPage,lesson:lessonPage,assignments:assignmentsPage,assignmentDetail:assignmentDetailPage,documents:documentsPage,profile:profilePage,admin:adminPage};
   document.querySelector("#app").innerHTML = `${topbar()}${(pages[currentPage] || homePage)()}${bottomNav()}<div class="toast" id="toast" role="status"></div>`;
   bindEvents();
 }
@@ -548,7 +572,11 @@ function toast(message) {
 }
 
 function bindEvents() {
-  document.querySelectorAll("[data-go]").forEach(el => el.addEventListener("click", () => { currentPage = el.dataset.go; searchValue=""; render(); window.scrollTo({top:0,behavior:"smooth"}); }));
+  document.querySelectorAll("[data-admin-tab]").forEach(el=>el.addEventListener("click",()=>{adminTab=el.dataset.adminTab;render();}));
+  document.querySelectorAll("[data-admin-refresh]").forEach(el=>el.addEventListener("click",()=>{if(adminAccess.isAdmin)loadAdminDashboard();else loadAdminAccess(true);}));
+  document.querySelectorAll("[data-admin-action]").forEach(el=>el.addEventListener("click",()=>{if(el.dataset.adminAction==="configure-bot"){el.disabled=true;el.textContent="Настраиваем…";callAdminApi("configureBot",{},(error,result)=>{toast(error?.message||result?.message||"Настройка завершена.");loadAdminDashboard();});}}));
+  document.querySelectorAll("[data-review-status]").forEach(el=>el.addEventListener("click",()=>{const card=el.closest("[data-admin-submission]"),comment=card?.querySelector("[data-review-comment]")?.value||"",grade=card?.querySelector("[data-review-grade]")?.value??"";el.disabled=true;callAdminApi("reviewSubmission",{studentId:el.dataset.studentId,submissionId:el.dataset.submissionId,status:el.dataset.reviewStatus,comment,grade},(error,result)=>{if(error||!result?.ok){toast(error?.message||result?.message||"Не удалось сохранить проверку.");loadAdminDashboard();return;}toast("Проверка сохранена. Студент получил уведомление.");loadAdminDashboard();});}));
+  document.querySelectorAll("[data-go]").forEach(el => el.addEventListener("click", () => { currentPage = el.dataset.go; searchValue=""; if(currentPage==="admin")loadAdminDashboard(); render(); window.scrollTo({top:0,behavior:"smooth"}); }));
   document.querySelectorAll("[data-faculty]").forEach(el => el.addEventListener("click", () => { selectedFaculty=faculties.find(f=>f.id===el.dataset.faculty)||faculties[0]; currentPage="facultyDetail"; render(); window.scrollTo({top:0,behavior:"smooth"}); }));
   document.querySelectorAll("[data-lesson-open]").forEach(el=>el.addEventListener("click",()=>{selectedLessonId=el.dataset.lessonOpen;quizChoice="";lessonTab="lesson";currentPage="lesson";render();window.scrollTo({top:0,behavior:"smooth"});}));
   document.querySelectorAll("[data-course]").forEach(el => el.addEventListener("click", (event) => {
@@ -704,6 +732,7 @@ function showStartupScreen() {
 }
 
 render();
+if(currentPage==="admin")loadAdminAccess(true);else loadAdminAccess(false);
 showStartupScreen();
 triggerStartupHaptic();
 initializeCloudStudentData();
