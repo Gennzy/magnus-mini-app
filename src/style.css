@@ -6681,3 +6681,54 @@ body { background:#f6f6f3;color:#252b2d; }
  .admin-subscription-actions .orange-button,.admin-subscription-revoke { width:100%; }
  .admin-subscription-facts b { font-size:10px; }
 }
+
+/* Telegram Stars plans and student checkout */
+.admin-payment-plans,.profile-plans {
+ margin:16px 0;padding:16px;border:1px solid #e7e5df;border-radius:12px;background:#fff;
+}
+.admin-payment-intro,.profile-plans-heading>p {
+ margin:0 0 14px;color:#7d888b;font-size:10px;line-height:1.65;
+}
+.admin-payment-plan-list { display:grid;gap:9px; }
+.admin-payment-plan {
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(125px,.7fr) minmax(150px,.8fr);
+ align-items:center;gap:14px;padding:12px;border:1px solid #eeece7;border-radius:9px;
+}
+.admin-payment-plan>div { display:flex;flex-direction:column;gap:5px; }
+.admin-payment-plan>div>span { color:#3d474a;font-size:12px;font-weight:800; }
+.admin-payment-plan>div>b { color:#899194;font-size:10px; }
+.admin-payment-plan>label { display:flex;flex-direction:column;gap:5px;color:#7d888b;font-size:9px;font-weight:750; }
+.admin-payment-plan input[type=number] {
+ width:100%;height:36px;padding:0 9px;border:1px solid #e5e3dc;border-radius:7px;
+ background:#fff;color:#30383a;font:inherit;font-size:11px;
+}
+.admin-payment-plan .admin-payment-toggle { flex-direction:row;align-items:center;gap:8px; }
+.admin-payment-plan .admin-payment-toggle input { accent-color:#e87525; }
+.admin-payment-plans .admin-settings-actions { display:flex;align-items:center;gap:12px;margin-top:14px; }
+.admin-payment-plans .admin-settings-actions small { color:#899194;font-size:9px;line-height:1.5; }
+.profile-plans { padding:14px;margin-bottom:20px; }
+.profile-plans-heading { margin-bottom:12px; }
+.profile-plans-heading h2 { margin:5px 0;color:#30383a;font-size:18px;letter-spacing:-.5px; }
+.profile-plans-heading>p { margin:0; }
+.profile-plan {
+ display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px;
+ padding:12px 0;border-top:1px solid #eeece7;
+}
+.profile-plan>div { display:flex;flex-direction:column;gap:4px; }
+.profile-plan>div>b { color:#30383a;font-size:12px; }
+.profile-plan>div>small { color:#899194;font-size:9px; }
+.profile-plan>strong { color:#30383a;font-size:12px;white-space:nowrap; }
+.profile-plan>button {
+ min-width:76px;min-height:34px;padding:7px 11px;border:0;border-radius:7px;
+ background:#e87525;color:#fff;font-size:10px;font-weight:800;
+}
+.profile-plan>button:disabled { opacity:.55; }
+.profile-plans-empty { padding:13px 0;color:#899194;font-size:10px; }
+@media(max-width:650px) {
+ .admin-payment-plan { grid-template-columns:1fr 1fr;gap:10px; }
+ .admin-payment-plan>div { grid-column:1/-1; }
+ .admin-payment-plans .admin-settings-actions { align-items:stretch;flex-direction:column; }
+ .admin-payment-plans .admin-settings-actions .orange-button { width:100%; }
+ .profile-plan { grid-template-columns:minmax(0,1fr) auto; }
+ .profile-plan>button { grid-column:1/-1;width:100%; }
+}
