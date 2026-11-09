@@ -36,6 +36,39 @@ function cleanText(value, max) {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
 }
 
+function plainMap(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function summarizeStudent(row) {
+  const payload = plainMap(row.payload);
+  const profile = plainMap(payload.studentProfile);
+  const submissions = Array.isArray(payload.assignmentSubmissions) ? payload.assignmentSubmissions : [];
+  const completedLessons = plainMap(payload.completedLessons);
+  const quizResults = plainMap(payload.lessonQuizResults);
+  const quizAttempts = Object.values(quizResults).reduce((total, raw) => {
+    try {
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      return total + Math.max(0, Number(parsed?.attempts) || 0);
+    } catch { return total; }
+  }, 0);
+  return {
+    telegramId: String(row.tgId),
+    firstName: cleanText(profile.firstName, 80),
+    lastName: cleanText(profile.lastName, 80),
+    username: cleanText(profile.username, 64),
+    updatedAt: Number(row.updatedAt) || 0,
+    submissionsCount: submissions.length,
+    pendingCount: submissions.filter(item => item.status === 'received').length,
+    reviewedCount: submissions.filter(item => item.status === 'reviewed').length,
+    revisionCount: submissions.filter(item => item.status === 'revision').length,
+    completedLessonsCount: Object.keys(completedLessons).length,
+    quizAnswersCount: Object.keys(quizResults).length,
+    quizAttempts,
+    interestedFacultiesCount: Object.keys(plainMap(payload.interestedFaculties)).length,
+  };
+}
+
 async function writeAudit(entry) {
   await db.insert(adminAuditLog).values({
     id: Date.now() + '-' + Math.random().toString(36).slice(2, 10),
@@ -98,6 +131,40 @@ export default async function (input, ctx) {
     const entries = await db.select().from(adminAuditLog)
       .orderBy(desc(adminAuditLog.createdAt)).limit(150).all();
     return { ok: true, entries };
+  }
+
+
+  if (input?.action === 'students') {
+    const rows = await db.select().from(studentData)
+      .orderBy(desc(studentData.updatedAt)).limit(1000).all();
+    return { ok: true, students: rows.map(summarizeStudent) };
+  }
+
+  if (input?.action === 'studentDetail') {
+    const studentId = String(input.studentId || '').trim();
+    if (!/^\d{5,20}$/.test(studentId)) {
+      return { ok: false, code: 'INVALID_STUDENT', message: 'Некорректный Telegram ID студента.' };
+    }
+    const row = await db.select().from(studentData).where(eq(studentData.tgId, studentId)).get();
+    if (!row) return { ok: false, code: 'STUDENT_NOT_FOUND', message: 'Профиль студента не найден.' };
+    const payload = plainMap(row.payload);
+    const profile = plainMap(payload.studentProfile);
+    const submissions = Array.isArray(payload.assignmentSubmissions) ? payload.assignmentSubmissions.slice(-50) : [];
+    return {
+      ok: true,
+      student: summarizeStudent(row),
+      profile: {
+        firstName: cleanText(profile.firstName, 80),
+        lastName: cleanText(profile.lastName, 80),
+        username: cleanText(profile.username, 64),
+      },
+      submissions: submissions.reverse(),
+      interestedFaculties: Object.keys(plainMap(payload.interestedFaculties)),
+      completedLessonIds: Object.keys(plainMap(payload.completedLessons)),
+      quizLessonIds: Object.keys(plainMap(payload.lessonQuizResults)),
+      notesCount: Object.keys(plainMap(payload.lessonNotes)).length,
+      draftsCount: Object.keys(plainMap(payload.assignmentDrafts)).length,
+    };
   }
 
   if (input?.action === 'overview') {
