@@ -6246,3 +6246,18 @@ body { background:#f6f6f3;color:#252b2d; }
   .profile-screen .profile-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .quiz-saved-result { font-size:10px; }
 }
+
+
+/* Structured course curriculum and lesson navigation */
+.curriculum-progress { height:5px;margin-top:11px;overflow:hidden;border-radius:8px;background:#efede8; }
+.curriculum-progress>span { display:block;height:100%;border-radius:8px;background:#e87525;transition:width .2s ease; }
+.curriculum-lesson-row { width:100%;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer; }
+.curriculum-lesson-copy { display:flex;flex:1;min-width:0;flex-direction:column;gap:5px; }
+.curriculum-lesson-copy>b { color:#374043;font-size:11px; }
+.curriculum-lesson-copy>small { color:#7b8486;font-size:9px; }
+.curriculum-lesson-state { display:inline-flex;align-items:center;gap:5px;color:#9b5a30;font-size:9px;white-space:nowrap; }
+.curriculum-lesson-state svg { width:13px;height:13px; }
+.lesson-sequence { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding-top:14px;border-top:1px solid #e9e6df; }
+.lesson-sequence button { min-height:36px;padding:8px 10px;border:1px solid #e8ded3;border-radius:8px;background:#fff;color:#9f582a;font-size:10px;font-weight:750; }
+.lesson-sequence>span { color:#858d8f;font-size:10px; }
+@media(max-width:420px) { .curriculum-lesson-row { gap:8px;padding:10px; } .curriculum-lesson-state { font-size:8px; } .lesson-sequence button { font-size:9px;padding:7px; } }
