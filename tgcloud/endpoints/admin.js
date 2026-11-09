@@ -1,6 +1,6 @@
 import { db, api } from 'sdk';
 import { eq, desc } from 'sdk/db';
-import { adminUsers, studentData, botSettings, adminAuditLog, adminMessages } from '../schema.js';
+import { adminUsers, studentData, botSettings, adminAuditLog, adminMessages, studentSubscriptions } from '../schema.js';
 
 const APP_URL = 'https://app9020486965.tgcloud.ai/';
 const BOT_COMMANDS = [
@@ -38,6 +38,18 @@ function cleanText(value, max) {
 
 function plainMap(value) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function publicSubscription(row, now = Math.floor(Date.now() / 1000)) {
+  if (!row) return { status: 'none', planId: '', startsAt: 0, endsAt: 0, source: '' };
+  const status = row.status === 'active' && Number(row.endsAt) <= now ? 'expired' : row.status;
+  return {
+    status,
+    planId: cleanText(row.planId, 32),
+    startsAt: Number(row.startsAt) || 0,
+    endsAt: Number(row.endsAt) || 0,
+    source: cleanText(row.source, 32),
+  };
 }
 
 function summarizeStudent(row) {
@@ -137,7 +149,12 @@ export default async function (input, ctx) {
   if (input?.action === 'students') {
     const rows = await db.select().from(studentData)
       .orderBy(desc(studentData.updatedAt)).limit(1000).all();
-    return { ok: true, students: rows.map(summarizeStudent) };
+    const subscriptions = await db.select().from(studentSubscriptions).all();
+    const byStudent = new Map(subscriptions.map(row => [String(row.tgId), publicSubscription(row)]));
+    return { ok: true, students: rows.map(row => ({
+      ...summarizeStudent(row),
+      subscription: byStudent.get(String(row.tgId)) || publicSubscription(null),
+    })) };
   }
 
   if (input?.action === 'studentDetail') {
@@ -150,9 +167,12 @@ export default async function (input, ctx) {
     const payload = plainMap(row.payload);
     const profile = plainMap(payload.studentProfile);
     const submissions = Array.isArray(payload.assignmentSubmissions) ? payload.assignmentSubmissions.slice(-50) : [];
+    const subscriptionRow = await db.select().from(studentSubscriptions)
+      .where(eq(studentSubscriptions.tgId, studentId)).get();
     return {
       ok: true,
-      student: summarizeStudent(row),
+      student: { ...summarizeStudent(row), subscription: publicSubscription(subscriptionRow) },
+      subscription: publicSubscription(subscriptionRow),
       profile: {
         firstName: cleanText(profile.firstName, 80),
         lastName: cleanText(profile.lastName, 80),
@@ -168,6 +188,64 @@ export default async function (input, ctx) {
       notesCount: Object.keys(plainMap(payload.lessonNotes)).length,
       draftsCount: Object.keys(plainMap(payload.assignmentDrafts)).length,
     };
+  }
+
+  if (input?.action === 'grantSubscription') {
+    const studentId = String(input.studentId || '').trim();
+    const days = Number(input.days);
+    const plans = { 7: 'trial-7d', 30: 'monthly-30d', 90: 'quarterly-90d', 365: 'annual-365d' };
+    if (!/^\d{5,20}$/.test(studentId)) return { ok: false, code: 'INVALID_STUDENT', message: 'Некорректный Telegram ID студента.' };
+    if (!plans[days]) return { ok: false, code: 'INVALID_DURATION', message: 'Выбери срок 7, 30, 90 или 365 дней.' };
+    const student = await db.select({ tgId: studentData.tgId }).from(studentData)
+      .where(eq(studentData.tgId, studentId)).get();
+    if (!student) return { ok: false, code: 'STUDENT_NOT_FOUND', message: 'Студент не найден в базе.' };
+    const now = Math.floor(Date.now() / 1000);
+    const existing = await db.select().from(studentSubscriptions)
+      .where(eq(studentSubscriptions.tgId, studentId)).get();
+    const startsAt = existing?.status === 'active' && Number(existing.endsAt) > now
+      ? Number(existing.startsAt) || now : now;
+    const base = existing?.status === 'active' && Number(existing.endsAt) > now
+      ? Number(existing.endsAt) : now;
+    const endsAt = base + days * 86400;
+    const record = {
+      tgId: studentId, planId: plans[days], status: 'active',
+      startsAt, endsAt, source: 'manual', createdBy: tgId,
+      createdAt: existing?.createdAt || now, updatedAt: now,
+    };
+    await db.insert(studentSubscriptions).values(record).onConflictDoUpdate({
+      target: studentSubscriptions.tgId,
+      set: { planId: record.planId, status: 'active', startsAt, endsAt, source: 'manual', createdBy: tgId, updatedAt: now },
+    }).run();
+    await writeAuditSafely({
+      action: 'subscription.granted', actorTgId: tgId, actorEmail: admin.email,
+      targetType: 'student', targetId: studentId,
+      summary: 'Выдан учебный доступ на ' + days + ' дней',
+      details: { days, planId: plans[days], startsAt, endsAt },
+    });
+    return { ok: true, subscription: publicSubscription(record), message: 'Доступ выдан на ' + days + ' дней.' };
+  }
+
+  if (input?.action === 'revokeSubscription') {
+    const studentId = String(input.studentId || '').trim();
+    if (!/^\d{5,20}$/.test(studentId)) return { ok: false, code: 'INVALID_STUDENT', message: 'Некорректный Telegram ID студента.' };
+    const existing = await db.select().from(studentSubscriptions)
+      .where(eq(studentSubscriptions.tgId, studentId)).get();
+    if (!existing || existing.status !== 'active' || Number(existing.endsAt) <= Math.floor(Date.now() / 1000)) {
+      return { ok: false, code: 'NO_ACTIVE_SUBSCRIPTION', message: 'У студента нет действующего доступа.' };
+    }
+    const now = Math.floor(Date.now() / 1000);
+    const revoked = { ...existing, status: 'revoked', updatedAt: now };
+    await db.insert(studentSubscriptions).values(revoked).onConflictDoUpdate({
+      target: studentSubscriptions.tgId,
+      set: { status: 'revoked', updatedAt: now },
+    }).run();
+    await writeAuditSafely({
+      action: 'subscription.revoked', actorTgId: tgId, actorEmail: admin.email,
+      targetType: 'student', targetId: studentId,
+      summary: 'Учебный доступ отозван',
+      details: { planId: existing.planId, previousEndsAt: existing.endsAt },
+    });
+    return { ok: true, subscription: publicSubscription(revoked), message: 'Учебный доступ отозван.' };
   }
 
   if (input?.action === 'sendStudentMessage') {
