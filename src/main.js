@@ -68,6 +68,8 @@ const assignments = [
 let adminAccess = { loading: true, isAdmin: false, role: null };
 let adminDashboard = null, adminTab = "overview", adminLoading = false, adminError = "";
 let adminAuditEntries = [], adminAuditLoading = false, adminAuditError = "";
+let adminStudents = [], adminStudentsLoading = false, adminStudentsError = "";
+let adminStudentSelected = "", adminStudentDetail = null, adminStudentDetailLoading = false, adminStudentDetailError = "";
 let currentPage = new URLSearchParams(window.location.search).get("admin") === "1" ? "admin" : "home";
 let selectedFaculty = faculties[0];
 let selectedCourse = courses[0];
@@ -227,6 +229,28 @@ function callCloudStudentData(action, payload, callback) {
 function callAdminApi(action,payload,callback){const serverless=tg?.Serverless;if(typeof serverless?.call!=="function")return false;serverless.call("admin",{action,...payload},(error,result)=>{if(typeof callback==="function")callback(error,result);});return true;}
 function loadAdminAccess(openPanel=false){const called=callAdminApi("status",{},(error,result)=>{adminAccess={loading:false,isAdmin:!error&&Boolean(result?.isAdmin),role:result?.role||null};if(openPanel&&adminAccess.isAdmin)loadAdminDashboard();if(currentPage==="admin"||currentPage==="profile")render();});if(!called){adminAccess={loading:false,isAdmin:false,role:null};if(currentPage==="admin"||currentPage==="profile")render();}}
 function loadAdminDashboard(){adminLoading=true;adminError="";if(currentPage==="admin")render();const called=callAdminApi("overview",{},(error,result)=>{adminLoading=false;if(error||!result?.ok){adminError=error?.message||result?.message||"Не удалось загрузить панель управления.";adminDashboard=null;}else{adminDashboard=result;adminError="";}if(currentPage==="admin")render();});if(!called){adminLoading=false;adminError="Открой MAGNUS через Telegram, чтобы подключить панель управления.";if(currentPage==="admin")render();}}
+function loadAdminStudents(){
+ adminStudentsLoading=true;adminStudentsError='';adminStudentSelected='';adminStudentDetail=null;
+ if(currentPage==='admin')render();
+ const called=callAdminApi('students',{},(error,result)=>{
+  adminStudentsLoading=false;
+  if(error||!result?.ok){adminStudents=[];adminStudentsError=error?.message||result?.message||'Не удалось загрузить список студентов.';}
+  else{adminStudents=Array.isArray(result.students)?result.students:[];adminStudentsError='';}
+  if(currentPage==='admin'&&adminTab==='students')render();
+ });
+ if(!called){adminStudentsLoading=false;adminStudentsError='Открой MAGNUS через Telegram, чтобы загрузить студентов.';if(currentPage==='admin')render();}
+}
+function loadAdminStudentDetail(studentId){
+ adminStudentSelected=String(studentId||'');adminStudentDetail=null;adminStudentDetailLoading=true;adminStudentDetailError='';
+ if(currentPage==='admin')render();
+ const called=callAdminApi('studentDetail',{studentId:adminStudentSelected},(error,result)=>{
+  adminStudentDetailLoading=false;
+  if(error||!result?.ok){adminStudentDetailError=error?.message||result?.message||'Не удалось загрузить профиль студента.';adminStudentDetail=null;}
+  else{adminStudentDetail=result;adminStudentDetailError='';}
+  if(currentPage==='admin'&&adminTab==='students')render();
+ });
+ if(!called){adminStudentDetailLoading=false;adminStudentDetailError='Открой MAGNUS через Telegram, чтобы загрузить профиль.';if(currentPage==='admin')render();}
+}
 function loadAdminAudit(){
  adminAuditLoading=true;adminAuditError='';
  if(currentPage==='admin')render();
