@@ -77,6 +77,8 @@ let activeAssignmentFilter = "Все";
 let assignmentDrafts = loadAssignmentDrafts();
 let lessonNotes = loadLessonNotes();
 let toastTimer;
+let cloudSyncTimer;
+let cloudSyncReady = false;
 
 const esc = (v) => String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const icon = (name, cls="") => {
@@ -156,6 +158,43 @@ function storeLessonNotes() {
     return false;
   }
 }
+function callCloudStudentData(action, payload, callback) {
+  const serverless = tg?.Serverless;
+  if (typeof serverless?.call !== "function") return false;
+  serverless.call("studentData", { action, ...payload }, (error, result) => {
+    if (typeof callback === "function") callback(error, result);
+  });
+  return true;
+}
+
+function scheduleCloudStudentDataSync() {
+  if (!cloudSyncReady) return;
+  window.clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = window.setTimeout(() => {
+    callCloudStudentData("save", {
+      assignmentDrafts,
+      lessonNotes
+    }, (error) => {
+      if (error) console.warn("MAGNUS: не удалось синхронизировать учебные данные.", error);
+    });
+  }, 900);
+}
+
+function initializeCloudStudentData() {
+  callCloudStudentData("load", {}, (error, result) => {
+    if (error || !result) {
+      console.warn("MAGNUS: облачная синхронизация пока недоступна.", error || "");
+      return;
+    }
+    assignmentDrafts = { ...(result.assignmentDrafts || {}), ...assignmentDrafts };
+    lessonNotes = { ...(result.lessonNotes || {}), ...lessonNotes };
+    storeAssignmentDrafts();
+    storeLessonNotes();
+    cloudSyncReady = true;
+    render();
+  });
+}
+
 function hasAssignmentDraft(id) {
   return Boolean(String(assignmentDrafts[id] || "").trim());
 }
@@ -467,6 +506,7 @@ function bindEvents() {
       if (!field) return;
       assignmentDrafts[selectedAssignmentId] = field.value;
       const saved = storeAssignmentDrafts();
+      scheduleCloudStudentDataSync();
       render();
       toast(saved
         ? "Черновик сохранён на этом устройстве. Преподавателю он пока не отправлен."
@@ -481,6 +521,7 @@ function bindEvents() {
   noteField?.addEventListener("input", e => {
     lessonNotes[selectedCourse.id] = e.target.value;
     storeLessonNotes();
+    scheduleCloudStudentDataSync();
   });
   const input = document.querySelector("#faculty-search");
   input?.addEventListener("input", e => { const pos=e.target.selectionStart; searchValue=e.target.value; const y=window.scrollY; render(); const next=document.querySelector("#faculty-search"); next?.focus(); next?.setSelectionRange(pos,pos); window.scrollTo(0,y); });
@@ -532,3 +573,4 @@ function showStartupScreen() {
 render();
 showStartupScreen();
 triggerStartupHaptic();
+initializeCloudStudentData();
