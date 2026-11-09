@@ -303,7 +303,7 @@ function facultiesPage() {
   });
   return `<main class="screen inner-screen">${heading("MAGNUS · АКАДЕМИЧЕСКАЯ СРЕДА","Выбери свой<br><em>факультет.</em>","Направления, которые помогут превратить любопытство в компетенции.")}
     <label class="search-box">${icon("search")}<input id="faculty-search" value="${esc(searchValue)}" placeholder="Поиск факультета" autocomplete="off"><span>⌘ K</span></label>
-    <div class="filter-row">${filters.map(f=>`<button class="filter-chip ${activeFilter===f?"selected":""}" data-filter="${f}">${f}</button>`).join("")}</div>
+    <div class="filter-row">${filters.map(f=>`<button class="filter-chip ${activeFilter===f?"selected":""}" data-filter="${f}" aria-pressed="${activeFilter===f}">${f}</button>`).join("")}</div>
     <div class="faculty-grid">${filtered.map(f=>`<button class="faculty-card" data-faculty="${f.id}">${facultyArt(f)}<span class="faculty-card-copy"><small>${f.en}</small><b>${f.name}</b><span>${f.desc}</span><i>Подробнее ${icon("arrow")}</i></span></button>`).join("")}</div>
     ${filtered.length?"":`<div class="empty-message">Ничего не найдено. Попробуй изменить запрос.</div>`}
   </main>`;
@@ -410,10 +410,10 @@ function lessonPage() {
       <div class="player-center"><div class="player-play">▶</div><b>Видеоурок</b><small>Демонстрационный экран</small></div>
       <div class="player-controls"><span>00:00</span><div class="player-track"><i></i></div><span>24:00</span><span>⋯</span></div>
     </section>
-    <div class="lesson-tabs">${[["lesson","Урок"],["materials","Конспект"],["notes","Заметки"]].map(([id,label])=>`<button class="${lessonTab===id?"selected":""}" data-lesson-tab="${id}">${label}</button>`).join("")}</div>
+    <div class="lesson-tabs">${[["lesson","Урок"],["materials","Конспект"],["notes","Заметки"]].map(([id,label])=>`<button class="${lessonTab===id?"selected":""}" data-lesson-tab="${id}" aria-pressed="${lessonTab===id}">${label}</button>`).join("")}</div>
     <section class="lesson-content">${tabContent}</section>
     <section class="lesson-quiz"><div class="kicker">ПРОВЕРЬ СЕБЯ</div><h2>Что помогает перейти от теории к пониманию?</h2><p>Выберите один вариант ответа.</p>
-      ${["Заучивание определений без примеров","Разбор конкретной ситуации и проверка вывода","Пропуск сложных понятий"].map((answer,i)=>`<button class="quiz-option ${quizChoice===String(i)?"chosen":""}" data-quiz="${i}"><span>${String.fromCharCode(65+i)}</span>${answer}${quizChoice===String(i)?'<b>✓</b>':""}</button>`).join("")}
+      ${["Заучивание определений без примеров","Разбор конкретной ситуации и проверка вывода","Пропуск сложных понятий"].map((answer,i)=>`<button class="quiz-option ${quizChoice===String(i)?"chosen":""}" data-quiz="${i}" aria-pressed="${quizChoice===String(i)}"><span>${String.fromCharCode(65+i)}</span>${answer}${quizChoice===String(i)?'<b>✓</b>':""}</button>`).join("")}
       ${quizChoice!==""?`<div class="quiz-feedback ${quizChoice==="1"?"correct":"incorrect"}">${quizChoice==="1"?"Верно! Пример помогает связать понятия с практикой.":"Попробуйте ещё раз: подумайте, что помогает применить знания на практике."}</div>`:""}
     </section>
     <div class="lesson-footer"><button class="lesson-finish" data-action="lesson-finish">Отметить урок завершённым ${icon("arrow")}</button><small>Демо-режим · отметка не сохраняется на сервере</small></div>
@@ -435,7 +435,7 @@ function assignmentsPage() {
       <div><b>${assignments.filter(a => !hasAssignmentDraft(a.id)).length}</b><span>Ожидают работы</span></div>
       <div><b>${assignments.filter(a => hasAssignmentDraft(a.id)).length}</b><span>С черновиком</span></div>
     </div>
-    <div class="assignment-filter-row">${filters.map(f => `<button class="filter-chip ${activeAssignmentFilter===f?"selected":""}" data-assignment-filter="${f}">${f}</button>`).join("")}</div>
+    <div class="assignment-filter-row">${filters.map(f => `<button class="filter-chip ${activeAssignmentFilter===f?"selected":""}" data-assignment-filter="${f}" aria-pressed="${activeAssignmentFilter===f}">${f}</button>`).join("")}</div>
     <div class="assignment-list">
       ${filtered.map(a => `<article class="assignment-card">
         <div class="assignment-card-top"><span class="assignment-kind">${a.type}</span><span class="assignment-status ${hasAssignmentDraft(a.id)?"has-draft":""}">${assignmentStatusText(a.id)}</span></div>
