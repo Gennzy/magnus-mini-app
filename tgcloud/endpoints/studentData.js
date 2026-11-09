@@ -52,13 +52,14 @@ export default async function (input, ctx) {
   }
 
   if (input?.action === 'save') {
+    const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
     const payload = {
       assignmentDrafts: cleanMap(input.assignmentDrafts),
       lessonNotes: cleanMap(input.lessonNotes),
       interestedFaculties: cleanMap(input.interestedFaculties),
       lessonQuizResults: cleanMap(input.lessonQuizResults),
       completedLessons: cleanMap(input.completedLessons),
-      assignmentSubmissions: Array.isArray(input.assignmentSubmissions) ? input.assignmentSubmissions.slice(-50) : [],
+      assignmentSubmissions: Array.isArray(existing?.payload?.assignmentSubmissions) ? existing.payload.assignmentSubmissions.slice(-50) : [],
     };
     await db.insert(studentData).values({
       tgId,
