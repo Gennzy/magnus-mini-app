@@ -151,7 +151,7 @@ function courseArtwork(c) {
 
 function courseTile(c, compact=false) {
   return `<article class="course-card ${compact?"compact":""}" data-course="${c.id}" tabindex="0" role="button" aria-label="Открыть курс: ${c.title}">
-    <div class="course-art ${c.color}" data-course-art="${c.id}">${courseArtwork(c)}<span class="course-art-mark">${c.mark}</span><span class="art-orbit"></span><span class="art-dots">✦　·　✧</span></div>
+    <div class="course-art ${c.color}" data-course-art="${c.id}">${courseArtwork(c)}<span class="course-art-mark">${c.mark}</span></div>
     <div class="course-details"><div class="course-meta"><span>${c.category}</span><span>${c.time}</span></div><h3>${c.title}</h3><p>${c.lesson}</p><div class="progress-line" role="progressbar" aria-label="Прогресс курса ${esc(c.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${c.progress}"><span style="width:${c.progress}%"></span></div><div class="progress-caption"><span>${c.progress}% пройдено</span><button data-course="${c.id}">Продолжить ${icon("arrow")}</button></div></div>
   </article>`;
 }
@@ -238,14 +238,15 @@ function assignmentStatusText(id) {
 
 function dashboardOverview() {
   const drafted = assignments.filter(a => hasAssignmentDraft(a.id)).length;
+  const notes = Object.values(lessonNotes).filter(value => String(value || "").trim()).length;
+  const savedTotal = drafted + notes;
   return `<section class="dashboard-overview">
-    <div class="section-title"><div><span class="subtle-label">ТВОЯ ТРАЕКТОРИЯ</span><h2>Прогресс обучения</h2></div><span class="dashboard-demo-tag">ДЕМО-ДАННЫЕ</span></div>
-    <div class="dashboard-metrics">
-      <article class="dashboard-metric progress-metric"><div class="metric-ring"><span>68%</span></div><div><b>68%</b><small>Общий прогресс</small></div></article>
-      <article class="dashboard-metric"><span class="metric-icon peach">▤</span><div><b>24 <i>/ 36</i></b><small>Уроков завершено</small></div></article>
-      <article class="dashboard-metric"><span class="metric-icon mint">◷</span><div><b>12 <i>ч</i></b><small>Время обучения</small></div></article>
+    <div class="section-title"><div><span class="subtle-label">СОХРАНЁННОЕ</span><h2>Мои материалы</h2></div><button class="text-link" data-go="profile">Профиль ${icon("arrow")}</button></div>
+    <div class="dashboard-materials">
+      <div><b>${drafted}</b><span>Черновики заданий</span></div>
+      <div><b>${notes}</b><span>Заметки к урокам</span></div>
     </div>
-    <div class="dashboard-overview-foot"><span>${drafted} из ${assignments.length} заданий имеют сохранённый черновик</span><button data-go="study">Моя статистика ${icon("arrow")}</button></div>
+    <div class="dashboard-overview-foot"><span>${savedTotal ? "Материалы сохраняются автоматически" : "Здесь появятся твои сохранённые ответы и заметки"}</span><button data-go="assignments">Мои задания ${icon("arrow")}</button></div>
   </section>`;
 }
 function dashboardTasksPreview() {
@@ -253,7 +254,7 @@ function dashboardTasksPreview() {
   const laterAssignments = assignments.slice(1, 3);
   return `<section class="dashboard-work-grid">
     <div class="dashboard-panel dashboard-assignment-panel">
-      <div class="section-title"><div><span class="subtle-label">ТВОЙ СЛЕДУЮЩИЙ ШАГ</span><h2>Ближайшее задание</h2></div><button class="text-link" data-go="assignments">Все задания ${icon("arrow")}</button></div>
+      <div class="section-title"><div><span class="subtle-label">ПРОДОЛЖИТЬ КУРС</span><h2>Ближайшее задание</h2></div><button class="text-link" data-go="assignments">Все задания ${icon("arrow")}</button></div>
       <article class="dashboard-featured-task">
         <div class="featured-task-top"><span class="featured-task-kind">${esc(nextAssignment.type)}</span><span class="featured-task-due">${hasAssignmentDraft(nextAssignment.id) ? "Черновик сохранён" : "Срок · " + esc(nextAssignment.dueHint)}</span></div>
         <h3>${esc(nextAssignment.title)}</h3>
@@ -278,14 +279,14 @@ function homePage() {
   return `<main class="screen home-screen">
     <section class="greeting-row"><div><div class="subtle-label">ЛИЧНЫЙ КАБИНЕТ</div><h1>Привет, ${esc(firstName)}!</h1><p>С чего начнём сегодня?</p></div></section>
     <section class="hero-card">
-      <div class="hero-copy"><span class="hero-eyebrow">ОБУЧЕНИЕ В MAGNUS</span><h2>Найди своё<br>направление.</h2><p>Выбери факультет, посмотри программы и начни с первого урока.</p><button class="orange-button" data-go="faculties">Смотреть факультеты ${icon("arrow")}</button></div>
+      <div class="hero-copy"><span class="hero-eyebrow">ОБУЧЕНИЕ В MAGNUS</span><h2>Список факультетов<br>направление.</h2><p>Выбери факультет, посмотри программы и начни с первого урока.</p><button class="orange-button" data-go="faculties">Смотреть факультеты ${icon("arrow")}</button></div>
       <div class="mascot-stage"><img src="/mascot/magnus-owl.svg" class="hero-mascot" alt="Совёнок MAGNUS" /></div>
     </section>
-    <section class="courses-section home-featured-course"><div class="section-title"><div><span class="subtle-label">ТВОЙ СЛЕДУЮЩИЙ ШАГ</span><h2>Продолжить обучение</h2></div><button class="text-link" data-go="study">Все курсы ${icon("arrow")}</button></div>${courseTile(courses[0],true)}</section>
-    <section class="quick-section"><div class="section-title"><div><span class="subtle-label">ТВОЁ ПРОСТРАНСТВО</span><h2>Быстрый доступ</h2></div><button class="text-link" data-go="faculties">Все разделы ${icon("arrow")}</button></div><div class="quick-grid">
+    <section class="courses-section home-featured-course"><div class="section-title"><div><span class="subtle-label">СЛЕДУЮЩИЙ УРОК</span><h2>Продолжить обучение</h2></div><button class="text-link" data-go="study">Все курсы ${icon("arrow")}</button></div>${courseTile(courses[0],true)}</section>
+    <section class="quick-section"><div class="section-title"><div><span class="subtle-label">РАЗДЕЛЫ</span><h2>Быстрый доступ</h2></div><button class="text-link" data-go="faculties">Все разделы ${icon("arrow")}</button></div><div class="quick-grid">
       <button class="quick-item" data-go="faculties"><span class="quick-icon peach">${icon("faculty")}</span><b>Факультеты</b><small>Найди своё</small></button>
-      <button class="quick-item" data-go="study"><span class="quick-icon lilac">${icon("study")}</span><b>Обучение</b><small>Твои курсы</small></button>
-      <button class="quick-item" data-go="documents"><span class="quick-icon butter">${icon("docs")}</span><b>Документы</b><small>Достижения</small></button>
+      <button class="quick-item" data-go="study"><span class="quick-icon lilac">${icon("study")}</span><b>Обучение</b><small>Учебные программы</small></button>
+      <button class="quick-item" data-go="documents"><span class="quick-icon butter">${icon("docs")}</span><b>Документы</b><small>Сертификаты</small></button>
       <button class="quick-item" data-go="profile"><span class="quick-icon mint">${icon("profile")}</span><b>Профиль</b><small>Твой аккаунт</small></button>
     </div></section>
     ${dashboardOverview()}
@@ -294,7 +295,7 @@ function homePage() {
 }
 
 function facultyArt(f) {
-  return `<div class="faculty-art ${f.color}" data-faculty-art="${f.id}"><span>${f.symbol}</span><b class="faculty-art-orbit"></b><b class="faculty-art-dot"></b><i>${f.num}</i></div>`;
+  return `<div class="faculty-art ${f.color}" data-faculty-art="${f.id}"><span>${f.symbol}</span><i>${f.num}</i></div>`;
 }
 function facultiesPage() {
   const filters = ["Все","Психология","Технологии","Бизнес","Гуманитарные"];
@@ -303,7 +304,7 @@ function facultiesPage() {
     const group = f.id === "psychology" ? "Психология" : f.id === "it" ? "Технологии" : ["management","economics","marketing"].includes(f.id) ? "Бизнес" : "Гуманитарные";
     return matchesQuery && (activeFilter === "Все" || group === activeFilter);
   });
-  return `<main class="screen inner-screen">${heading("MAGNUS · АКАДЕМИЧЕСКАЯ СРЕДА","Выбери свой<br><em>факультет.</em>","Направления, которые помогут превратить любопытство в компетенции.")}
+  return `<main class="screen inner-screen">${heading("MAGNUS · АКАДЕМИЧЕСКАЯ СРЕДА","Выбери свой<br><em>факультет.</em>","Краткое описание факультетов и тем, которые входят в каждое направление.")}
     <label class="search-box">${icon("search")}<input id="faculty-search" value="${esc(searchValue)}" placeholder="Поиск факультета" autocomplete="off"><span>⌘ K</span></label>
     <div class="filter-row">${filters.map(f=>`<button class="filter-chip ${activeFilter===f?"selected":""}" data-filter="${f}" aria-pressed="${activeFilter===f}">${f}</button>`).join("")}</div>
     <div class="faculty-grid">${filtered.map(f=>`<button class="faculty-card" data-faculty="${f.id}">${facultyArt(f)}<span class="faculty-card-copy"><small>${f.en}</small><b>${f.name}</b><span>${f.desc}</span><i>Подробнее ${icon("arrow")}</i></span></button>`).join("")}</div>
@@ -323,12 +324,12 @@ function facultyDetailPage() {
   }[f.id];
   const format = f.id==="it" ? "Практикумы и цифровые проекты" : f.id==="psychology" ? "Наблюдения, кейсы и рефлексия" : f.id==="management" ? "Командные кейсы и бизнес-сценарии" : f.id==="economics" ? "Разборы ситуаций и аналитика" : f.id==="marketing" ? "Исследования и творческие задания" : "Работа с источниками и дискуссии";
   return `<main class="screen inner-screen detail-screen"><button class="back-button" data-go="faculties">${icon("back")} Все факультеты</button>
-    <div class="detail-banner ${f.color}"><div><span class="subtle-label">НАПРАВЛЕНИЕ ${f.num} / 06</span><h1>${f.name}</h1><p>${f.desc}</p><span class="detail-en">${f.en}</span></div><div class="detail-symbol">${f.symbol}</div><span class="detail-banner-index">MAGNUS ACADEMY</span></div>
-    <section class="faculty-intro"><div><span class="subtle-label">О НАПРАВЛЕНИИ</span><h2>Знания, которые<br><em>работают в жизни.</em></h2></div><p>Здесь ты познакомишься с ключевыми идеями области, научишься применять их на практике и постепенно сформируешь собственный образовательный маршрут.</p></section>
+    <div class="detail-banner ${f.color}"><div><span class="subtle-label">НАПРАВЛЕНИЕ ${f.num} / 06</span><h1>${f.name}</h1><p>${f.desc}</p><span class="detail-en">${f.en}</span></div><div class="detail-symbol">${f.symbol}</div></div>
+    <section class="faculty-intro"><div><span class="subtle-label">О НАПРАВЛЕНИИ</span><h2>Основные темы<br><em>и навыки.</em></h2></div><p>В этом разделе собраны основные темы направления и навыки, которые разбираются в учебных программах.</p></section>
     <section class="detail-topics"><div><span class="subtle-label">ПЕРВЫЕ ШАГИ</span><h2>Что будем<br><em>изучать?</em></h2></div><ol>${f.topics.map((t,i)=>`<li><span>0${i+1}</span>${t}</li>`).join("")}</ol></section>
-    <section class="faculty-outcomes"><div class="section-title"><div><span class="subtle-label">РЕЗУЛЬТАТ ОБУЧЕНИЯ</span><h2>Что ты освоишь</h2></div><span class="outcome-count">03 НАВЫКА</span></div><div class="outcome-grid">${outcomes.map((t,i)=>`<article class="outcome-card"><span>0${i+1}</span><b>${t}</b><i>✦</i></article>`).join("")}</div></section>
-    <section class="faculty-method"><div class="method-mark">${f.symbol}</div><div><span class="subtle-label">ФОРМАТ ОБУЧЕНИЯ</span><h3>${format}</h3><p>Короткие тематические блоки, понятные объяснения и задания для закрепления материала.</p></div></section>
-    <div class="detail-callout"><div><b>Хочешь изучать это направление?</b><p>Отметь интерес — мы сможем учесть его при запуске программ.</p></div><button class="orange-button" data-action="interest">Мне интересно ${icon("arrow")}</button></div>
+    <section class="faculty-outcomes"><div class="section-title"><div><span class="subtle-label">РЕЗУЛЬТАТ ОБУЧЕНИЯ</span><h2>Что ты освоишь</h2></div><span class="outcome-count">03 НАВЫКА</span></div><div class="outcome-grid">${outcomes.map((t,i)=>`<article class="outcome-card"><span>0${i+1}</span><b>${t}</b></article>`).join("")}</div></section>
+    <section class="faculty-method"><div class="method-mark">${f.symbol}</div><div><span class="subtle-label">ФОРМАТ ОБУЧЕНИЯ</span><h3>${format}</h3><p>Теория, примеры и практические задания по темам курса.</p></div></section>
+    <div class="detail-callout"><div><b>Рассматриваешь это направление?</b><p>Отметь интерес к факультету. Эта отметка пока сохраняется только в демо-режиме.</p></div><button class="orange-button" data-action="interest">Мне интересно ${icon("arrow")}</button></div>
     <p class="demo-disclaimer">Информация о направлениях носит ознакомительный характер. Состав программ, преподаватели и условия обучения будут опубликованы отдельно.</p>
   </main>`;
 }
@@ -358,12 +359,10 @@ function schedulePanel() {
 }
 
 function studyPage() {
-  return `<main class="screen inner-screen">${heading("ТВОЙ ОБРАЗОВАТЕЛЬНЫЙ ПУТЬ","Учись в своём<br><em>ритме.</em>","Небольшие шаги каждый день превращаются в большие результаты.")}
-    <section class="learning-overview"><div class="overview-head"><div><span class="subtle-label">ТВОЯ АКТИВНОСТЬ</span><h2>На этой неделе</h2></div><span class="study-demo-label">ДЕМО-ДАННЫЕ</span></div><div class="week-chart">${[["Пн",2],["Вт",3],["Ср",1],["Чт",4],["Пт",5],["Сб",2],["Вс",3]].map(([d,v],i)=>`<div class="day-bar"><span class="bar-value ${i===4?"current":""}" style="height:${v*17+18}px"></span><small>${d}</small></div>`).join("")}</div></section>
-    <div class="stats-row"><div class="stat-card dark-stat"><span>${icon("clock")}</span><b>12<span>ч</span></b><small>Время обучения</small></div><div class="stat-card"><span>${icon("chart")}</span><b>68%</b><small>Общий прогресс</small></div></div>
-    <p class="study-data-note">График и показатели приведены для примера. Персональный прогресс появится после подключения учебной системы.</p>
+  return `<main class="screen inner-screen study-screen">
+    ${heading("ОБУЧЕНИЕ", "Расписание<br><em>и курсы.</em>", "Выбирай курс, открывай уроки и работай с материалами.")}
     ${schedulePanel()}
-    <section class="courses-section study-courses"><div class="section-title"><div><span class="subtle-label">ТВОЯ БИБЛИОТЕКА</span><h2>Мои курсы</h2></div><span class="course-count">03 курса</span></div>${courses.map(c=>courseTile(c,true)).join("")}</section>
+    <section class="courses-section study-courses"><div class="section-title"><div><span class="subtle-label">ДОСТУПНЫЕ ПРОГРАММЫ</span><h2>Мои курсы</h2></div><span class="course-count">${courses.length} курса</span></div>${courses.map(c=>courseTile(c,true)).join("")}</section>
   </main>`;
 }
 
@@ -446,7 +445,7 @@ function assignmentsPage() {
     return true;
   });
   return `<main class="screen inner-screen assignments-screen">
-    ${heading("ТВОИ УЧЕБНЫЕ ЗАДАЧИ", "Двигайся<br><em>шаг за шагом.</em>", "Все задания и практические работы собраны в одном месте.")}
+    ${heading("ТВОИ УЧЕБНЫЕ ЗАДАЧИ", "Список<br><em>заданий.</em>", "Задания по учебным программам и сохранённые черновики.")}
     <div class="assignment-summary">
       <div><b>${counts.all}</b><span>Всего заданий</span></div>
       <div><b>${counts.pending}</b><span>Без черновика</span></div>
