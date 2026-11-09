@@ -642,7 +642,7 @@ function adminSubmissionCard(item,reviewable){
  ${reviewable?`<div class="admin-review-fields"><label>Комментарий<textarea data-review-comment placeholder="Обратная связь студенту…">${esc(item.comment||"")}</textarea></label><label>Оценка<input data-review-grade type="number" min="0" max="100" step="1" placeholder="0–100" value="${item.grade??""}"></label></div><div class="admin-review-actions"><button data-review-status="revision" data-student-id="${esc(item.studentId)}" data-submission-id="${esc(item.id)}">На доработку</button><button data-review-status="reviewed" data-student-id="${esc(item.studentId)}" data-submission-id="${esc(item.id)}">Принять работу</button></div>`:item.comment?`<p class="admin-existing-comment">${esc(item.comment)}</p>`:""}</article>`;
 }
 function adminAuditCard(item){
- const labels={'submission.reviewed':'Проверка работы','bot.settings.updated':'Настройки бота','admin.granted':'Назначение администратора','student.message.sent':'Сообщение студенту','subscription.granted':'Выдача доступа','subscription.revoked':'Отзыв доступа'};
+ const labels={'submission.reviewed':'Проверка работы','bot.settings.updated':'Настройки бота','admin.granted':'Назначение администратора','student.message.sent':'Сообщение студенту','subscription.granted':'Выдача доступа','subscription.revoked':'Отзыв доступа','subscription.paid':'Оплата подписки','payment.plans.updated':'Настройки тарифов'};
  const d=item.details&&typeof item.details==='object'?item.details:{};
  const date=item.createdAt?new Date(item.createdAt*1000).toLocaleString('ru-RU',{dateStyle:'medium',timeStyle:'short'}):'Дата не указана';
  const actor=item.actorEmail||'Администратор';
@@ -664,6 +664,10 @@ function adminAuditCard(item){
   detail='Выдано на '+(Number(d.days)||0)+' дней · '+(d.planId||'ручной доступ');
  }else if(item.action==='subscription.revoked'){
   detail='Отозван тариф '+(d.planId||'—');
+ }else if(item.action==='subscription.paid'){
+  detail='Оплачено '+(Number(d.amount)||0)+' Stars · '+(d.planId||'тариф');
+ }else if(item.action==='payment.plans.updated'){
+  detail='Изменены цены и доступность тарифов';
  }else if(item.action==='admin.granted'){
   detail='Email: '+(d.email||'—')+' · роль: '+(d.role||'owner');
  }
