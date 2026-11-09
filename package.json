@@ -1,12 +1,15 @@
 {
-  "name": "MAGNUS",
+  "name": "magnus",
+  "version": "0.0.0",
   "private": true,
-  "devDependencies": {
-    "@tgcloud/cli": "^0.2.0"
-  },
+  "type": "module",
   "scripts": {
-    "deploy": "tgcloud push",
-    "status": "tgcloud status",
-    "run": "tgcloud run"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@tgcloud/cli": "^0.2.0",
+    "vite": "^8.3.6"
   }
 }
