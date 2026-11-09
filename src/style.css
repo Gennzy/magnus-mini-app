@@ -1847,3 +1847,27 @@ button, a, input, textarea { touch-action: manipulation; }
 @media (prefers-reduced-motion: reduce) {
   .course-art-illustration { transition: none; }
 }
+
+
+.course-detail-hero { isolation: isolate; }
+.course-detail-hero .course-art-illustration {
+  inset: 0 0 0 auto;
+  z-index: 0;
+  width: 67%;
+  height: 100%;
+  opacity: .3;
+  transform: scale(1.18);
+  color: rgba(255,255,255,.95);
+  pointer-events: none;
+}
+.course-detail-hero .course-detail-orbit { z-index: 0; pointer-events: none; }
+.course-detail-hero .course-detail-mark {
+  z-index: 2;
+  opacity: .9;
+  text-shadow: 0 14px 30px rgba(0,0,0,.25);
+}
+.course-detail-hero .course-detail-kicker,
+.course-detail-hero .course-detail-bottom { z-index: 3; }
+@media (max-width: 650px) {
+  .course-detail-hero .course-art-illustration { width: 76%; opacity: .26; transform: scale(1.14); }
+}
