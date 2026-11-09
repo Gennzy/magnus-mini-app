@@ -476,7 +476,7 @@ function assignmentDetailPage() {
   return `<main class="screen inner-screen assignment-detail-screen">
     <button class="back-button" data-go="assignments">${icon("back")} Все задания</button>
     <section class="assignment-detail-hero">
-      <div class="assignment-detail-top"><span class="assignment-kind">${esc(a.type)} · MAGNUS</span><span class="assignment-status ${saved?"has-draft":""}">${assignmentStatusText(a.id)}</span></div>
+      <div class="assignment-detail-top"><span class="assignment-kind">${esc(a.type)} · MAGNUS</span><span class="assignment-status ${saved?"has-draft":""}" id="assignment-detail-status">${assignmentStatusText(a.id)}</span></div>
       <h1>${esc(a.title)}</h1>
       <p>${esc(a.course)}</p>
       <div class="assignment-detail-meta"><span><small>СРОК СДАЧИ</small><b>${esc(a.due)}</b></span><span><small>ОЦЕНКА ВРЕМЕНИ</small><b>${esc(a.estimate)}</b></span></div>
@@ -488,7 +488,7 @@ function assignmentDetailPage() {
       <ol>${a.requirements.map((r,i)=>`<li><span>0${i+1}</span>${esc(r)}</li>`).join("")}</ol>
     </section>
     <section class="assignment-answer">
-      <div class="assignment-answer-head"><div><span class="subtle-label">ТВОЙ ОТВЕТ</span><h2>Рабочее поле</h2></div><span class="assignment-draft-mark">${saved?"ЧЕРНОВИК ЕСТЬ":"НОВЫЙ ОТВЕТ"}</span></div>
+      <div class="assignment-answer-head"><div><span class="subtle-label">ТВОЙ ОТВЕТ</span><h2>Рабочее поле</h2></div><span class="assignment-draft-mark" id="assignment-draft-mark">${saved?"ЧЕРНОВИК ЕСТЬ":"НОВЫЙ ОТВЕТ"}</span></div>
       <textarea id="assignment-answer" aria-label="Текст ответа на задание" placeholder="Начни писать ответ здесь...">${esc(draft)}</textarea>
       <div class="assignment-answer-footer"><span id="assignment-char-count">${draft.length} символов</span><span id="assignment-save-status" role="status" aria-live="polite">${saved?"Сохранено на устройстве":"Автосохранение включено"}</span></div>
       <div class="assignment-save-row"><small>Ответ пока является личным черновиком и не отправляется преподавателю.</small><button class="orange-button" data-action="save-assignment-draft">Сохранить черновик ${icon("arrow")}</button></div>
@@ -576,6 +576,24 @@ function bindEvents() {
     lessonNotes[selectedCourse.id] = e.target.value;
     storeLessonNotes();
     scheduleCloudStudentDataSync();
+  });
+  const assignmentField = document.querySelector("#assignment-answer");
+  assignmentField?.addEventListener("input", e => {
+    const value = e.target.value;
+    assignmentDrafts[selectedAssignmentId] = value;
+    const saved = storeAssignmentDrafts();
+    scheduleCloudStudentDataSync();
+    const counter = document.querySelector("#assignment-char-count");
+    const status = document.querySelector("#assignment-save-status");
+    const headerStatus = document.querySelector("#assignment-detail-status");
+    const draftMark = document.querySelector("#assignment-draft-mark");
+    if (counter) counter.textContent = `${value.length} символов`;
+    if (status) status.textContent = saved ? "Сохранено на устройстве" : "Не удалось сохранить";
+    if (headerStatus) {
+      headerStatus.textContent = value.trim() ? "Черновик сохранён" : "К выполнению";
+      headerStatus.classList.toggle("has-draft", Boolean(value.trim()));
+    }
+    if (draftMark) draftMark.textContent = value.trim() ? "ЧЕРНОВИК ЕСТЬ" : "НОВЫЙ ОТВЕТ";
   });
   const input = document.querySelector("#faculty-search");
   input?.addEventListener("input", e => { const pos=e.target.selectionStart; searchValue=e.target.value; const y=window.scrollY; render(); const next=document.querySelector("#faculty-search"); next?.focus(); next?.setSelectionRange(pos,pos); window.scrollTo(0,y); });
