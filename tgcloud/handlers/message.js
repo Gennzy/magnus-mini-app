@@ -6,7 +6,6 @@ const APP_URL = 'https://app9020486965.tgcloud.ai/';
 const BOT_COMMANDS = [
   { command: 'start', description: 'Открыть MAGNUS' },
   { command: 'help', description: 'Помощь и возможности' },
-  { command: 'admin', description: 'Панель управления' },
 ];
 
 function menuKeyboard(admin = false) {
@@ -31,9 +30,19 @@ export default async function (message) {
 
   if (command === '/admin') {
     const telegramId = String(message.from?.id || '');
-    const admin = telegramId
-      ? await db.select().from(adminUsers).where(eq(adminUsers.tgId, telegramId)).get()
-      : null;
+    let admin = null;
+    try {
+      admin = telegramId
+        ? await db.select().from(adminUsers).where(eq(adminUsers.tgId, telegramId)).get()
+        : null;
+    } catch (error) {
+      console.error('MAGNUS: не удалось проверить таблицу администраторов.', error);
+      await api.sendMessage({
+        chat_id: message.chat.id,
+        text: 'Панель управления временно недоступна: база данных ещё не подготовлена. Владелец проекта должен выполнить миграцию Telegram Cloud и повторить назначение администратора.',
+      });
+      return;
+    }
     if (!admin?.active) {
       await api.sendMessage({
         chat_id: message.chat.id,
@@ -59,7 +68,7 @@ export default async function (message) {
   }
 
   const welcome = command === '/help'
-    ? 'MAGNUS — образовательное пространство.\n\n/start — открыть приложение\n/help — помощь\n/admin — панель управления (только для администратора)'
+    ? 'MAGNUS — образовательное пространство.\n\n/start — открыть приложение\n/help — помощь'
     : 'Добро пожаловать в MAGNUS.\n\nУчебные программы, материалы и задания собраны в одном пространстве.';
   await api.sendMessage({
     chat_id: message.chat.id,
