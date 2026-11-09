@@ -66,3 +66,30 @@ export const studentSubscriptions = table('student_subscriptions', {
   createdAt: integer('created_at').notNull(),
   updatedAt: integer('updated_at').notNull(),
 });
+
+// Тарифы в Telegram Stars. Цена задаётся владельцем из админ-панели.
+export const subscriptionPlans = table('subscription_plans', {
+  planId: text('plan_id').primaryKey(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  days: integer('days').notNull(),
+  starsPrice: integer('stars_price').notNull(),
+  enabled: integer('enabled').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+  updatedBy: text('updated_by').notNull(),
+});
+
+// Платёжные заказы Telegram Stars с проверкой суммы и защитой от повторной активации.
+export const paymentOrders = table('payment_orders', {
+  id: text('id').primaryKey(),
+  tgId: text('tg_id').notNull(),
+  planId: text('plan_id').notNull(),
+  amount: integer('amount').notNull(),
+  currency: text('currency').notNull(),
+  status: text('status').notNull(),
+  invoicePayload: text('invoice_payload').notNull(),
+  telegramChargeId: text('telegram_charge_id').notNull(),
+  providerChargeId: text('provider_charge_id').notNull(),
+  createdAt: integer('created_at').notNull(),
+  paidAt: integer('paid_at').notNull(),
+});
