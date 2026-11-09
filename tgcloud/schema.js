@@ -27,3 +27,16 @@ export const botSettings = table('bot_settings', {
   updatedAt: integer('updated_at').notNull(),
   updatedBy: text('updated_by').notNull(),
 });
+
+// Неизменяемая история административных действий для контроля изменений.
+export const adminAuditLog = table('admin_audit_log', {
+  id: text('id').primaryKey(),
+  action: text('action').notNull(),
+  actorTgId: text('actor_tg_id').notNull(),
+  actorEmail: text('actor_email').notNull(),
+  targetType: text('target_type').notNull(),
+  targetId: text('target_id').notNull(),
+  summary: text('summary').notNull(),
+  details: json('details').notNull(),
+  createdAt: integer('created_at').notNull(),
+});
