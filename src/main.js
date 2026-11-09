@@ -199,7 +199,7 @@ function hasAssignmentDraft(id) {
   return Boolean(String(assignmentDrafts[id] || "").trim());
 }
 function assignmentStatusText(id) {
-  return hasAssignmentDraft(id) ? "Черновик на устройстве" : "К выполнению";
+  return hasAssignmentDraft(id) ? "Черновик сохранён" : "К выполнению";
 }
 
 function dashboardOverview() {
@@ -211,7 +211,7 @@ function dashboardOverview() {
       <article class="dashboard-metric"><span class="metric-icon peach">▤</span><div><b>24 <i>/ 36</i></b><small>Уроков завершено</small></div></article>
       <article class="dashboard-metric"><span class="metric-icon mint">◷</span><div><b>12 <i>ч</i></b><small>Время обучения</small></div></article>
     </div>
-    <div class="dashboard-overview-foot"><span>${drafted} из ${assignments.length} заданий имеют локальный черновик</span><button data-go="study">Моя статистика ${icon("arrow")}</button></div>
+    <div class="dashboard-overview-foot"><span>${drafted} из ${assignments.length} заданий имеют сохранённый черновик</span><button data-go="study">Моя статистика ${icon("arrow")}</button></div>
   </section>`;
 }
 function dashboardTasksPreview() {
@@ -509,7 +509,7 @@ function bindEvents() {
       scheduleCloudStudentDataSync();
       render();
       toast(saved
-        ? "Черновик сохранён на этом устройстве. Преподавателю он пока не отправлен."
+        ? "Черновик сохранён. Преподавателю он пока не отправлен."
         : "Не удалось сохранить черновик в памяти браузера.");
       return;
     }
