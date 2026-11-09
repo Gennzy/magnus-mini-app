@@ -1948,3 +1948,144 @@ button, a, input, textarea { touch-action: manipulation; }
   .kicker { font-size: 8px; letter-spacing: 1.2px; }
   .kicker::before { width: 14px; }
 }
+
+
+/* Tactile and accessible interaction states across MAGNUS */
+::selection { background: rgba(244,122,25,.2); color: #252525; }
+button:disabled, button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: .48;
+  transform: none !important;
+  box-shadow: none !important;
+}
+button:active:not(:disabled) {
+  transform: translateY(1px) scale(.985);
+}
+.filter-chip {
+  position: relative;
+  min-height: 36px;
+  padding: 8px 15px;
+  border-color: #e8e5df;
+  color: #666e71;
+  background: linear-gradient(180deg,#fff,#fbfaf7);
+}
+.filter-chip.selected {
+  color: #fff;
+  border-color: #e86f16;
+  background: linear-gradient(135deg,#fa8b35,#e96e13);
+  box-shadow: 0 4px 12px rgba(230,106,19,.2), inset 0 1px 0 rgba(255,255,255,.18);
+}
+.filter-chip.selected::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: inherit;
+  pointer-events: none;
+}
+.lesson-tabs button {
+  border: 0;
+  border-bottom: 0;
+  border-radius: 99px;
+  transition: color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.lesson-tabs button.selected {
+  color: #bd5d1b;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(38,32,26,.08), inset 0 0 0 1px rgba(236,225,214,.6);
+}
+.quiz-option {
+  position: relative;
+  min-height: 48px;
+  border-color: #e8e6e0;
+  box-shadow: 0 2px 7px rgba(39,34,28,.025);
+}
+.quiz-option > span {
+  width: 27px;
+  height: 27px;
+  border-radius: 9px;
+  color: #6a7072;
+  transition: color .18s ease, background .18s ease;
+}
+.quiz-option.chosen {
+  border-color: #ee9b60;
+  background: linear-gradient(110deg,#fff8f1,#fff);
+  box-shadow: 0 0 0 2px rgba(244,122,25,.07), 0 5px 14px rgba(39,34,28,.035);
+}
+.quiz-option.chosen > span {
+  color: #fff;
+  background: linear-gradient(145deg,#fb9140,#e86e16);
+}
+.quiz-feedback {
+  border: 1px solid transparent;
+  animation: feedbackReveal .22s ease both;
+}
+.quiz-feedback.correct { border-color: #cfe5d5; }
+.quiz-feedback.incorrect { border-color: #f1d8c6; }
+.nav-item {
+  position: relative;
+  border-radius: 14px;
+  transition: color .18s ease, background .18s ease, transform .18s ease;
+}
+.nav-item.active {
+  color: #d96815;
+  background: linear-gradient(180deg,#fff5ec,#fffaf5);
+}
+.nav-item.active::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  width: 18px;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg,#ffb06e,#ed741c);
+  box-shadow: 0 2px 7px rgba(244,122,25,.22);
+}
+.nav-item.active svg { filter: drop-shadow(0 2px 4px rgba(244,122,25,.16)); }
+.toast {
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 14px 38px rgba(20,22,22,.22), 0 2px 8px rgba(20,22,22,.1);
+  backdrop-filter: blur(12px);
+}
+.toast.visible { animation: toastReveal .22s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes toastReveal {
+  from { opacity: 0; transform: translate(-50%,16px) scale(.97); }
+  to { opacity: 1; transform: translate(-50%,0) scale(1); }
+}
+@keyframes feedbackReveal {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (hover: hover) {
+  .filter-chip:not(.selected):hover {
+    color: #c45e16;
+    background: #fff7ef;
+    border-color: #edc09d;
+    transform: translateY(-1px);
+  }
+  .lesson-tabs button:not(.selected):hover {
+    color: #b85b1c;
+    background: rgba(255,255,255,.58);
+  }
+  .quiz-option:not(.chosen):hover {
+    border-color: #edbd99;
+    background: #fffaf5;
+    transform: translateY(-1px);
+  }
+  .nav-item:not(.active):hover {
+    color: #8c684d;
+    background: #faf7f2;
+  }
+  .orange-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(244,122,25,.27), inset 0 1px 0 rgba(255,255,255,.2);
+  }
+}
+@media (max-width: 650px) {
+  .filter-chip { min-height: 39px; }
+  .nav-item.active::before { top: -6px; }
+  .quiz-option { min-height: 50px; padding: 12px 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quiz-feedback, .toast.visible { animation: none; }
+}
