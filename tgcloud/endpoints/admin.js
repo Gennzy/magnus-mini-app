@@ -16,7 +16,7 @@ function cleanText(value, max) {
 export default async function (input, ctx) {
   // Первичное назначение администратора возможно только из локального CLI.
   // Публичный вызов Mini App всегда содержит проверенный initData.user.
-  if (input?.action === 'grantAdmin' && !ctx.initData?.user) {
+  if (input?.action === 'grantAdmin' && !ctx?.initData?.user) {
     const tgId = String(input.telegramId || '').trim();
     const email = cleanText(input.email, 254).toLowerCase();
     if (!/^\d{5,20}$/.test(tgId) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
