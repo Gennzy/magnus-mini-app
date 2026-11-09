@@ -1399,3 +1399,198 @@ button:focus-visible, [tabindex="0"]:focus-visible, input:focus-visible, textare
   .module-row { padding: 13px 0; }
   .course-detail-cta { padding: 16px; }
 }
+
+
+/* Finish the design pass across lesson, assignments, documents and profile */
+.assignment-summary { gap: 12px; margin: 12px 0 20px; }
+.assignment-summary > div {
+  min-height: 84px;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 17px;
+  background: linear-gradient(145deg,#fff,#fbfaf7);
+  box-shadow: 0 6px 18px rgba(38,34,28,.035);
+}
+.assignment-summary b { font-size: 25px; letter-spacing: -1px; }
+.assignment-summary span { font-size: 9px; color: #62696c; }
+.assignment-list { gap: 14px; }
+.assignment-card {
+  padding: 19px;
+  border-radius: 20px;
+  background: linear-gradient(150deg,#fff 0%,#fdfbf8 100%);
+  box-shadow: 0 8px 23px rgba(39,34,28,.045);
+}
+.assignment-kind { letter-spacing: 1.2px; }
+.assignment-status { border: 1px solid #f3dfcb; }
+.assignment-status.has-draft { border-color: #d8ebdc; }
+.assignment-card h2 { font-size: 15px; letter-spacing: -.3px; }
+.assignment-card > p { font-size: 10px; color: #62696c; }
+.assignment-card-meta {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #eeece7;
+}
+.assignment-card-meta span { color: #717779; }
+.assignment-open {
+  min-height: 39px;
+  border-radius: 99px;
+  background: #fff4ea;
+  color: #bb5d1b;
+  transition: background .18s, transform .18s;
+}
+.assignment-open:hover { background: #ffead9; transform: translateY(-1px); }
+.assignment-detail-head {
+  padding: 17px 0 22px;
+}
+.assignment-detail-head h1 { letter-spacing: -1.8px; }
+.assignment-instructions, .assignment-answer {
+  padding: 21px;
+  border-radius: 20px;
+  box-shadow: 0 8px 23px rgba(39,34,28,.045);
+}
+.assignment-instructions > p { font-size: 13px; line-height: 1.75; }
+.assignment-instructions li { padding: 12px 0; font-size: 11px; }
+.assignment-answer textarea { min-height: 180px; padding: 14px; line-height: 1.6; }
+.assignment-demo-note { color: #72797c; line-height: 1.65; }
+.lesson-heading { padding-top: 20px; }
+.lesson-heading h1 { letter-spacing: -2px; }
+.lesson-player {
+  height: 250px;
+  border-radius: 24px;
+  box-shadow: 0 17px 38px rgba(21,24,25,.16), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.player-orbit {
+  border-color: rgba(255,255,255,.2);
+  box-shadow: 0 0 0 30px rgba(255,255,255,.045), 0 0 0 62px rgba(255,255,255,.025);
+}
+.player-play {
+  width: 58px;
+  height: 58px;
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 50%;
+  background: linear-gradient(145deg,#ff9a4a,#e86d13);
+  box-shadow: 0 8px 24px rgba(244,122,25,.32), inset 0 1px 0 rgba(255,255,255,.3);
+}
+.lesson-tabs {
+  padding: 5px;
+  border: 1px solid #eae8e2;
+  border-radius: 99px;
+  background: #f0efeb;
+}
+.lesson-tabs button { border-radius: 99px; }
+.lesson-tabs button.selected {
+  background: #fff;
+  color: #bd5d1b;
+  box-shadow: 0 3px 10px rgba(32,29,25,.08);
+}
+.lesson-content { margin-top: 17px; }
+.lesson-reading {
+  border: 1px solid #eceae5;
+  border-radius: 20px;
+  padding: 22px;
+  background: #fff;
+  box-shadow: 0 7px 22px rgba(39,34,28,.04);
+}
+.lesson-reading h3 { letter-spacing: -.5px; }
+.lesson-callout {
+  border: 1px solid #f4e0cf;
+  border-radius: 15px;
+  background: #fff8f1;
+}
+.lesson-notes {
+  border: 1px solid #eceae5;
+  border-radius: 20px;
+  padding: 20px;
+  background: #fff;
+}
+.lesson-quiz {
+  border: 1px solid #eceae5;
+  border-radius: 21px;
+  padding: 21px;
+  box-shadow: 0 8px 24px rgba(39,34,28,.045);
+}
+.quiz-option {
+  border-radius: 13px;
+  border-color: #eae8e3;
+  transition: border-color .18s, background .18s, transform .18s;
+}
+.quiz-option:hover { border-color: #efbd98; transform: translateY(-1px); }
+.quiz-option.chosen { border-color: #e99a5f; background: #fff8f2; }
+.lesson-finish {
+  min-height: 48px;
+  border-radius: 99px;
+  box-shadow: 0 8px 18px rgba(244,122,25,.2);
+}
+.certificate-preview {
+  min-height: 310px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 43%,rgba(244,122,25,.18),transparent 43%),
+    linear-gradient(145deg,#282b2c,#17191a);
+  box-shadow: 0 19px 42px rgba(25,27,28,.15), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.cert-seal {
+  width: 62px; height: 62px;
+  border-color: #f7a36b;
+  color: #ffb47e;
+  box-shadow: 0 0 0 7px rgba(244,122,25,.07), 0 0 28px rgba(244,122,25,.2);
+}
+.certificate-preview h2 { letter-spacing: -.6px; }
+.empty-docs {
+  padding: 22px;
+  border: 1px solid #eceae5;
+  border-radius: 19px;
+  background: #fff;
+  box-shadow: 0 7px 21px rgba(39,34,28,.04);
+}
+.empty-doc-icon { box-shadow: inset 0 1px 0 rgba(255,255,255,.9); }
+.legal-note {
+  border-left-width: 3px;
+  border-left-color: #efa66e;
+  padding: 11px 0 11px 14px;
+  color: #656c70;
+}
+.profile-card {
+  border-radius: 21px;
+  padding: 20px;
+  background: linear-gradient(120deg,#fff 0%,#fff9f3 100%);
+  box-shadow: 0 9px 25px rgba(39,34,28,.05);
+}
+.profile-avatar {
+  width: 62px; height: 62px;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1px #f1d6c1, 0 5px 15px rgba(50,36,25,.09);
+}
+.profile-info small { color: #9a674a; }
+.profile-info h2 { font-size: 19px; letter-spacing: -.4px; }
+.profile-medal { filter: drop-shadow(0 3px 5px rgba(244,122,25,.18)); }
+.profile-stats {
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(39,34,28,.035);
+}
+.profile-stats > div { padding: 17px 12px; }
+.profile-stats b { font-size: 22px; letter-spacing: -.7px; }
+.profile-stats small { color: #666d70; font-size: 9px; }
+.profile-menu { border-radius: 20px; box-shadow: 0 7px 22px rgba(39,34,28,.04); }
+.profile-menu button { min-height: 62px; padding: 14px 17px; }
+.menu-icon { width: 36px; height: 36px; border-radius: 12px; }
+.profile-menu b { font-size: 11px; }
+.profile-menu small { font-size: 9px; color: #687074; }
+@media (max-width: 650px) {
+  .assignment-summary { gap: 7px; }
+  .assignment-summary > div { min-height: 72px; padding: 12px 9px; border-radius: 14px; }
+  .assignment-summary b { font-size: 20px; }
+  .assignment-summary span { font-size: 8px; }
+  .assignment-list { gap: 10px; }
+  .assignment-card { padding: 15px; border-radius: 17px; }
+  .assignment-card h2 { font-size: 14px; }
+  .assignment-instructions, .assignment-answer { padding: 15px; border-radius: 17px; }
+  .lesson-player { height: 205px; border-radius: 20px; }
+  .lesson-reading, .lesson-notes, .lesson-quiz { padding: 15px; border-radius: 17px; }
+  .certificate-preview { min-height: 275px; border-radius: 20px; }
+  .empty-docs { padding: 15px; border-radius: 16px; }
+  .profile-card { padding: 15px; }
+  .profile-avatar { width: 52px; height: 52px; }
+  .profile-menu { border-radius: 17px; }
+}
