@@ -511,11 +511,13 @@ function showStartupScreen() {
   root.insertAdjacentHTML("afterbegin", `
     <div class="startup-screen" role="status" aria-label="Загрузка MAGNUS">
       <div class="startup-inner">
-        <div class="startup-owl-wrap"><img class="startup-owl" src="/mascot/magnus-owl.svg" alt="" /></div>
+        <div class="startup-orbit startup-orbit-one"></div><div class="startup-orbit startup-orbit-two"></div>
+        <span class="startup-spark startup-spark-one">✦</span><span class="startup-spark startup-spark-two">✧</span>
+        <div class="startup-owl-wrap"><span class="startup-owl-halo"></span><img class="startup-owl" src="/mascot/magnus-owl.svg" alt="" /></div>
         <div class="startup-wordmark">MAGNUS</div>
-        <div class="startup-caption">UNIVERSITY · LEARN WITH PURPOSE</div>
+        <div class="startup-caption">UNIVERSITY <i></i> LEARN WITH PURPOSE</div>
         <div class="startup-loader" aria-hidden="true"><span></span></div>
-        <div class="startup-loading-text">Загружаем твоё пространство</div>
+        <div class="startup-loading-text">Открываем новые возможности</div>
       </div>
     </div>
   `);
