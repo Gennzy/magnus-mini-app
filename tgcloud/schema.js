@@ -53,3 +53,16 @@ export const adminMessages = table('admin_messages', {
   errorMessage: text('error_message').notNull(),
   createdAt: integer('created_at').notNull(),
 });
+
+// Ручные учебные доступы. Оплата через платёжного провайдера подключается отдельно.
+export const studentSubscriptions = table('student_subscriptions', {
+  tgId: text('tg_id').primaryKey(),
+  planId: text('plan_id').notNull(),
+  status: text('status').notNull(),
+  startsAt: integer('starts_at').notNull(),
+  endsAt: integer('ends_at').notNull(),
+  source: text('source').notNull(),
+  createdBy: text('created_by').notNull(),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+});
