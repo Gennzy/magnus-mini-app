@@ -6236,3 +6236,13 @@ body { background:#f6f6f3;color:#252b2d; }
     justify-content:center;
   }
 }
+
+
+/* Learning results: compact saved-state feedback and balanced profile metrics */
+.profile-screen .profile-stats { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.quiz-saved-result { margin-top:10px;padding:10px 12px;border:1px solid #e8e5df;border-radius:10px;background:#faf9f6;color:#596164;font-size:11px;line-height:1.5; }
+.lesson-finish:disabled { cursor:default;opacity:.72; }
+@media(max-width:650px) {
+  .profile-screen .profile-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .quiz-saved-result { font-size:10px; }
+}
