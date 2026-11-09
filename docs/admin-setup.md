@@ -11,6 +11,8 @@
 - The **Студенты** tab lists Telegram accounts that have opened the Mini App and synchronized cloud data. It includes a searchable profile, activity timestamps, saved lesson markers, quiz attempts and assignment history.
 - Student profiles include a one-to-one message composer. Outgoing bot messages are stored with the admin identity, timestamp, Telegram message ID when available, and the Bot API send result. The full text is visible to administrators in that student's message history.
 - Student profiles also include manual access management: grant or extend access for 7, 30, 90 or 365 days, or revoke the current access. Each change is stored in `student_subscriptions` and added to the administrator audit log. A still-active grant is extended from its existing end date rather than shortened.
+- The student profile shows a read-only history of the latest 30 payment orders belonging to the authenticated Telegram account. It includes plan, amount, date and payment state; it never accepts a Telegram ID from the client as the account selector.
+- The **Оплаты** tab combines tariff configuration with an administrator-only ledger of up to 200 latest orders. It shows paid-order count, confirmed Stars total, pending orders, Telegram ID, order reference and available charge-reference suffix.
 - The bot section reports webhook state and lets the owner edit the `/start` greeting, bot descriptions and Mini App menu-button text. Settings are stored in `bot_settings` and applied to Telegram.
 
 ## Connect the first owner
@@ -34,7 +36,7 @@ The grant action deliberately refuses calls carrying Mini App init data. It is i
 - Do not expose the grant action as a public UI control.
 - All review, bot-management, student-directory, direct-message, tariff-management and audit-log read actions require a matching active row in `admin_users`.
 - A successful Telegram `sendMessage` response is recorded as **Отправлено Telegram**; it is not a read receipt and does not mean the student has opened the message. Failed sends retain the Telegram error description for troubleshooting.
-- The **Тарифы** tab configures 30-, 90- and 365-day plans in Telegram Stars. A price of 0 or a disabled toggle hides a plan from students. The owner must configure prices before purchase buttons appear.
+- The **Оплаты** tab configures 30-, 90- and 365-day plans in Telegram Stars and displays the latest payment orders. A price of 0 or a disabled toggle hides a plan from students. The owner must configure prices before purchase buttons appear. The displayed Stars summary is calculated from the latest 200 stored orders, not a lifetime accounting report.
 - The Mini App creates a single-use invoice link using `XTR`. The `pre_checkout_query` handler checks the invoice payload, Telegram user ID, currency and exact amount against the stored pending order. Access is activated only after the `successful_payment` update is received and the Telegram charge ID is stored. Duplicate successful-payment updates cannot extend the same order twice.
 - `/paysupport` opens a support request flow. The student's message is stored and forwarded to active administrators, who can reply through the student's profile.
 - Manual access records are administrative entitlements, not payment confirmations. No automatic recurring billing, refund UI or paid-content gate is connected yet. The current catalog remains demonstrational, so issuing access does not turn example lessons into paid courses.
