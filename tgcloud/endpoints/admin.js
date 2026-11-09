@@ -1,12 +1,36 @@
 import { db, api } from 'sdk';
 import { eq } from 'sdk/db';
-import { adminUsers, studentData } from '../schema.js';
+import { adminUsers, studentData, botSettings } from '../schema.js';
 
 const APP_URL = 'https://app9020486965.tgcloud.ai/';
 const BOT_COMMANDS = [
   { command: 'start', description: 'Открыть MAGNUS' },
   { command: 'help', description: 'Помощь и возможности' },
 ];
+const DEFAULT_BOT_SETTINGS = {
+  welcomeMessage: 'Добро пожаловать в MAGNUS.\\n\\nУчебные программы, материалы и задания собраны в одном пространстве.',
+  description: 'MAGNUS — образовательная платформа. Изучай темы, выполняй задания и отслеживай результаты.',
+  shortDescription: 'Обучение, учебные программы и задания в Telegram.',
+  menuButtonText: 'Открыть MAGNUS',
+};
+
+function publicBotSettings(row) {
+  return row ? {
+    welcomeMessage: row.welcomeMessage,
+    description: row.description,
+    shortDescription: row.shortDescription,
+    menuButtonText: row.menuButtonText,
+  } : { ...DEFAULT_BOT_SETTINGS };
+}
+
+async function applyBotSettings(settings) {
+  await api.setMyCommands({ commands: BOT_COMMANDS });
+  await api.setMyDescription({ description: settings.description });
+  await api.setMyShortDescription({ short_description: settings.shortDescription });
+  await api.setChatMenuButton({
+    menu_button: { type: 'web_app', text: settings.menuButtonText, web_app: { url: APP_URL } },
+  });
+}
 
 function cleanText(value, max) {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -61,6 +85,7 @@ export default async function (input, ctx) {
     const bot = await api.getMe();
     const webhook = await api.getWebhookInfo();
     const commands = await api.getMyCommands();
+    const savedBotSettings = await db.select().from(botSettings).where(eq(botSettings.key, 'default')).get();
     return {
       ok: true,
       admin: { email: admin.email, role: admin.role },
@@ -77,6 +102,7 @@ export default async function (input, ctx) {
         lastError: webhook.last_error_message || '',
         commands,
       },
+      botSettings: publicBotSettings(savedBotSettings),
     };
   }
 
@@ -113,16 +139,45 @@ export default async function (input, ctx) {
     return { ok: true, submission: reviewed, notificationSent };
   }
 
+  if (input?.action === 'saveBotSettings') {
+    const welcomeMessage = cleanText(input.welcomeMessage, 3500);
+    const description = cleanText(input.description, 512);
+    const shortDescription = cleanText(input.shortDescription, 120);
+    const menuButtonText = cleanText(input.menuButtonText, 64);
+    if (!welcomeMessage || !description || !shortDescription || !menuButtonText ||
+        String(input.welcomeMessage || '').length > 3500 ||
+        String(input.description || '').length > 512 ||
+        String(input.shortDescription || '').length > 120 ||
+        String(input.menuButtonText || '').length > 64) {
+      return { ok: false, code: 'INVALID_BOT_SETTINGS', message: 'Заполни все поля и проверь ограничения длины: приветствие — 3500, описание — 512, краткое описание — 120, кнопка — 64 символа.' };
+    }
+    const settings = { welcomeMessage, description, shortDescription, menuButtonText };
+    await db.insert(botSettings).values({
+      key: 'default', ...settings,
+      updatedAt: Math.floor(Date.now() / 1000),
+      updatedBy: tgId,
+    }).onConflictDoUpdate({
+      target: botSettings.key,
+      set: {
+        ...settings,
+        updatedAt: Math.floor(Date.now() / 1000),
+        updatedBy: tgId,
+      },
+    }).run();
+    try {
+      await applyBotSettings(settings);
+      return { ok: true, saved: true, applied: true, settings, message: 'Настройки сохранены и применены к Telegram-боту.' };
+    } catch (error) {
+      console.warn('MAGNUS: настройки сохранены, но Telegram не применил часть параметров.', error);
+      return { ok: true, saved: true, applied: false, settings, message: 'Настройки сохранены в базе, но Telegram не подтвердил их применение. Нажми «Сохранить и применить» ещё раз.' };
+    }
+  }
+
   if (input?.action === 'configureBot') {
-    const description = 'MAGNUS — образовательная платформа. Изучай темы, выполняй задания и отслеживай результаты.';
-    const shortDescription = 'Обучение, учебные программы и задания в Telegram.';
-    await api.setMyCommands({ commands: BOT_COMMANDS });
-    await api.setMyDescription({ description });
-    await api.setMyShortDescription({ short_description: shortDescription });
-    await api.setChatMenuButton({
-      menu_button: { type: 'web_app', text: 'Открыть MAGNUS', web_app: { url: APP_URL } },
-    });
-    return { ok: true, message: 'Команды, описание и кнопка меню бота обновлены.' };
+    const row = await db.select().from(botSettings).where(eq(botSettings.key, 'default')).get();
+    const settings = publicBotSettings(row);
+    await applyBotSettings(settings);
+    return { ok: true, applied: true, message: 'Текущие настройки бота применены к Telegram.' };
   }
 
   return { ok: false, code: 'UNKNOWN_ACTION' };
