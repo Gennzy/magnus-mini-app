@@ -151,7 +151,7 @@ function courseArtwork(c) {
 function courseTile(c, compact=false) {
   return `<article class="course-card ${compact?"compact":""}" data-course="${c.id}" tabindex="0" role="button" aria-label="Открыть курс: ${c.title}">
     <div class="course-art ${c.color}" data-course-art="${c.id}">${courseArtwork(c)}<span class="course-art-mark">${c.mark}</span><span class="art-orbit"></span><span class="art-dots">✦　·　✧</span></div>
-    <div class="course-details"><div class="course-meta"><span>${c.category}</span><span>${c.time}</span></div><h3>${c.title}</h3><p>${c.lesson}</p><div class="progress-line"><span style="width:${c.progress}%"></span></div><div class="progress-caption"><span>${c.progress}% пройдено</span><button data-course="${c.id}">Продолжить ${icon("arrow")}</button></div></div>
+    <div class="course-details"><div class="course-meta"><span>${c.category}</span><span>${c.time}</span></div><h3>${c.title}</h3><p>${c.lesson}</p><div class="progress-line" role="progressbar" aria-label="Прогресс курса ${esc(c.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${c.progress}"><span style="width:${c.progress}%"></span></div><div class="progress-caption"><span>${c.progress}% пройдено</span><button data-course="${c.id}">Продолжить ${icon("arrow")}</button></div></div>
   </article>`;
 }
 
@@ -357,8 +357,9 @@ function schedulePanel() {
 
 function studyPage() {
   return `<main class="screen inner-screen">${heading("ТВОЙ ОБРАЗОВАТЕЛЬНЫЙ ПУТЬ","Учись в своём<br><em>ритме.</em>","Небольшие шаги каждый день превращаются в большие результаты.")}
-    <section class="learning-overview"><div class="overview-head"><div><span class="subtle-label">ТВОЯ АКТИВНОСТЬ</span><h2>На этой неделе</h2></div><span class="week-pill">7 дней ✦</span></div><div class="week-chart">${[["Пн",2],["Вт",3],["Ср",1],["Чт",4],["Пт",5],["Сб",2],["Вс",3]].map(([d,v],i)=>`<div class="day-bar"><span class="bar-value ${i===4?"current":""}" style="height:${v*17+18}px"></span><small>${d}</small></div>`).join("")}</div></section>
+    <section class="learning-overview"><div class="overview-head"><div><span class="subtle-label">ТВОЯ АКТИВНОСТЬ</span><h2>На этой неделе</h2></div><span class="study-demo-label">ДЕМО-ДАННЫЕ</span></div><div class="week-chart">${[["Пн",2],["Вт",3],["Ср",1],["Чт",4],["Пт",5],["Сб",2],["Вс",3]].map(([d,v],i)=>`<div class="day-bar"><span class="bar-value ${i===4?"current":""}" style="height:${v*17+18}px"></span><small>${d}</small></div>`).join("")}</div></section>
     <div class="stats-row"><div class="stat-card dark-stat"><span>${icon("clock")}</span><b>12<span>ч</span></b><small>Время обучения</small></div><div class="stat-card"><span>${icon("chart")}</span><b>68%</b><small>Общий прогресс</small></div></div>
+    <p class="study-data-note">График и показатели приведены для примера. Персональный прогресс появится после подключения учебной системы.</p>
     ${schedulePanel()}
     <section class="courses-section study-courses"><div class="section-title"><div><span class="subtle-label">ТВОЯ БИБЛИОТЕКА</span><h2>Мои курсы</h2></div><span class="course-count">03 курса</span></div>${courses.map(c=>courseTile(c,true)).join("")}</section>
   </main>`;
