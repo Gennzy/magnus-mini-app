@@ -92,6 +92,7 @@ const icon = (name, cls="") => {
     arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
     search:'<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/>',
     clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    cloud:'<path d="M7 18a4 4 0 1 1 .7-7.94A5.5 5.5 0 0 1 18.4 9 4.5 4.5 0 0 1 18 18H7Z"/>',
     chart:'<path d="M4 19V5M4 19h16M8 15v-4M13 15V7M18 15V4"/>',
     play:'<path d="m9 6 9 6-9 6V6Z"/>',
     back:'<path d="m15 18-6-6 6-6"/>'
