@@ -600,8 +600,8 @@ function bindEvents() {
       const called=callAdminApi("saveBotSettings",payload,(error,result)=>{
         el.disabled=false;el.textContent="Сохранить и применить";
         if(error||!result?.ok){toast(error?.message||result?.message||"Не удалось сохранить настройки.");return;}
-        toast(result.message||"Настройки сохранены.");
         loadAdminDashboard();
+        toast(result.message||"Настройки сохранены.");
       });
       if(!called){el.disabled=false;el.textContent="Сохранить и применить";toast("Открой панель из Telegram, чтобы сохранить настройки.");}
     }else if(el.dataset.adminAction==="configure-bot"){
