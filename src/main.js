@@ -512,46 +512,65 @@ function dashboardOverview() {
     <div class="dashboard-overview-foot"><span>${savedTotal ? "Материалы сохраняются автоматически" : "Здесь появятся твои сохранённые ответы и заметки"}</span><button data-go="assignments">Мои задания ${icon("arrow")}</button></div>
   </section>`;
 }
+function dashboardContinueLearning() {
+  const candidates = courses.map(course => {
+    const lessons = courseLessons(course.id);
+    const completed = courseCompletionCount(course.id);
+    const nextIndex = lessons.findIndex((lesson,index) => !completedLessons[lesson[0]] && lessonIsUnlocked(lessons,index));
+    return { course, lessons, completed, nextIndex, progress: lessons.length ? Math.round(completed / lessons.length * 100) : 0 };
+  });
+  const active = candidates.find(item => item.nextIndex >= 0) || candidates[0];
+  if (!active) return "";
+  const lesson = active.lessons[active.nextIndex >= 0 ? active.nextIndex : 0];
+  const isStarted = active.completed > 0;
+  return `<section class="dashboard-continue">
+    <div class="dashboard-continue-copy">
+      <span class="subtle-label">${isStarted ? "ПРОДОЛЖИТЬ ОБУЧЕНИЕ" : "ТВОЙ ПЕРВЫЙ ШАГ"}</span>
+      <span class="dashboard-continue-course">${esc(active.course.title || active.course.name || "Учебная программа")}</span>
+      <h2>${esc(lesson?.[1] || "Начать обучение")}</h2>
+      <p>${esc(lesson?.[2] || "Открой программу и начни с первого занятия.")} · ${lesson?.[3] || 10} минут</p>
+      <div class="dashboard-continue-progress"><span><i style="width:${active.progress}%"></i></span><small>${active.completed} из ${active.lessons.length} занятий · ${active.progress}%</small></div>
+      <button class="orange-button" data-course="${esc(active.course.id)}">${isStarted ? "Продолжить занятие" : "Начать программу"} ${icon("arrow")}</button>
+    </div>
+    <div class="dashboard-continue-mark"><span>${String(active.completed + 1).padStart(2,"0")}</span><small>СЛЕДУЮЩИЙ<br>ШАГ</small></div>
+  </section>`;
+}
 function dashboardTasksPreview() {
-  const nextAssignment = assignments[0];
-  const laterAssignments = assignments.slice(1, 3);
-  return `<section class="dashboard-work-grid">
-    <div class="dashboard-panel dashboard-assignment-panel">
-      <div class="section-title"><div><span class="subtle-label">УЧЕБНЫЕ ПРИМЕРЫ</span><h2>Примеры заданий</h2></div><button class="text-link" data-go="assignments">Все задания ${icon("arrow")}</button></div>
-      <article class="dashboard-featured-task">
-        <div class="featured-task-top"><span class="featured-task-kind">${esc(nextAssignment.type)}</span><span class="featured-task-due">${hasAssignmentDraft(nextAssignment.id) ? "Черновик сохранён" : "Пример задания"}</span></div>
-        <h3>${esc(nextAssignment.title)}</h3>
-        <p>${esc(nextAssignment.course)}</p>
-        <div class="featured-task-bottom"><span>${icon("clock")}${esc(nextAssignment.estimate)}</span><button data-assignment-open="${nextAssignment.id}">${hasAssignmentDraft(nextAssignment.id) ? "Продолжить" : "Открыть задание"} ${icon("arrow")}</button></div>
-      </article>
-      ${laterAssignments.map(a => `<article class="dashboard-upcoming-task"><span><b>${esc(a.title)}</b><small>${esc(a.course)} · ${esc(a.due)}</small></span><button data-assignment-open="${a.id}" aria-label="Открыть задание">${icon("arrow")}</button></article>`).join("")}
-      <div class="dashboard-task-foot"><span>${assignments.length} учебных задания в списке</span><button data-go="assignments">Открыть центр заданий</button></div>
+  const pending = assignments.filter(a => !hasAssignmentSubmission(a.id));
+  const nextAssignment = pending.find(a => hasAssignmentDraft(a.id)) || pending[0];
+  const laterAssignments = pending.filter(a => a.id !== nextAssignment?.id).slice(0, 2);
+  const drafted = assignments.filter(a => hasAssignmentDraft(a.id) && !hasAssignmentSubmission(a.id)).length;
+  const submitted = assignments.filter(a => hasAssignmentSubmission(a.id)).length;
+  return `<section class="dashboard-work-section">
+    <div class="section-title"><div><span class="subtle-label">УЧЕБНЫЙ ПРОЦЕСС</span><h2>Твои задания</h2></div><button class="text-link" data-go="assignments">Все задания ${icon("arrow")}</button></div>
+    <div class="dashboard-work-stats">
+      <article><b>${pending.length}</b><span>Осталось выполнить</span></article>
+      <article><b>${drafted}</b><span>Черновики</span></article>
+      <article><b>${submitted}</b><span>Отправлено</span></article>
     </div>
-    <div class="dashboard-next-card">
-      <span class="subtle-label">РАСПИСАНИЕ</span>
-      <h3>Персональные занятия</h3>
-      <p>Расписание появится здесь после подключения учебной системы.</p>
-      <button data-go="study">Открыть обучение ${icon("arrow")}</button>
-    </div>
+    ${nextAssignment ? `<article class="dashboard-featured-task">
+      <div class="featured-task-top"><span class="featured-task-kind">${esc(nextAssignment.type)}</span><span class="featured-task-due">${hasAssignmentDraft(nextAssignment.id) ? "Черновик сохранён" : "Можно начать"}</span></div>
+      <h3>${esc(nextAssignment.title)}</h3><p>${esc(nextAssignment.course)}</p>
+      <div class="featured-task-bottom"><span>${icon("clock")}${esc(nextAssignment.estimate)}</span><button data-assignment-open="${nextAssignment.id}">${hasAssignmentDraft(nextAssignment.id) ? "Продолжить" : "Открыть задание"} ${icon("arrow")}</button></div>
+    </article>` : `<div class="dashboard-task-empty"><b>Все задания отправлены</b><p>Новые практические работы появятся вместе со следующими учебными модулями.</p></div>`}
+    ${laterAssignments.map(a => `<article class="dashboard-upcoming-task"><span><b>${esc(a.title)}</b><small>${esc(a.course)} · ${esc(a.estimate)}</small></span><button data-assignment-open="${a.id}" aria-label="Открыть задание">${icon("arrow")}</button></article>`).join("")}
   </section>`;
 }
 
 function homePage() {
+  const completedTotal = Object.keys(completedLessons).filter(id => completedLessons[id]).length;
+  const notesTotal = Object.values(lessonNotes).filter(value => String(value || "").trim()).length;
+  const draftsTotal = Object.keys(assignmentDrafts).filter(id => hasAssignmentDraft(id) && !hasAssignmentSubmission(id)).length;
   return `<main class="screen home-screen">
-    <section class="greeting-row"><div><div class="subtle-label">ЛИЧНЫЙ КАБИНЕТ</div><h1>Привет, ${esc(firstName)}!</h1><p>С чего начнём сегодня?</p></div></section>
-    <section class="hero-card">
-      <div class="hero-copy"><span class="hero-eyebrow">ВЫБЕРИ НАПРАВЛЕНИЕ</span><h2>Найди своё<br>направление.</h2><p>Посмотри факультеты и ознакомительные программы.</p><button class="orange-button" data-go="faculties">Все факультеты ${icon("arrow")}</button></div>
-      <div class="mascot-stage"><img src="${magnusOwl3d}" class="hero-mascot" alt="Совёнок MAGNUS" /></div>
+    <section class="greeting-row"><div><div class="subtle-label">ЛИЧНЫЙ КАБИНЕТ · MAGNUS</div><h1>Привет, ${esc(firstName)}!</h1><p>Продолжим с того места, где остановились?</p></div><div class="home-avatar">${telegramPhotoUrl ? `<img src="${esc(telegramPhotoUrl)}" alt="">` : icon("profile")}</div></section>
+    ${dashboardContinueLearning()}
+    <section class="dashboard-progress-strip">
+      <article><b>${completedTotal}</b><span>Занятий пройдено</span></article>
+      <article><b>${draftsTotal}</b><span>Черновика</span></article>
+      <article><b>${notesTotal}</b><span>Заметок</span></article>
     </section>
-    <section class="courses-section home-featured-course"><div class="section-title"><div><span class="subtle-label">ОЗНАКОМИТЕЛЬНАЯ ПРОГРАММА</span><h2>Посмотреть пример курса</h2></div><button class="text-link" data-go="study">Все курсы ${icon("arrow")}</button></div>${courseTile(courses[0],true)}</section>
-    <section class="quick-section"><div class="section-title"><div><span class="subtle-label">НАВИГАЦИЯ</span><h2>Разделы MAGNUS</h2></div><button class="text-link" data-go="faculties">Все факультеты ${icon("arrow")}</button></div><div class="quick-grid">
-      <button class="quick-item" data-go="faculties"><span class="quick-icon peach">${icon("faculty")}</span><b>Факультеты</b><small>Найди своё</small></button>
-      <button class="quick-item" data-go="study"><span class="quick-icon lilac">${icon("study")}</span><b>Обучение</b><small>Расписание и курсы</small></button>
-      <button class="quick-item" data-go="documents"><span class="quick-icon butter">${icon("docs")}</span><b>Документы</b><small>Сертификаты</small></button>
-      <button class="quick-item" data-go="profile"><span class="quick-icon mint">${icon("profile")}</span><b>Профиль</b><small>Твой аккаунт</small></button>
-    </div></section>
-    ${dashboardOverview()}
     ${dashboardTasksPreview()}
+    <section class="home-discover"><div><span class="subtle-label">ЕСТЬ ИНТЕРЕС К НОВОМУ?</span><h2>Открой другое направление</h2><p>Изучи факультеты и выбери тему для следующего этапа.</p></div><button class="text-link" data-go="faculties">Каталог факультетов ${icon("arrow")}</button></section>
   </main>`;
 }
 
