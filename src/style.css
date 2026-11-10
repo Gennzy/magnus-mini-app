@@ -7712,3 +7712,24 @@ textarea { line-height: 1.6; }
   .dashboard-work-section { gap: 11px; }
   .home-discover { align-items: flex-start; flex-direction: column; gap: 12px; padding: 17px; }
 }
+
+
+/* Academic enrollment */
+.faculty-enrollment,.enrollment-empty{margin:18px 0 0;padding:22px 24px;border:1px solid #e8e7e3;border-radius:20px;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:22px}
+.faculty-enrollment-copy{max-width:560px}
+.faculty-enrollment-copy h2,.enrollment-empty h2{font-size:clamp(19px,2.2vw,25px);letter-spacing:-.7px;margin:8px 0}
+.faculty-enrollment-copy p,.enrollment-empty p{font-size:13px;line-height:1.6;color:#777b7d;margin:0}
+.faculty-enrollment-muted{background:#f7f7f5}
+.enrolled-programs{margin:20px 0 0}
+.enrolled-program-card{background:#202326;color:#fff;border-radius:20px;padding:22px 24px;margin-top:12px;max-width:760px}
+.enrolled-program-top{display:flex;justify-content:space-between;align-items:center;color:#c7c8c8;font-size:11px}
+.enrolled-program-top b{color:#f5a16a;font-size:14px}
+.enrolled-program-card h3{font-size:21px;letter-spacing:-.5px;margin:18px 0 5px}
+.enrolled-program-card p{color:#b7b9b9;font-size:12px;margin:0 0 14px}
+.enrolled-progress{height:5px;background:#424648;border-radius:99px;overflow:hidden}
+.enrolled-progress span{display:block;height:100%;background:#f28b50;border-radius:99px}
+.enrolled-program-card>button{margin-top:18px;border:0;background:none;color:#fff;font:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:9px;padding:0}
+.enrolled-program-card>button svg{width:16px;height:16px}
+.enrollment-empty{display:block;background:#f7f6f2}
+.enrollment-empty p{max-width:480px;margin-bottom:18px}
+@media(max-width:640px){.faculty-enrollment{align-items:stretch;flex-direction:column;padding:19px}.faculty-enrollment>.orange-button{width:100%;justify-content:center}.enrolled-program-card{padding:19px}.enrollment-empty{padding:20px}}
