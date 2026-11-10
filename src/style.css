@@ -7235,3 +7235,13 @@ body { background:#f6f6f3;color:#252b2d; }
  .learning-map-screen .learning-node-wrap.left,
  .learning-map-screen .learning-node-wrap.right{padding:0 7px}
 }
+
+/* Locked stages remain readable; unavailable does not mean low-contrast. */
+.learning-node-wrap.is-locked .learning-node-card{
+  opacity:1;background:#fff;border-color:#dedbd2;
+}
+.learning-node-wrap.is-locked .learning-node-card>b{color:#4f5a58}
+.learning-node-wrap.is-locked .learning-node-meta{color:#69736f}
+.learning-node-wrap.is-locked .learning-node-meta span:first-child{color:#916a4b}
+.learning-node-wrap.is-locked .learning-node-status{background:#eeece6;color:#6e746e}
+.learning-node-lock{display:block;width:21px;height:21px;color:#8b9088}
