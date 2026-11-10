@@ -7304,3 +7304,48 @@ body { background:#f6f6f3;color:#252b2d; }
  .learning-checkpoint-copy>span{font-size:8px}
  .learning-checkpoint>strong{font-size:6px}
 }
+
+
+/* 3D MAGNUS owl — homepage hero */
+.hero-card {
+  background:
+    radial-gradient(ellipse at 82% 48%, rgba(111, 66, 178, .42) 0%, transparent 47%),
+    linear-gradient(112deg, #17191d 0%, #191722 62%, #21172d 100%);
+}
+.mascot-stage {
+  min-height: 270px;
+  position: relative;
+  isolation: isolate;
+}
+.mascot-stage::before {
+  content: "";
+  position: absolute;
+  width: 88%;
+  aspect-ratio: 1;
+  right: 2%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(135, 76, 211, .28) 0%, rgba(93, 48, 151, .12) 45%, transparent 72%);
+  filter: blur(8px);
+  z-index: 0;
+}
+.hero-mascot {
+  width: min(100%, 340px);
+  height: 310px;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 26px rgba(0, 0, 0, .30));
+  mix-blend-mode: normal;
+}
+@media (max-width: 650px) {
+  .mascot-stage {
+    min-height: 208px;
+    margin-right: -10px;
+  }
+  .hero-mascot {
+    width: 158%;
+    max-width: none;
+    height: 208px;
+    object-fit: contain;
+  }
+}
