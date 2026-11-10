@@ -6835,7 +6835,7 @@ body { background:#f6f6f3;color:#252b2d; }
 
 /* Owner-only Groq settings */
 .admin-ai-settings{display:flex;flex-direction:column;gap:13px;padding:17px;border:1px solid #e7e5df;border-radius:14px;background:#fff}
-.admin-ai-settings>p{margin:0;color:#697174;font-size:11px;line-height:1.6}.admin-ai-settings>label{display:flex;flex-direction:column;gap:7px;color:#596164;font-size:10px;font-weight:800}
+.admin-ai-settings>p{margin:0;color:#697174;font-size:11px;line-height:1.6}.admin-ai-settings>label{display:flex;flex-direction:column;gap:7px;color:#596164;font-size:10px;font-weight:800}.admin-ai-key-hint{color:#748078;font-size:10px;font-weight:500;line-height:1.45}
 .admin-ai-settings input,.admin-ai-settings select{width:100%;min-height:43px;padding:10px 12px;border:1px solid #e4e2dc;border-radius:9px;background:#fbfaf8;color:#30383a;font:inherit;font-size:12px}
 .admin-ai-state{padding:6px 9px;border-radius:7px;background:#f5eee7;color:#9a653f;font-size:9px;font-weight:800}.admin-ai-state.is-ready{background:#eaf4ed;color:#39754c}
 .admin-ai-notice{display:flex;flex-direction:column;gap:5px;padding:13px;border-radius:10px;background:#f6f5f1;color:#636b6d;font-size:10px;line-height:1.55}.admin-ai-notice b{color:#30383a;font-size:11px}
