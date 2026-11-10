@@ -83,6 +83,10 @@ try {
     await page.waitForSelector(".lesson-screen .lesson-tutor", { timeout: 10000 });
     const tutorVisible = await page.locator(".lesson-tutor-heading h2").textContent();
     if (!tutorVisible?.includes("Разберём тему вместе")) failures.push(`${name}/lesson: не найден блок учебного помощника`);
+    const lessonTabs = await page.locator("[data-lesson-tab]").count();
+    if (lessonTabs !== 4) failures.push(`${name}/lesson: ожидалось 4 вкладки, найдено ${lessonTabs}`);
+    const tutorInputFont = await page.locator("[data-tutor-input]").evaluate(el => Number.parseFloat(getComputedStyle(el).fontSize));
+    if (tutorInputFont < 16) failures.push(`${name}/lesson: размер шрифта поля наставника меньше 16px — возможен автозум iOS`);
 
     await page.locator('[data-lesson-tab="practice"]').click();
     const practiceVisible = await page.locator(".lesson-practice").count();
