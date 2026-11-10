@@ -7245,3 +7245,62 @@ body { background:#f6f6f3;color:#252b2d; }
 .learning-node-wrap.is-locked .learning-node-meta span:first-child{color:#916a4b}
 .learning-node-wrap.is-locked .learning-node-status{background:#eeece6;color:#6e746e}
 .learning-node-lock{display:block;width:21px;height:21px;color:#8b9088}
+
+
+/* Course chapter headers and milestone checkpoints */
+.learning-chapter{
+  position:relative;z-index:1;display:flex;align-items:center;gap:14px;
+  width:min(92%,650px);margin:19px auto 10px;padding:16px 18px;
+  border:1px solid #ddd7ca;border-radius:15px;
+  background:linear-gradient(105deg,#fdfcf8,#f0ede4);
+  box-shadow:0 8px 20px #302d240c,inset 0 1px #fff;
+}
+.learning-chapter-number{
+  width:43px;height:43px;flex:none;display:grid;place-items:center;
+  border-radius:12px;background:#e6e0d3;color:#78684e;
+  font-family:Georgia,serif;font-size:20px;font-weight:700;
+}
+.learning-chapter-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.learning-chapter-copy small{font-size:8px;font-weight:900;letter-spacing:1.1px;color:#8a806e}
+.learning-chapter-copy b{font-size:15px;line-height:1.3;color:#313b3b}
+.learning-chapter-copy>span{font-size:10px;color:#7e8580}
+.learning-chapter-count{flex:none;padding:6px 8px;border:1px solid #e1ddd3;border-radius:6px;color:#817c70;background:#fff9;font-size:8px;font-weight:800}
+.learning-chapter.is-current{border-color:color-mix(in srgb,var(--map-accent) 40%,#ddd7ca);background:linear-gradient(105deg,#fff,var(--map-accent-soft))}
+.learning-chapter.is-current .learning-chapter-number{background:var(--map-accent);color:#fff}
+.learning-chapter.is-current .learning-chapter-copy small{color:var(--map-accent)}
+.learning-chapter.is-done{background:linear-gradient(105deg,#f8fcf8,#edf4ed);border-color:#d4e2d4}
+.learning-chapter.is-done .learning-chapter-number{background:#dcecdf;color:#477953}
+.learning-chapter.is-done .learning-chapter-copy small{color:#56805c}
+.learning-checkpoint{
+  position:relative;z-index:1;display:flex;align-items:center;gap:12px;
+  width:min(86%,590px);margin:9px auto 20px;padding:12px 15px;
+  border:1px dashed #c8bca8;border-radius:12px;background:#fffaf1eF;
+  box-shadow:0 5px 13px #302d2409;
+}
+.learning-checkpoint-icon{
+  width:34px;height:34px;flex:none;display:grid;place-items:center;
+  border-radius:10px;background:#f0e4d1;color:#9a7044;
+}
+.learning-checkpoint-icon svg{width:18px;height:18px}
+.learning-checkpoint-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.learning-checkpoint-copy small{font-size:7px;letter-spacing:.9px;font-weight:900;color:#9a7a58}
+.learning-checkpoint-copy b{font-size:11px;line-height:1.35;color:#4b514e}
+.learning-checkpoint-copy>span{font-size:9px;color:#81857e}
+.learning-checkpoint>strong{flex:none;font-size:7px;letter-spacing:.8px;color:#9c815e}
+.learning-checkpoint.is-done{border-style:solid;border-color:#d5e2d4;background:#f5faf4}
+.learning-checkpoint.is-done .learning-checkpoint-icon{background:#e2eee2;color:#4b8152}
+.learning-checkpoint.is-done .learning-checkpoint-copy small,.learning-checkpoint.is-done>strong{color:#56805c}
+@media(max-width:650px){
+ .learning-chapter{width:96%;gap:10px;margin:15px auto 7px;padding:12px}
+ .learning-chapter-number{width:37px;height:37px;border-radius:10px;font-size:18px}
+ .learning-chapter-copy small{font-size:7px;letter-spacing:.7px}
+ .learning-chapter-copy b{font-size:12px}
+ .learning-chapter-copy>span{font-size:9px}
+ .learning-chapter-count{font-size:7px;padding:5px 6px}
+ .learning-checkpoint{width:92%;gap:9px;margin:7px auto 16px;padding:10px}
+ .learning-checkpoint-icon{width:30px;height:30px}
+ .learning-checkpoint-copy small{font-size:6px;letter-spacing:.6px}
+ .learning-checkpoint-copy b{font-size:10px}
+ .learning-checkpoint-copy>span{font-size:8px}
+ .learning-checkpoint>strong{font-size:6px}
+}
