@@ -66,6 +66,47 @@ export default async function (input, ctx) {
       .onConflictDoUpdate({ target: studentData.tgId, set: { payload: { ...payload, studentProfile: telegramProfile, enrollments }, updatedAt } }).run();
     return { ok: true, courseId, facultyId: allowedPrograms[courseId], enrolledAt: enrollments[courseId], enrollments };
   }
+  if (input?.action === 'savePracticeReview') {
+    const lessonId = String(input.lessonId || '');
+    const courseId = lessonId.split('-')[0];
+    const allowedLessons = {
+      ai: ['ai-01','ai-02','ai-03','ai-04','ai-05','ai-06'],
+      mind: ['mind-01','mind-02','mind-03','mind-04','mind-05','mind-06'],
+      brand: ['brand-01','brand-02','brand-03','brand-04','brand-05','brand-06'],
+    };
+    if (!allowedLessons[courseId]?.includes(lessonId)) return { ok: false, code: 'INVALID_LESSON', message: 'Занятие не найдено.' };
+    const answer = typeof input.answer === 'string' ? input.answer.trim() : '';
+    const feedback = typeof input.feedback === 'string' ? input.feedback.trim() : '';
+    if (answer.length < 20 || answer.length > 2000 || feedback.length < 20 || feedback.length > 6000) {
+      return { ok: false, code: 'INVALID_REVIEW', message: 'Не удалось сохранить разбор. Проверь ответ и попробуй ещё раз.' };
+    }
+    const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
+    const payload = existing?.payload || {};
+    const enrollments = cleanMap(payload.enrollments);
+    if (!enrollments[courseId]) return { ok: false, code: 'NOT_ENROLLED', message: 'Сначала оформи зачисление на эту программу.' };
+    const completed = cleanMap(payload.completedLessons);
+    const index = allowedLessons[courseId].indexOf(lessonId);
+    if (index > 0 && !completed[allowedLessons[courseId][index - 1]]) {
+      return { ok: false, code: 'LESSON_LOCKED', message: 'Сначала заверши предыдущее занятие.' };
+    }
+    const results = cleanMap(payload.lessonPracticeResults);
+    let previous = {};
+    try { previous = JSON.parse(results[lessonId] || '{}'); } catch {}
+    const record = {
+      answer,
+      feedback,
+      attempts: Math.max(0, Number(previous.attempts) || 0) + 1,
+      reviewedAt: new Date().toISOString(),
+      status: 'reviewed',
+    };
+    results[lessonId] = JSON.stringify(record);
+    const updatedAt = Math.floor(Date.now() / 1000);
+    const nextPayload = { ...payload, studentProfile: telegramProfile, lessonPracticeResults: results };
+    await db.insert(studentData).values({ tgId, payload: nextPayload, updatedAt })
+      .onConflictDoUpdate({ target: studentData.tgId, set: { payload: nextPayload, updatedAt } }).run();
+    return { ok: true, lessonId, result: record };
+  }
+
   if (input?.action === 'completeLesson') {
     const lessonId = String(input.lessonId || '');
     const answerIndex = Number(input.answerIndex);
