@@ -118,6 +118,76 @@ export default async function (input, ctx) {
     return { ok: true, lessonId, result: record };
   }
 
+  if (input?.action === 'startFinalExam' || input?.action === 'submitFinalExam') {
+    const courseId = String(input.courseId || '');
+    const examBank = {
+      ai: [
+        ['Как корректнее всего описать ИИ?', ['Универсальный разум','Система для решения определённых задач','Программа без ошибок'], 1],
+        ['Для чего нужна тестовая выборка?', ['Для увеличения объёма интерфейса','Для проверки модели на новых данных','Для хранения паролей'], 1],
+        ['Что помогает снизить ошибки модели?', ['Полный отказ от проверки','Качественные данные и проверка результатов','Увеличение длины ответа'], 1],
+        ['Что такое промпт?', ['Команда или инструкция модели','Название базы данных','Тип видеокарты'], 0],
+        ['Почему важно проверять ответ ИИ?', ['Модель всегда выдумывает','Модель может ошибаться или упускать контекст','Проверка мешает обучению'], 1],
+        ['Что лучше для сложной задачи?', ['Один общий запрос без контекста','Разбить задачу на шаги и задать критерии','Просить ответить случайно'], 1],
+      ],
+      mind: [
+        ['Что изучает психология?', ['Только работу мозга','Психику, поведение и процессы человека','Только общественные правила'], 1],
+        ['Что такое когнитивное искажение?', ['Способ измерить рост','Систематическая ошибка мышления','Вид физической нагрузки'], 1],
+        ['Что помогает лучше понять эмоцию?', ['Игнорировать её','Назвать переживание и его возможную причину','Сразу оценить другого человека'], 1],
+        ['Что важно в активном слушании?', ['Перебивать советами','Уточнять и проверять понимание','Менять тему'], 1],
+        ['Почему нельзя делать вывод о человеке по одному поступку?', ['Поступки не имеют значения','Нужны контекст и повторяющиеся наблюдения','Характер всегда неизменен'], 1],
+        ['Что такое личная граница?', ['Запрет на общение','Понимание собственных допустимых условий и пределов','Обязанность соглашаться'], 1],
+      ],
+      brand: [
+        ['Что формирует позиционирование бренда?', ['Только логотип','Ценность и отличие для выбранной аудитории','Количество публикаций'], 1],
+        ['Зачем изучать целевую аудиторию?', ['Чтобы обращаться ко всем одинаково','Чтобы понимать задачи и мотивы клиентов','Чтобы отказаться от продукта'], 1],
+        ['Что такое УТП?', ['Уникальное торговое предложение','Универсальный тарифный план','Учёт товарных позиций'], 0],
+        ['Что делает коммуникацию бренда последовательной?', ['Случайный тон в каждом канале','Единый смысл и узнаваемый голос','Частая смена названия'], 1],
+        ['Как оценивать маркетинговую гипотезу?', ['По личному впечатлению','По заранее выбранным метрикам и результатам теста','По числу идей'], 1],
+        ['Что важнее в контент-стратегии?', ['Публиковать как можно чаще','Связать контент с задачами аудитории и целью','Копировать конкурентов'], 1],
+      ],
+    };
+    const questions = examBank[courseId];
+    if (!questions) return { ok: false, code: 'INVALID_PROGRAM', message: 'Итоговый экзамен для этой программы не найден.' };
+    const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
+    const payload = existing?.payload || {};
+    if (!cleanMap(payload.enrollments)[courseId]) return { ok: false, code: 'NOT_ENROLLED', message: 'Сначала оформи зачисление на программу.' };
+    const lessons = { ai:['ai-01','ai-02','ai-03','ai-04','ai-05','ai-06'], mind:['mind-01','mind-02','mind-03','mind-04','mind-05','mind-06'], brand:['brand-01','brand-02','brand-03','brand-04','brand-05','brand-06'] }[courseId];
+    const completed = cleanMap(payload.completedLessons);
+    if (!lessons.every(id => Boolean(completed[id]))) return { ok: false, code: 'LESSONS_INCOMPLETE', message: 'Сначала заверши все занятия программы.' };
+    const exams = payload.finalExams && typeof payload.finalExams === 'object' ? payload.finalExams : {};
+    const state = exams[courseId] && typeof exams[courseId] === 'object' ? exams[courseId] : { attempts: [], passed: false };
+    if (state.passed) return { ok: true, passed: true, result: state.attempts?.at(-1) || null, attemptsUsed: (state.attempts || []).length, maxAttempts: 3 };
+    if (input.action === 'startFinalExam') {
+      if ((state.attempts || []).length >= 3) return { ok: false, code: 'ATTEMPTS_EXHAUSTED', message: 'Попытки экзамена закончились. Обратись в учебную поддержку.' };
+      const sessionId = 'exam-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+      const session = { sessionId, questions: questions.map((q, index) => ({ id: courseId + '-q' + (index + 1), text: q[0], options: q[1] })), startedAt: new Date().toISOString() };
+      const nextExams = { ...exams, [courseId]: { ...state, activeSession: session, attempts: state.attempts || [] } };
+      const nextPayload = { ...payload, finalExams: nextExams };
+      const updatedAt = Math.floor(Date.now() / 1000);
+      await db.insert(studentData).values({ tgId, payload: nextPayload, updatedAt }).onConflictDoUpdate({ target: studentData.tgId, set: { payload: nextPayload, updatedAt } }).run();
+      return { ok: true, sessionId, questions: session.questions, attemptsUsed: (state.attempts || []).length, maxAttempts: 3, passingScore: 70 };
+    }
+    const session = state.activeSession;
+    const answers = input.answers && typeof input.answers === 'object' ? input.answers : {};
+    if (!session || session.sessionId !== String(input.sessionId || '')) return { ok: false, code: 'EXAM_SESSION_INVALID', message: 'Экзаменационная сессия не найдена. Начни экзамен заново.' };
+    let correct = 0;
+    const details = questions.map((question, index) => {
+      const selected = Number(answers[courseId + '-q' + (index + 1)]);
+      const isCorrect = Number.isInteger(selected) && selected === question[2];
+      if (isCorrect) correct += 1;
+      return { questionId: courseId + '-q' + (index + 1), selected: Number.isInteger(selected) ? selected : -1, correct: isCorrect };
+    });
+    const score = Math.round(correct / questions.length * 100);
+    const passed = score >= 70;
+    const attempt = { score, correct, total: questions.length, passed, submittedAt: new Date().toISOString(), details };
+    const attempts = [...(state.attempts || []), attempt].slice(-3);
+    const nextExams = { ...exams, [courseId]: { attempts, passed, activeSession: null } };
+    const nextPayload = { ...payload, finalExams: nextExams };
+    const updatedAt = Math.floor(Date.now() / 1000);
+    await db.insert(studentData).values({ tgId, payload: nextPayload, updatedAt }).onConflictDoUpdate({ target: studentData.tgId, set: { payload: nextPayload, updatedAt } }).run();
+    return { ok: true, result: attempt, attemptsUsed: attempts.length, maxAttempts: 3 };
+  }
+
   if (input?.action === 'completeLesson') {
     const lessonId = String(input.lessonId || '');
     const answerIndex = Number(input.answerIndex);
@@ -192,6 +262,7 @@ export default async function (input, ctx) {
       enrollments: cleanMap(payload.enrollments),
       lessonPracticeDrafts: cleanMap(payload.lessonPracticeDrafts),
       lessonPracticeResults: cleanMap(payload.lessonPracticeResults),
+      finalExams: payload.finalExams && typeof payload.finalExams === 'object' ? payload.finalExams : {},
       assignmentSubmissions: Array.isArray(payload.assignmentSubmissions) ? payload.assignmentSubmissions.slice(-50) : [],
       subscription: publicSubscription(subscriptionRow),
     };
@@ -207,7 +278,8 @@ export default async function (input, ctx) {
       completedLessons: cleanMap(existing?.payload?.completedLessons),
       enrollments: cleanMap(existing?.payload?.enrollments),
       lessonPracticeDrafts: cleanMap(input.lessonPracticeDrafts),
-      lessonPracticeResults: cleanMap(input.lessonPracticeResults),
+      lessonPracticeResults: cleanMap(existing?.payload?.lessonPracticeResults),
+      finalExams: existing?.payload?.finalExams && typeof existing.payload.finalExams === 'object' ? existing.payload.finalExams : {},
       assignmentSubmissions: Array.isArray(existing?.payload?.assignmentSubmissions) ? existing.payload.assignmentSubmissions.slice(-50) : [],
       studentProfile: {
         firstName: telegramProfile.firstName || existing?.payload?.studentProfile?.firstName || '',
