@@ -586,7 +586,7 @@ function courseDetailPage() {
   return `<div class="learning-node-wrap ${index%2?"right":"left"} ${done?"is-done":current?"is-current":"is-locked"}">
    <span class="learning-path-connector" aria-hidden="true"></span>
    <button type="button" class="learning-node" ${unlocked?`data-lesson-open="${esc(lesson[0])}"`:"disabled"} aria-label="${esc(lesson[1])}: ${state}">
-    <span class="learning-node-icon">${done?"✓":unlocked?String(index+1).padStart(2,"0"):"⌑"}</span>
+    <span class="learning-node-icon">${done?"✓":unlocked?String(index+1).padStart(2,"0"):'<svg class="learning-node-lock" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'}</span>
    </button>
    <div class="learning-node-card">
     <div class="learning-node-kicker"><small>ЭТАП ${String(index+1).padStart(2,"0")} · ${esc(lesson[2].toUpperCase())}</small><span class="learning-node-status">${done?"ЗАВЕРШЁН":current?"ТЕКУЩИЙ":"ЗАКРЫТ"}</span></div>
