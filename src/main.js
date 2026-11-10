@@ -595,7 +595,7 @@ function courseDetailPage() {
    </div>
   </div>`;
  }).join("");
- return `<main class="screen inner-screen course-detail-screen learning-map-screen ${c.color}">
+ return `<main class="screen inner-screen course-detail-screen learning-map-screen" data-map-course="${c.id}">
  <button class="back-button" data-go="study">${icon("back")} Все программы</button>
  <section class="learning-map-heading">
   <div class="learning-map-art ${c.color}">${courseArtwork(c)}<span>${esc(c.category)}</span></div>
