@@ -506,7 +506,7 @@ function homePage() {
     <section class="greeting-row"><div><div class="subtle-label">ЛИЧНЫЙ КАБИНЕТ</div><h1>Привет, ${esc(firstName)}!</h1><p>С чего начнём сегодня?</p></div></section>
     <section class="hero-card">
       <div class="hero-copy"><span class="hero-eyebrow">ВЫБЕРИ НАПРАВЛЕНИЕ</span><h2>Найди своё<br>направление.</h2><p>Посмотри факультеты и ознакомительные программы.</p><button class="orange-button" data-go="faculties">Все факультеты ${icon("arrow")}</button></div>
-      <div class="mascot-stage"><img src="/mascot/magnus-owl.svg" class="hero-mascot" alt="Совёнок MAGNUS" /></div>
+      <div class="mascot-stage"><img src="/mascot/magnus-owl-3d.webp" class="hero-mascot" alt="Совёнок MAGNUS" /></div>
     </section>
     <section class="courses-section home-featured-course"><div class="section-title"><div><span class="subtle-label">ОЗНАКОМИТЕЛЬНАЯ ПРОГРАММА</span><h2>Посмотреть пример курса</h2></div><button class="text-link" data-go="study">Все курсы ${icon("arrow")}</button></div>${courseTile(courses[0],true)}</section>
     <section class="quick-section"><div class="section-title"><div><span class="subtle-label">НАВИГАЦИЯ</span><h2>Разделы MAGNUS</h2></div><button class="text-link" data-go="faculties">Все факультеты ${icon("arrow")}</button></div><div class="quick-grid">
