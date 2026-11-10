@@ -7104,9 +7104,9 @@ body { background:#f6f6f3;color:#252b2d; }
 
 /* MAGNUS course map — illustrated field-guide route */
 .learning-map-screen{--map-accent:#d87935;--map-accent-soft:#fff0e4;--map-ink:#273437}
-.learning-map-screen.course-ai{--map-accent:#4c8797;--map-accent-soft:#eaf3f5}
-.learning-map-screen.course-mind{--map-accent:#8a70aa;--map-accent-soft:#f0ebf7}
-.learning-map-screen.course-brand{--map-accent:#bd773f;--map-accent-soft:#fbefe3}
+.learning-map-screen[data-map-course="ai"]{--map-accent:#4c8797;--map-accent-soft:#eaf3f5}
+.learning-map-screen[data-map-course="mind"]{--map-accent:#8a70aa;--map-accent-soft:#f0ebf7}
+.learning-map-screen[data-map-course="brand"]{--map-accent:#bd773f;--map-accent-soft:#fbefe3}
 .learning-map-screen .learning-map-heading{grid-template-columns:210px minmax(0,1fr);gap:28px;align-items:center;margin:18px 0 25px}
 .learning-map-screen .learning-map-art{height:184px;border-radius:20px;box-shadow:0 12px 30px #24221c16,inset 0 1px #ffffff55}
 .learning-map-screen .learning-map-art>svg{opacity:.58}
