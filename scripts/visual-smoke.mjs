@@ -101,6 +101,7 @@ try {
     // Проверяем, что черновик читается из localStorage после полной перезагрузки Mini App.
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.waitForSelector("#app .home-screen", { timeout: 15000 });
+    await page.waitForTimeout(1900);
     await page.locator('[data-course="ai"]').click();
     await page.waitForSelector(".learning-map-screen .learning-path", { timeout: 10000 });
     await page.locator(".learning-node[data-lesson-open]").first().click();
