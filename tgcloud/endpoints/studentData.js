@@ -51,6 +51,21 @@ export default async function (input, ctx) {
     await db.insert(studentData).values({ tgId, payload, updatedAt: Math.floor(Date.now() / 1000) }).onConflictDoUpdate({ target: studentData.tgId, set: { payload, updatedAt: Math.floor(Date.now() / 1000) } }).run();
     return { ok: true, submission };
   }
+  if (input?.action === 'enrollProgram') {
+    const courseId = String(input.courseId || '');
+    const allowedPrograms = { ai: 'it', mind: 'psychology', brand: 'marketing' };
+    if (!Object.prototype.hasOwnProperty.call(allowedPrograms, courseId)) {
+      return { ok: false, code: 'INVALID_PROGRAM', message: 'Эта учебная программа пока недоступна для зачисления.' };
+    }
+    const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
+    const payload = existing?.payload || {};
+    const enrollments = cleanMap(payload.enrollments);
+    if (!enrollments[courseId]) enrollments[courseId] = new Date().toISOString();
+    const updatedAt = Math.floor(Date.now() / 1000);
+    await db.insert(studentData).values({ tgId, payload: { ...payload, studentProfile: telegramProfile, enrollments }, updatedAt })
+      .onConflictDoUpdate({ target: studentData.tgId, set: { payload: { ...payload, studentProfile: telegramProfile, enrollments }, updatedAt } }).run();
+    return { ok: true, courseId, facultyId: allowedPrograms[courseId], enrolledAt: enrollments[courseId], enrollments };
+  }
   if (input?.action === 'completeLesson') {
     const lessonId = String(input.lessonId || '');
     const answerIndex = Number(input.answerIndex);
@@ -68,6 +83,8 @@ export default async function (input, ctx) {
     const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
     const previousPayload = existing?.payload || {};
     const completedLessons = cleanMap(previousPayload.completedLessons);
+    const enrollments = cleanMap(previousPayload.enrollments);
+    if (!enrollments[courseId]) return { ok: false, code: 'NOT_ENROLLED', message: 'Сначала оформи зачисление на эту программу.' };
     if (lessonIndex > 0 && !completedLessons[sequence[lessonIndex - 1]]) {
       return { ok: false, code: 'LESSON_LOCKED', message: 'Сначала заверши предыдущее занятие.' };
     }
@@ -114,6 +131,7 @@ export default async function (input, ctx) {
       interestedFaculties: cleanMap(payload.interestedFaculties),
       lessonQuizResults: cleanMap(payload.lessonQuizResults),
       completedLessons: cleanMap(payload.completedLessons),
+      enrollments: cleanMap(payload.enrollments),
       lessonPracticeDrafts: cleanMap(payload.lessonPracticeDrafts),
       lessonPracticeResults: cleanMap(payload.lessonPracticeResults),
       assignmentSubmissions: Array.isArray(payload.assignmentSubmissions) ? payload.assignmentSubmissions.slice(-50) : [],
@@ -129,6 +147,7 @@ export default async function (input, ctx) {
       interestedFaculties: cleanMap(input.interestedFaculties),
       lessonQuizResults: cleanMap(input.lessonQuizResults),
       completedLessons: cleanMap(existing?.payload?.completedLessons),
+      enrollments: cleanMap(existing?.payload?.enrollments),
       lessonPracticeDrafts: cleanMap(input.lessonPracticeDrafts),
       lessonPracticeResults: cleanMap(input.lessonPracticeResults),
       assignmentSubmissions: Array.isArray(existing?.payload?.assignmentSubmissions) ? existing.payload.assignmentSubmissions.slice(-50) : [],
