@@ -77,8 +77,15 @@ export default async function (input, ctx) {
     if (!allowedLessons[courseId]?.includes(lessonId)) return { ok: false, code: 'INVALID_LESSON', message: 'Занятие не найдено.' };
     const answer = typeof input.answer === 'string' ? input.answer.trim() : '';
     const feedback = typeof input.feedback === 'string' ? input.feedback.trim() : '';
-    if (answer.length < 20 || answer.length > 2000 || feedback.length < 20 || feedback.length > 6000) {
-      return { ok: false, code: 'INVALID_REVIEW', message: 'Не удалось сохранить разбор. Проверь ответ и попробуй ещё раз.' };
+    const assessment = input.assessment && typeof input.assessment === 'object' ? input.assessment : {};
+    const scores = assessment.scores && typeof assessment.scores === 'object' ? assessment.scores : {};
+    const rubricScores = ['relevance','completeness','reasoning'].map(key => Number(scores[key]));
+    const totalScore = rubricScores.reduce((sum, value) => sum + value, 0);
+    const verdict = totalScore >= 4 && rubricScores.every(value => Number.isInteger(value) && value > 0 && value <= 2) ? 'pass' : 'revise';
+    if (answer.length < 20 || answer.length > 2000 || feedback.length < 20 || feedback.length > 6000 ||
+        rubricScores.some(value => !Number.isInteger(value) || value < 0 || value > 2) ||
+        Number(assessment.totalScore) !== totalScore || assessment.verdict !== verdict) {
+      return { ok: false, code: 'INVALID_REVIEW', message: 'Не удалось сохранить оценку. Попробуй ещё раз.' };
     }
     const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
     const payload = existing?.payload || {};
@@ -95,9 +102,13 @@ export default async function (input, ctx) {
     const record = {
       answer,
       feedback,
+      scores: { relevance: rubricScores[0], completeness: rubricScores[1], reasoning: rubricScores[2] },
+      totalScore,
+      maxScore: 6,
+      verdict,
       attempts: Math.max(0, Number(previous.attempts) || 0) + 1,
       reviewedAt: new Date().toISOString(),
-      status: 'reviewed',
+      status: verdict,
     };
     results[lessonId] = JSON.stringify(record);
     const updatedAt = Math.floor(Date.now() / 1000);
