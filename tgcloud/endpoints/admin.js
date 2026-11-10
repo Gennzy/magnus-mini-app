@@ -1,6 +1,6 @@
 import { db, api } from 'sdk';
 import { eq, desc } from 'sdk/db';
-import { adminUsers, studentData, botSettings, adminAuditLog, adminMessages, studentSubscriptions, subscriptionPlans, paymentOrders } from '../schema.js';
+import { adminUsers, studentData, botSettings, adminAuditLog, adminMessages, studentSubscriptions, subscriptionPlans, paymentOrders, supportRequests } from '../schema.js';
 import { DEFAULT_SUBSCRIPTION_PLANS, normalizePlan } from '../lib/subscriptionPlans.js';
 
 const APP_URL = 'https://app9020486965.tgcloud.ai/';
@@ -140,6 +140,76 @@ export default async function (input, ctx) {
 
   const admin = await db.select().from(adminUsers).where(eq(adminUsers.tgId, tgId)).get();
   if (!admin?.active) return { ok: false, code: 'FORBIDDEN', message: 'Нет доступа к панели MAGNUS.' };
+
+
+  if (input?.action === 'supportInbox') {
+    const rows = await db.select().from(supportRequests)
+      .orderBy(desc(supportRequests.createdAt)).limit(200).all();
+    return { ok: true, requests: rows.map(row => ({
+      id: cleanText(row.id, 100), telegramId: String(row.tgId),
+      username: cleanText(row.username, 64), displayName: cleanText(row.displayName, 160),
+      messageText: cleanText(row.messageText, 3000), status: cleanText(row.status, 24),
+      createdAt: Number(row.createdAt) || 0,
+    })) };
+  }
+
+  if (input?.action === 'updateSupportRequest') {
+    const requestId = cleanText(input.requestId, 100);
+    const status = String(input.status || '');
+    if (!requestId || !['new', 'in_progress', 'resolved'].includes(status)) {
+      return { ok: false, code: 'INVALID_REQUEST', message: 'Некорректное обращение или статус.' };
+    }
+    const existing = await db.select().from(supportRequests)
+      .where(eq(supportRequests.id, requestId)).get();
+    if (!existing) return { ok: false, code: 'NOT_FOUND', message: 'Обращение не найдено.' };
+    await db.update(supportRequests).set({ status })
+      .where(eq(supportRequests.id, requestId)).run();
+    await writeAuditSafely({
+      action: 'support.request.updated', actorTgId: tgId, actorEmail: admin.email,
+      targetType: 'support_request', targetId: requestId,
+      summary: 'Изменён статус обращения поддержки',
+      details: { previousStatus: existing.status, status, studentId: String(existing.tgId) },
+    });
+    return { ok: true, status, message: 'Статус обращения обновлён.' };
+  }
+
+  if (input?.action === 'replySupportRequest') {
+    const requestId = cleanText(input.requestId, 100);
+    const messageText = typeof input.message === 'string' ? input.message.trim() : '';
+    if (!requestId || !messageText || messageText.length > 3500) {
+      return { ok: false, code: 'INVALID_MESSAGE', message: 'Сообщение должно содержать от 1 до 3500 символов.' };
+    }
+    const request = await db.select().from(supportRequests)
+      .where(eq(supportRequests.id, requestId)).get();
+    if (!request) return { ok: false, code: 'NOT_FOUND', message: 'Обращение не найдено.' };
+    let status = 'failed', telegramMessageId = null, errorMessage = '';
+    try {
+      const sent = await api.sendMessage({ chat_id: Number(request.tgId), text: messageText });
+      status = 'delivered';
+      telegramMessageId = Number(sent?.message_id) || null;
+    } catch (error) {
+      errorMessage = cleanText(error?.description || error?.message || 'Telegram не принял сообщение.', 500);
+    }
+    const now = Math.floor(Date.now() / 1000);
+    const record = {
+      id: 'msg-' + now + '-' + Math.random().toString(36).slice(2, 8),
+      studentId: String(request.tgId), adminTgId: tgId, adminEmail: admin.email,
+      messageText, status, telegramMessageId, errorMessage, createdAt: now,
+    };
+    await db.insert(adminMessages).values(record).run();
+    if (status === 'delivered' && request.status === 'new') {
+      await db.update(supportRequests).set({ status: 'in_progress' })
+        .where(eq(supportRequests.id, requestId)).run();
+    }
+    await writeAuditSafely({
+      action: 'support.request.replied', actorTgId: tgId, actorEmail: admin.email,
+      targetType: 'support_request', targetId: requestId,
+      summary: status === 'delivered' ? 'Отправлен ответ по обращению поддержки' : 'Не удалось отправить ответ по обращению',
+      details: { studentId: String(request.tgId), status, messageLength: messageText.length },
+    });
+    return { ok: true, delivered: status === 'delivered', message: status === 'delivered'
+      ? 'Ответ отправлен в Telegram.' : 'Не удалось отправить ответ: ' + errorMessage };
+  }
 
   if (input?.action === 'paymentPlans') {
     const saved = await db.select().from(subscriptionPlans).all();
