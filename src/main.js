@@ -130,6 +130,7 @@ let tutorPending = false;
 let interestedFaculties = loadInterestedFaculties();
 let lessonQuizResults = loadLessonQuizResults();
 let completedLessons = loadCompletedLessons();
+let enrollments = readStudentStorage("enrollments");
 let studentSubscription = { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
 let availableSubscriptionPlans = [];
 let paymentPlansLoading = false;
@@ -449,6 +450,7 @@ function scheduleCloudStudentDataSync() {
       completedLessons,
       lessonPracticeDrafts,
       lessonPracticeResults,
+      enrollments,
     }, (error) => {
       if (error) console.warn("MAGNUS: не удалось синхронизировать учебные данные.", error);
     });
@@ -469,6 +471,7 @@ function initializeCloudStudentData() {
     const localCompletedLessons = Object.keys(completedLessons).length > 0;
     const localPracticeDrafts = Object.keys(lessonPracticeDrafts).length > 0;
     const localPracticeResults = Object.keys(lessonPracticeResults).length > 0;
+    const localEnrollments = Object.keys(enrollments).length > 0;
     assignmentDrafts = { ...(result.assignmentDrafts || {}), ...assignmentDrafts };
     assignmentSubmissions = { ...(result.assignmentSubmissions || []).reduce((map,item)=>{ if(item?.assignmentId){(map[item.assignmentId] ||= []).push(item);} return map; },{}), ...assignmentSubmissions };
     storeAssignmentSubmissions();
@@ -478,6 +481,8 @@ function initializeCloudStudentData() {
     completedLessons = { ...(result.completedLessons || {}), ...completedLessons };
     lessonPracticeDrafts = { ...(result.lessonPracticeDrafts || {}), ...lessonPracticeDrafts };
     lessonPracticeResults = { ...(result.lessonPracticeResults || {}), ...lessonPracticeResults };
+    enrollments = { ...(result.enrollments || {}), ...enrollments };
+    writeStudentStorage("enrollments", enrollments);
     studentSubscription = result.subscription || { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
     storeAssignmentDrafts();
     storeLessonNotes();
@@ -489,7 +494,7 @@ function initializeCloudStudentData() {
     cloudSyncReady = true;
     render();
     // Если локальные данные старше облачных, объединённый результат также отправляем в облако.
-    if (localAssignments || localSubmissions || localNotes || localInterests || localQuizResults || localCompletedLessons || localPracticeDrafts || localPracticeResults) scheduleCloudStudentDataSync();
+    if (localAssignments || localSubmissions || localNotes || localInterests || localQuizResults || localCompletedLessons || localPracticeDrafts || localPracticeResults || localEnrollments) scheduleCloudStudentDataSync();
   });
 }
 
@@ -592,6 +597,44 @@ function facultiesPage() {
   </main>`;
 }
 
+function programForFaculty(facultyId) {
+  return ({ it: "ai", psychology: "mind", marketing: "brand" })[facultyId] || "";
+}
+function isProgramEnrolled(courseId) {
+  return Boolean(enrollments[courseId]);
+}
+function enrollInProgram(courseId, button) {
+  if (!telegramUser?.id) {
+    toast("Зачисление доступно при открытии MAGNUS через Telegram.");
+    return;
+  }
+  if (isProgramEnrolled(courseId)) {
+    selectedCourse = courses.find(item => item.id === courseId) || courses[0];
+    currentPage = "courseDetail";
+    render();
+    return;
+  }
+  if (button) { button.disabled = true; button.textContent = "Оформляем зачисление…"; }
+  const called = callCloudStudentData("enrollProgram", { courseId }, (error, result) => {
+    if (error || !result?.ok) {
+      render();
+      toast(error?.message || result?.message || "Не удалось оформить зачисление.");
+      return;
+    }
+    enrollments = { ...enrollments, [courseId]: result.enrolledAt || new Date().toISOString() };
+    writeStudentStorage("enrollments", enrollments);
+    selectedCourse = courses.find(item => item.id === courseId) || courses[0];
+    scheduleCloudStudentDataSync();
+    currentPage = "study";
+    render();
+    toast("Зачисление оформлено. Учебная программа добавлена в твой план.");
+  });
+  if (!called) {
+    if (button) { button.disabled = false; button.textContent = "Зачислиться на программу"; }
+    toast("Открой MAGNUS через Telegram.");
+  }
+}
+
 function facultyDetailPage() {
   const f = selectedFaculty;
   const outcomes = {
@@ -610,6 +653,8 @@ function facultyDetailPage() {
     <section class="faculty-outcomes"><div class="section-title"><div><span class="subtle-label">РЕЗУЛЬТАТ ОБУЧЕНИЯ</span><h2>Что ты освоишь</h2></div><span class="outcome-count">03 НАВЫКА</span></div><div class="outcome-grid">${outcomes.map((t,i)=>`<article class="outcome-card"><span>0${i+1}</span><b>${t}</b></article>`).join("")}</div></section>
     <section class="faculty-method"><div class="method-mark">${f.symbol}</div><div><span class="subtle-label">ФОРМАТ ОБУЧЕНИЯ</span><h3>${format}</h3><p>Теория, примеры и практические задания по темам курса.</p></div></section>
     <div class="detail-callout"><div><b>Рассматриваешь это направление?</b><p>${interestedFaculties[f.id] ? "Направление сохранено в твоих интересах." : "Сохрани направление, чтобы вернуться к нему позже."}</p></div><button class="orange-button" data-action="interest">${interestedFaculties[f.id] ? "Убрать из интересов" : "Сохранить интерес"} ${icon("arrow")}</button></div>
+    ${programForFaculty(f.id) ? (()=>{const programId=programForFaculty(f.id),program=courses.find(item=>item.id===programId),enrolled=isProgramEnrolled(programId);return `<section class="faculty-enrollment"><div class="faculty-enrollment-copy"><span class="subtle-label">УЧЕБНЫЙ ПЛАН · 6 ЗАНЯТИЙ</span><h2>${enrolled?"Ты уже зачислен": "Начни обучение на факультете"}</h2><p>${esc(program.title)}. Последовательные занятия, практика и контрольные точки.</p></div><button class="orange-button" data-enroll-program="${programId}">${enrolled?"Перейти к программе":"Зачислиться на программу"} ${icon("arrow")}</button></section>`;})() : `<section class="faculty-enrollment faculty-enrollment-muted"><div class="faculty-enrollment-copy"><span class="subtle-label">УЧЕБНЫЕ ПРОГРАММЫ</span><h2>Программа готовится</h2><p>Учебный план этого факультета находится в разработке. Сохрани направление, чтобы не потерять его.</p></div></section>`}`;
+
     <p class="demo-disclaimer">Информация о направлениях носит ознакомительный характер. Состав программ, преподаватели и условия обучения будут опубликованы отдельно.</p>
   </main>`;
 }
@@ -628,8 +673,8 @@ function schedulePanel() {
 function studyPage() {
   return `<main class="screen inner-screen study-screen">
     ${heading("ТВОЯ УЧЕБНАЯ СРЕДА", "Мои<br><em>программы.</em>", "Здесь собраны программы, к которым можно вернуться в любой момент.")}
-    ${dashboardContinueLearning()}
-    <section class="courses-section study-courses"><div class="section-title"><div><span class="subtle-label">ДОСТУПНЫЕ ПРОГРАММЫ</span><h2>Каталог обучения</h2></div><span class="course-count">${courses.length} программы</span></div>${courses.map(c=>courseTile(c,true)).join("")}</section>
+    ${Object.keys(enrollments).some(id=>courses.some(course=>course.id===id)) ? `<section class="enrolled-programs"><div class="section-title"><div><span class="subtle-label">ТВОЁ ЗАЧИСЛЕНИЕ</span><h2>Учебный план</h2></div><span class="course-count">${Object.keys(enrollments).filter(id=>courses.some(course=>course.id===id)).length} активных</span></div>${courses.filter(course=>isProgramEnrolled(course.id)).map(course=>{const lessons=courseLessons(course.id),done=courseCompletionCount(course.id),progress=lessons.length?Math.round(done/lessons.length*100):0;return `<article class="enrolled-program-card"><div class="enrolled-program-top"><span>${esc(course.category)}</span><b>${progress}%</b></div><h3>${esc(course.title)}</h3><p>${done} из ${lessons.length} занятий завершено</p><div class="enrolled-progress"><span style="width:${progress}%"></span></div><button data-course="${course.id}">Открыть учебный план ${icon("arrow")}</button></article>`;}).join("")}</section>` : `<section class="enrollment-empty"><span class="subtle-label">ТВОЙ СЛЕДУЮЩИЙ ШАГ</span><h2>Выбери программу и оформи зачисление</h2><p>После зачисления программа появится здесь. Прогресс будет сохраняться в твоём Telegram-профиле.</p><button class="orange-button" data-go="faculties">Выбрать факультет ${icon("arrow")}</button></section>`}
+    <section class="courses-section study-courses"><div class="section-title"><div><span class="subtle-label">ОБРАЗОВАТЕЛЬНЫЙ КАТАЛОГ</span><h2>Все программы</h2></div><span class="course-count">${courses.length} ознакомительных</span></div>${courses.map(c=>courseTile(c,true)).join("")}</section>
   </main>`;
 }
 
@@ -1177,6 +1222,7 @@ document.querySelectorAll("[data-admin-payment-refresh]").forEach(el=>el.addEven
   }));
   document.querySelectorAll("[data-review-status]").forEach(el=>el.addEventListener("click",()=>{const card=el.closest("[data-admin-submission]"),comment=card?.querySelector("[data-review-comment]")?.value||"",grade=card?.querySelector("[data-review-grade]")?.value??"";el.disabled=true;callAdminApi("reviewSubmission",{studentId:el.dataset.studentId,submissionId:el.dataset.submissionId,status:el.dataset.reviewStatus,comment,grade},(error,result)=>{if(error||!result?.ok){toast(error?.message||result?.message||"Не удалось сохранить проверку.");loadAdminDashboard();return;}toast(result.notificationSent?"Проверка сохранена, уведомление отправлено.":"Проверка сохранена. Бот не смог доставить уведомление.");loadAdminDashboard();});}));
   document.querySelectorAll("[data-go]").forEach(el => el.addEventListener("click", () => { currentPage = el.dataset.go; searchValue=""; if(currentPage==="admin")loadAdminDashboard(); if(currentPage==="profile")loadStudentPaymentHistory(); render(); window.scrollTo({top:0,behavior:"smooth"}); }));
+  document.querySelectorAll("[data-enroll-program]").forEach(button=>button.addEventListener("click",()=>enrollInProgram(button.dataset.enrollProgram,button)));
   document.querySelectorAll("[data-faculty]").forEach(el => el.addEventListener("click", () => { selectedFaculty=faculties.find(f=>f.id===el.dataset.faculty)||faculties[0]; currentPage="facultyDetail"; render(); window.scrollTo({top:0,behavior:"smooth"}); }));
   document.querySelectorAll("[data-lesson-open]").forEach(el=>el.addEventListener("click",()=>{selectedLessonId=el.dataset.lessonOpen;quizChoice="";lessonTab="lesson";currentPage="lesson";render();window.scrollTo({top:0,behavior:"smooth"});}));
   document.querySelectorAll("[data-course]").forEach(el => el.addEventListener("click", (event) => {
