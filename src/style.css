@@ -7733,3 +7733,61 @@ textarea { line-height: 1.6; }
 .enrollment-empty{display:block;background:#f7f6f2}
 .enrollment-empty p{max-width:480px;margin-bottom:18px}
 @media(max-width:640px){.faculty-enrollment{align-items:stretch;flex-direction:column;padding:19px}.faculty-enrollment>.orange-button{width:100%;justify-content:center}.enrolled-program-card{padding:19px}.enrollment-empty{padding:20px}}
+
+
+/* Academic assessment rubric */
+.lesson-practice-feedback {
+  position: relative;
+}
+.lesson-practice-feedback.is-passed {
+  border-color: #cbdccf;
+  background: #f4f8f3;
+}
+.lesson-practice-feedback.is-revision {
+  border-color: #e8d8c5;
+  background: #fbf7f1;
+}
+.lesson-practice-feedback.is-revision>div span { color: #9a7043; }
+.lesson-practice-feedback.is-revision>div b { color: #60472e; }
+.lesson-practice-feedback .practice-score {
+  position: absolute;
+  top: 13px;
+  right: 15px;
+  color: #315f43;
+  font-size: 23px;
+  line-height: 1;
+  letter-spacing: -.8px;
+}
+.lesson-practice-feedback.is-revision .practice-score { color: #936b3d; }
+.lesson-practice-feedback .practice-score small {
+  color: #89928a;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+.practice-rubric {
+  display: grid !important;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 7px !important;
+  margin-top: 12px;
+}
+.practice-rubric span {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  padding: 8px 9px;
+  border: 1px solid rgba(93,119,98,.13);
+  border-radius: 8px;
+  background: rgba(255,255,255,.62);
+  color: #6d776e !important;
+  font-size: 9px !important;
+  letter-spacing: 0 !important;
+}
+.practice-rubric b {
+  color: #344a39 !important;
+  font-size: 10px !important;
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .practice-rubric { grid-template-columns: 1fr; }
+  .practice-rubric span { padding: 7px 9px; }
+}
