@@ -55,8 +55,11 @@ jobs:
       - name: Build Mini App
         run: npm run build
 
-      - name: Publish to Telegram Serverless
-        run: npx tgcloud push
+      - name: Sync deployed Telegram revision
+        run: npx tgcloud fetch
+
+      - name: Publish project modules and Mini App without deleting other cloud modules
+        run: npx tgcloud push tgcloud/ dist/
 
       - name: Apply safe database migrations
         run: npx tgcloud migrate --safe
