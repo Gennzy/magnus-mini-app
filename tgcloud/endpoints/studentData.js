@@ -188,6 +188,77 @@ export default async function (input, ctx) {
     return { ok: true, result: attempt, attemptsUsed: attempts.length, maxAttempts: 3 };
   }
 
+  if (input?.action === 'startFinalExam' || input?.action === 'submitFinalExam') {
+    const courseId = String(input.courseId || '');
+    const examBank = {
+      ai: [
+        { id:'ai-e1', q:'Что отличает машинное обучение от системы, работающей только по жёстким правилам?', a:['Модель выявляет закономерности на данных','Система никогда не ошибается','Данные не используются'], correct:0 },
+        { id:'ai-e2', q:'Для чего разделяют данные на обучающую и тестовую выборки?', a:['Чтобы увеличить объём файла','Чтобы оценить качество на ранее не использованных данных','Чтобы скрыть ошибки модели'], correct:1 },
+        { id:'ai-e3', q:'Что такое переобучение модели?', a:['Модель слишком хорошо запомнила обучающие данные и хуже обобщает','Модель обучается слишком быстро на новых данных','Модель полностью отказалась от данных'], correct:0 },
+        { id:'ai-e4', q:'Как безопаснее использовать ответ генеративной модели в важном решении?', a:['Принимать без проверки','Проверять факты и сверять с надёжными источниками','Считать ответ официальным заключением'], correct:1 },
+        { id:'ai-e5', q:'Какой подход лучше при выборе ИИ-инструмента?', a:['Выбирать самый популярный','Сначала определить задачу и критерии качества','Использовать одну модель для любых задач'], correct:1 },
+      ],
+      mind: [
+        { id:'mind-e1', q:'Что изучает психология?', a:['Только внешнее поведение','Психику, поведение и закономерности их проявления','Только работу мозга'], correct:1 },
+        { id:'mind-e2', q:'Почему важно учитывать контекст поведения человека?', a:['Один поступок всегда имеет одну причину','Контекст помогает точнее понять возможные причины поведения','Контекст не влияет на интерпретацию'], correct:1 },
+        { id:'mind-e3', q:'Что такое когнитивное искажение?', a:['Систематическая ошибка мышления при обработке информации','Любая сильная эмоция','Нарушение памяти после сна'], correct:0 },
+        { id:'mind-e4', q:'Как лучше проверить гипотезу о мотивах другого человека?', a:['Сделать вывод по одному жесту','Уточнить у человека и учитывать несколько наблюдений','Опираясь только на собственный опыт'], correct:1 },
+        { id:'mind-e5', q:'Что помогает вести конструктивный диалог?', a:['Активное слушание и уточняющие вопросы','Перебивание ради скорости','Оценка личности собеседника'], correct:0 },
+      ],
+      brand: [
+        { id:'brand-e1', q:'Что является основой позиционирования бренда?', a:['Чёткое место бренда в восприятии целевой аудитории','Количество публикаций','Сложность логотипа'], correct:0 },
+        { id:'brand-e2', q:'Зачем сегментировать аудиторию?', a:['Чтобы обращаться ко всем одинаково','Чтобы понимать разные потребности и мотивы групп','Чтобы отказаться от исследований'], correct:1 },
+        { id:'brand-e3', q:'Что такое ценностное предложение?', a:['Перечень всех функций продукта','Понятное объяснение пользы и отличия для клиента','Слоган без связи с продуктом'], correct:1 },
+        { id:'brand-e4', q:'Какой показатель ближе всего к оценке конверсии?', a:['Доля посетителей, выполнивших целевое действие','Общее число цветов на сайте','Количество сотрудников'], correct:0 },
+        { id:'brand-e5', q:'Как проверить гипотезу рекламного сообщения?', a:['Сравнить варианты на сопоставимой аудитории','Менять все элементы одновременно','Оценить только по личному вкусу'], correct:0 },
+      ],
+    };
+    const bank = examBank[courseId];
+    if (!bank) return { ok:false, code:'INVALID_PROGRAM', message:'Итоговый экзамен для этой программы недоступен.' };
+    const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
+    const payload = existing?.payload || {};
+    const enrollments = cleanMap(payload.enrollments);
+    if (!enrollments[courseId]) return { ok:false, code:'NOT_ENROLLED', message:'Сначала оформи зачисление на программу.' };
+    const lessonIds = Array.from({length:6},(_,i)=>courseId+'-0'+(i+1));
+    const completed = cleanMap(payload.completedLessons);
+    const allLessonsDone = lessonIds.every(id => Boolean(completed[id]));
+    if (!allLessonsDone) return { ok:false, code:'PROGRAM_INCOMPLETE', message:'Сначала заверши все занятия программы.' };
+    if (input.action === 'startFinalExam') {
+      const exams = payload.finalExams && typeof payload.finalExams === 'object' ? payload.finalExams : {};
+      const record = exams[courseId] && typeof exams[courseId] === 'object' ? exams[courseId] : { attempts:[], passed:false };
+      if (record.passed) return { ok:true, alreadyPassed:true, result:record.attempts?.at(-1) || null };
+      if ((record.attempts || []).length >= 3) return { ok:false, code:'ATTEMPTS_EXHAUSTED', message:'Попытки исчерпаны. Обратись в учебную поддержку для пересдачи.' };
+      const shuffled = [...bank].sort(() => Math.random() - 0.5);
+      const session = { id:'exam-'+Date.now()+'-'+Math.random().toString(36).slice(2,8), questionIds:shuffled.map(item=>item.id), startedAt:new Date().toISOString() };
+      const next = { ...payload, finalExamSessions:{ ...(payload.finalExamSessions || {}), [courseId]:session } };
+      const updatedAt = Math.floor(Date.now()/1000);
+      await db.insert(studentData).values({tgId,payload:next,updatedAt}).onConflictDoUpdate({target:studentData.tgId,set:{payload:next,updatedAt}}).run();
+      return { ok:true, sessionId:session.id, questions:shuffled.map(({id,q,a})=>({id,question:q,options:a})), attempt:(record.attempts||[]).length+1, maxAttempts:3, passPercent:80 };
+    }
+    const session = payload.finalExamSessions?.[courseId];
+    if (!session || session.id !== String(input.sessionId || '')) return { ok:false, code:'EXAM_SESSION_INVALID', message:'Сессия экзамена не найдена. Начни экзамен заново.' };
+    const answers = input.answers && typeof input.answers === 'object' ? input.answers : {};
+    const questionById = Object.fromEntries(bank.map(item=>[item.id,item]));
+    const validIds = session.questionIds || [];
+    if (validIds.length !== bank.length || validIds.some(id=>!questionById[id])) return { ok:false, code:'EXAM_SESSION_INVALID', message:'Не удалось проверить экзамен. Начни заново.' };
+    let correct = 0;
+    for (const id of validIds) {
+      const selected = Number(answers[id]);
+      if (!Number.isInteger(selected) || selected < 0 || selected >= questionById[id].a.length) return { ok:false, code:'ANSWERS_INCOMPLETE', message:'Ответь на каждый вопрос перед отправкой.' };
+      if (selected === questionById[id].correct) correct++;
+    }
+    const percent = Math.round(correct / validIds.length * 100);
+    const passed = percent >= 80;
+    const exams = payload.finalExams && typeof payload.finalExams === 'object' ? payload.finalExams : {};
+    const previous = exams[courseId] && typeof exams[courseId] === 'object' ? exams[courseId] : { attempts:[], passed:false };
+    const attempt = { number:(previous.attempts||[]).length+1, correct, total:validIds.length, percent, passed, submittedAt:new Date().toISOString() };
+    const nextRecord = { attempts:[...(previous.attempts||[]),attempt].slice(-3), passed:previous.passed || passed };
+    const nextPayload = { ...payload, finalExams:{...exams,[courseId]:nextRecord}, finalExamSessions:{...(payload.finalExamSessions||{}),[courseId]:null} };
+    const updatedAt = Math.floor(Date.now()/1000);
+    await db.insert(studentData).values({tgId,payload:nextPayload,updatedAt}).onConflictDoUpdate({target:studentData.tgId,set:{payload:nextPayload,updatedAt}}).run();
+    return { ok:true, result:attempt, remainingAttempts:Math.max(0,3-nextRecord.attempts.length), passed:nextRecord.passed };
+  }
+
   if (input?.action === 'completeLesson') {
     const lessonId = String(input.lessonId || '');
     const answerIndex = Number(input.answerIndex);
