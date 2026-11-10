@@ -25,6 +25,9 @@ export default async function(input,ctx){
  const usage=student?.payload?.tutorUsage&&typeof student.payload.tutorUsage==='object'?student.payload.tutorUsage:{};
  const day=new Date().toISOString().slice(0,10),used=usage.day===day?Number(usage.count)||0:0;
  if(used>=25)return{ok:false,code:'DAILY_LIMIT',message:'На сегодня лимит вопросов исчерпан. Продолжим завтра.'};
+ // Считаем каждую принятую попытку до обращения к провайдеру, включая временные ошибки.
+ const now=Math.floor(Date.now()/1000),payload={...(student?.payload||{}),tutorUsage:{day,count:used+1}};
+ await db.insert(studentData).values({tgId,payload,updatedAt:now}).onConflictDoUpdate({target:studentData.tgId,set:{payload,updatedAt:now}}).run();
  const system=[
   'Ты — учебный помощник образовательной системы MAGNUS. Отвечай на русском, доброжелательно и профессионально.',
   'Помогай ученику понять тему, а не просто выдавай готовый ответ. Объясняй простыми словами, приводи короткий пример и при необходимости задавай один проверочный вопрос.',
@@ -41,7 +44,5 @@ export default async function(input,ctx){
  if(!response.ok){return{ok:false,code:response.status===429?'RATE_LIMIT':response.status===401?'PROVIDER_AUTH':'PROVIDER_ERROR',message:response.status===429?'Сейчас много обращений. Попробуй немного позже.':response.status===401?'Не удалось авторизовать учебную систему. Проверь настройки подключения.':'Не удалось получить ответ. Попробуй ещё раз.'};}
  const result=await response.json(),answer=clean(result?.choices?.[0]?.message?.content,4000);
  if(!answer)return{ok:false,code:'EMPTY_RESPONSE',message:'Не удалось сформировать ответ. Попробуй переформулировать вопрос.'};
- const now=Math.floor(Date.now()/1000),payload={...(student?.payload||{}),tutorUsage:{day,count:used+1}};
- await db.insert(studentData).values({tgId,payload,updatedAt:now}).onConflictDoUpdate({target:studentData.tgId,set:{payload,updatedAt:now}}).run();
  return{ok:true,answer,remaining:24-used};
 }
