@@ -12,6 +12,9 @@ const firstName = telegramUser?.first_name || "друг";
 const username = telegramUser?.username ? `@${telegramUser.username}` : "Студент MAGNUS";
 const avatarLetter = telegramUser?.first_name?.trim().charAt(0).toUpperCase() || "M";
 const telegramPhotoUrl = telegramUser?.photo_url || "";
+const studentStorageScope = telegramUser?.id
+  ? `telegram-${String(telegramUser.id)}`
+  : "guest";
 
 const faculties = [
   { id:"psychology", num:"01", name:"Психология", en:"PSYCHOLOGY", desc:"Понимание человека, мышления и поведения", symbol:"◉", color:"lavender", topics:["Общая психология","Психология личности","Коммуникация и общество"] },
@@ -214,9 +217,6 @@ function courseTile(c, compact=false) {
 
 
 
-const studentStorageScope = telegramUser?.id
-  ? `telegram-${String(telegramUser.id)}`
-  : "guest";
 
 function studentStorageKey(kind) {
   return `magnus.${studentStorageScope}.${kind}`;
