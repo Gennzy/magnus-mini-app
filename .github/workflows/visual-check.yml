@@ -6,10 +6,12 @@ on:
       - magnus-source-upload
     paths:
       - "src/**"
+      - "tgcloud/**"
       - "index.html"
       - "package.json"
       - "package-lock.json"
       - "scripts/visual-smoke.mjs"
+      - "scripts/check-tutor-curriculum.mjs"
       - ".github/workflows/visual-check.yml"
   workflow_dispatch:
 
@@ -34,6 +36,9 @@ jobs:
 
       - name: Install application dependencies
         run: npm ci
+
+      - name: Check tutor coverage for every course lesson
+        run: npm run check:tutor
 
       - name: Build production bundle
         run: npm run build
