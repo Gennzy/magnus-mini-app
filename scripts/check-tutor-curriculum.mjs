@@ -3,16 +3,16 @@ import { readFileSync } from "node:fs";
 const source = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
 const tutor = readFileSync(new URL("../tgcloud/endpoints/tutor.js", import.meta.url), "utf8");
 
-const curriculumIds = [...new Set([...source.matchAll(/\\["((?:ai|mind|brand)-\\d{2})"/g)].map(match => match[1]))].sort();
-const tutorIds = [...tutor.matchAll(/^\\s*'((?:ai|mind|brand)-\\d{2})':\\s*\\{/gm)].map(match => match[1]);
+const curriculumIds = [...new Set([...source.matchAll(/\["((?:ai|mind|brand)-\d{2})"/g)].map(match => match[1]))].sort();
+const tutorIds = [...tutor.matchAll(/^\s*'((?:ai|mind|brand)-\d{2})':\s*\{/gm)].map(match => match[1]);
 const tutorSet = new Set(tutorIds);
 const missingTutor = curriculumIds.filter(id => !tutorSet.has(id));
 const duplicateTutor = tutorIds.filter((id, index) => tutorIds.indexOf(id) !== index);
 
 const frontendPractice = source.slice(source.indexOf("const lessonPractices ="), source.indexOf("const courseChapters ="));
 const serverPractice = tutor.slice(tutor.indexOf("const PRACTICE_TASKS ="), tutor.indexOf("function clean(value,max)"));
-const practiceIds = [...frontendPractice.matchAll(/^\\s*"((?:ai|mind|brand)-\\d{2})":\\s*\\{/gm)].map(match => match[1]);
-const reviewerIds = [...serverPractice.matchAll(/^\\s*'((?:ai|mind|brand)-\\d{2})':\\s*\\{/gm)].map(match => match[1]);
+const practiceIds = [...frontendPractice.matchAll(/^\s*"((?:ai|mind|brand)-\d{2})":\s*\{/gm)].map(match => match[1]);
+const reviewerIds = [...serverPractice.matchAll(/^\s*'((?:ai|mind|brand)-\d{2})':\s*\{/gm)].map(match => match[1]);
 const missingPractice = curriculumIds.filter(id => !practiceIds.includes(id));
 const missingReview = curriculumIds.filter(id => !reviewerIds.includes(id));
 const duplicatePractice = practiceIds.filter((id, index) => practiceIds.indexOf(id) !== index);
