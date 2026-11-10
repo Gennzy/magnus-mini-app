@@ -110,3 +110,10 @@ export const supportRequests = table('support_requests', {
   status: text('status').notNull(),
   createdAt: integer('created_at').notNull(),
 });
+
+
+// Server-side AI provider configuration. The API key is never returned to the Mini App.
+export const aiSettings = table('ai_settings', {
+ id: text('id').primaryKey(), provider: text('provider').notNull(), apiKey: text('api_key').notNull(),
+ model: text('model').notNull(), updatedAt: integer('updated_at').notNull(), updatedBy: text('updated_by').notNull(),
+});
