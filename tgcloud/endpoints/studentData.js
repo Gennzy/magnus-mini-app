@@ -51,6 +51,49 @@ export default async function (input, ctx) {
     await db.insert(studentData).values({ tgId, payload, updatedAt: Math.floor(Date.now() / 1000) }).onConflictDoUpdate({ target: studentData.tgId, set: { payload, updatedAt: Math.floor(Date.now() / 1000) } }).run();
     return { ok: true, submission };
   }
+  if (input?.action === 'completeLesson') {
+    const lessonId = String(input.lessonId || '');
+    const answerIndex = Number(input.answerIndex);
+    const courseLessons = {
+      ai: ['ai-01','ai-02','ai-03','ai-04','ai-05','ai-06'],
+      mind: ['mind-01','mind-02','mind-03','mind-04','mind-05','mind-06'],
+      brand: ['brand-01','brand-02','brand-03','brand-04','brand-05','brand-06'],
+    };
+    const courseId = lessonId.split('-')[0];
+    const sequence = courseLessons[courseId];
+    const lessonIndex = sequence?.indexOf(lessonId) ?? -1;
+    if (lessonIndex < 0) return { ok: false, code: 'INVALID_LESSON', message: 'Занятие не найдено.' };
+    if (answerIndex !== 1) return { ok: false, code: 'QUIZ_NOT_PASSED', message: 'Сначала ответь правильно на контрольный вопрос.' };
+
+    const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
+    const previousPayload = existing?.payload || {};
+    const completedLessons = cleanMap(previousPayload.completedLessons);
+    if (lessonIndex > 0 && !completedLessons[sequence[lessonIndex - 1]]) {
+      return { ok: false, code: 'LESSON_LOCKED', message: 'Сначала заверши предыдущее занятие.' };
+    }
+    const lessonQuizResults = cleanMap(previousPayload.lessonQuizResults);
+    const previousQuiz = (() => {
+      try { return JSON.parse(lessonQuizResults[lessonId] || '{}'); } catch { return {}; }
+    })();
+    const attempts = Math.max(1, Number(previousQuiz.attempts) || 1);
+    lessonQuizResults[lessonId] = JSON.stringify({
+      choice: String(answerIndex), correct: true, attempts,
+      answeredAt: previousQuiz.answeredAt || new Date().toISOString(),
+      verifiedAt: new Date().toISOString(),
+    });
+    completedLessons[lessonId] = new Date().toISOString();
+    const payload = {
+      ...previousPayload,
+      studentProfile: telegramProfile,
+      lessonQuizResults,
+      completedLessons,
+    };
+    const updatedAt = Math.floor(Date.now() / 1000);
+    await db.insert(studentData).values({ tgId, payload, updatedAt })
+      .onConflictDoUpdate({ target: studentData.tgId, set: { payload, updatedAt } }).run();
+    return { ok: true, lessonId, completedAt: completedLessons[lessonId], completedLessons };
+  }
+
   if (input?.action === 'load') {
     const existing = await db.select().from(studentData).where(eq(studentData.tgId, tgId)).get();
     const payload = {
@@ -85,7 +128,7 @@ export default async function (input, ctx) {
       lessonNotes: cleanMap(input.lessonNotes),
       interestedFaculties: cleanMap(input.interestedFaculties),
       lessonQuizResults: cleanMap(input.lessonQuizResults),
-      completedLessons: cleanMap(input.completedLessons),
+      completedLessons: cleanMap(existing?.payload?.completedLessons),
       lessonPracticeDrafts: cleanMap(input.lessonPracticeDrafts),
       lessonPracticeResults: cleanMap(input.lessonPracticeResults),
       assignmentSubmissions: Array.isArray(existing?.payload?.assignmentSubmissions) ? existing.payload.assignmentSubmissions.slice(-50) : [],
