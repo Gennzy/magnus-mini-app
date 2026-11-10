@@ -98,6 +98,18 @@ try {
     const practiceDraftPersistence = restoredDraft === practiceDraft;
     if (!practiceDraftPersistence) failures.push(`${name}/practice: черновик не восстановился после переключения вкладки`);
 
+    // Проверяем, что черновик читается из localStorage после полной перезагрузки Mini App.
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForSelector("#app .home-screen", { timeout: 15000 });
+    await page.locator('[data-course="ai"]').click();
+    await page.waitForSelector(".learning-map-screen .learning-path", { timeout: 10000 });
+    await page.locator(".learning-node[data-lesson-open]").first().click();
+    await page.waitForSelector(".lesson-screen .lesson-tutor", { timeout: 10000 });
+    await page.locator('[data-lesson-tab="practice"]').click();
+    const reloadedDraft = await page.locator("[data-practice-answer]").inputValue();
+    const practiceDraftPersistenceAfterReload = reloadedDraft === practiceDraft;
+    if (!practiceDraftPersistenceAfterReload) failures.push(`${name}/practice: черновик не восстановился после перезапуска приложения`);
+
     await page.locator('[data-lesson-tab="lesson"]').click();
     await assertNoHorizontalOverflow("lesson");
     await page.screenshot({ path: `${artifacts}/${name}-lesson.png`, fullPage: true });
@@ -105,7 +117,7 @@ try {
     const lessonText = await page.locator(".lesson-reading").innerText();
     if (!lessonText.trim()) failures.push(`${name}/lesson: пустой учебный материал`);
     await page.close();
-    return { viewport: name, mapNodes: mapCheck.nodes, chapters: mapCheck.chapterCount, checkpoints: mapCheck.checkpointCount, tutorBlock: Boolean(tutorVisible), practicePanel: practiceVisible === 1, practiceDraftPersistence, mapWithinViewport: mapCheck.mapLeft >= -1 && mapCheck.mapRight <= mapCheck.viewport + 1 };
+    return { viewport: name, mapNodes: mapCheck.nodes, chapters: mapCheck.chapterCount, checkpoints: mapCheck.checkpointCount, tutorBlock: Boolean(tutorVisible), practicePanel: practiceVisible === 1, practiceDraftPersistence, practiceDraftPersistenceAfterReload, mapWithinViewport: mapCheck.mapLeft >= -1 && mapCheck.mapRight <= mapCheck.viewport + 1 };
   }
 
   const desktop = await testViewport("desktop", { width: 1440, height: 1000 });
