@@ -7227,3 +7227,11 @@ body { background:#f6f6f3;color:#252b2d; }
  .learning-node-card>b{font-size:11px}
  .learning-node-meta{font-size:7px}
 }
+
+/* Reset legacy zig-zag offsets: the new route uses mirrored full-width rows. */
+.learning-map-screen .learning-node-wrap.left,
+.learning-map-screen .learning-node-wrap.right{padding:0 12px}
+@media(max-width:650px){
+ .learning-map-screen .learning-node-wrap.left,
+ .learning-map-screen .learning-node-wrap.right{padding:0 7px}
+}
