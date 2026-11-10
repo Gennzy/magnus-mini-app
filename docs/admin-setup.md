@@ -46,3 +46,13 @@ The grant action deliberately refuses calls carrying Mini App init data. It is i
 - Audit entries are append-only from the application workflow. A review entry records status and score changes plus whether the Telegram notification was delivered; bot-setting entries list which fields changed without copying their contents.
 - The bot can only send review notifications to users who have opened the bot at least once; Telegram may reject a message otherwise. A failed notification does not roll back the saved review.
 - The current owner grant is intentionally manual. A full multi-admin identity provider / account recovery flow is a separate authentication feature.
+
+
+## Подключение учебного ИИ Groq
+
+1. После публикации новой таблицы выполни `npx tgcloud migrate`.
+2. Создай API-ключ в консоли Groq.
+3. Открой MAGNUS из Telegram под аккаунтом владельца, перейди в `/admin` → «Учебный ИИ».
+4. Вставь ключ, выбери модель и сохрани подключение.
+
+Ключ хранится в серверной таблице `ai_settings`; административный endpoint не возвращает его обратно в Mini App. Ученический endpoint `tutor` принимает только разрешённые ID уроков, сам подставляет утверждённый контекст и ограничивает пользователя 25 обращениями в сутки. Начальная модель — `openai/gpt-oss-20b`. Бесплатные лимиты и доступность моделей задаёт Groq и они могут меняться. Контроль контекста уменьшает риск выдуманных сведений, но не обеспечивает абсолютную безошибочность.
