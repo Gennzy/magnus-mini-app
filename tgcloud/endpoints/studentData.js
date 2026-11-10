@@ -226,14 +226,14 @@ export default async function (input, ctx) {
     if (input.action === 'startFinalExam') {
       const exams = payload.finalExams && typeof payload.finalExams === 'object' ? payload.finalExams : {};
       const record = exams[courseId] && typeof exams[courseId] === 'object' ? exams[courseId] : { attempts:[], passed:false };
-      if (record.passed) return { ok:true, alreadyPassed:true, result:record.attempts?.at(-1) || null };
+      if (record.passed) return { ok:true, passed:true, alreadyPassed:true, result:record.attempts?.at(-1) || null };
       if ((record.attempts || []).length >= 3) return { ok:false, code:'ATTEMPTS_EXHAUSTED', message:'Попытки исчерпаны. Обратись в учебную поддержку для пересдачи.' };
       const shuffled = [...bank].sort(() => Math.random() - 0.5);
       const session = { id:'exam-'+Date.now()+'-'+Math.random().toString(36).slice(2,8), questionIds:shuffled.map(item=>item.id), startedAt:new Date().toISOString() };
       const next = { ...payload, finalExamSessions:{ ...(payload.finalExamSessions || {}), [courseId]:session } };
       const updatedAt = Math.floor(Date.now()/1000);
       await db.insert(studentData).values({tgId,payload:next,updatedAt}).onConflictDoUpdate({target:studentData.tgId,set:{payload:next,updatedAt}}).run();
-      return { ok:true, sessionId:session.id, questions:shuffled.map(({id,q,a})=>({id,question:q,options:a})), attempt:(record.attempts||[]).length+1, maxAttempts:3, passPercent:80 };
+      return { ok:true, sessionId:session.id, questions:shuffled.map(({id,q,a})=>({id,text:q,options:a})), attempt:(record.attempts||[]).length+1, maxAttempts:3, passPercent:70 };
     }
     const session = payload.finalExamSessions?.[courseId];
     if (!session || session.id !== String(input.sessionId || '')) return { ok:false, code:'EXAM_SESSION_INVALID', message:'Сессия экзамена не найдена. Начни экзамен заново.' };
@@ -248,10 +248,10 @@ export default async function (input, ctx) {
       if (selected === questionById[id].correct) correct++;
     }
     const percent = Math.round(correct / validIds.length * 100);
-    const passed = percent >= 80;
+    const passed = percent >= 70;
     const exams = payload.finalExams && typeof payload.finalExams === 'object' ? payload.finalExams : {};
     const previous = exams[courseId] && typeof exams[courseId] === 'object' ? exams[courseId] : { attempts:[], passed:false };
-    const attempt = { number:(previous.attempts||[]).length+1, correct, total:validIds.length, percent, passed, submittedAt:new Date().toISOString() };
+    const attempt = { number:(previous.attempts||[]).length+1, correct, total:validIds.length, score:percent, percent, passed, submittedAt:new Date().toISOString() };
     const nextRecord = { attempts:[...(previous.attempts||[]),attempt].slice(-3), passed:previous.passed || passed };
     const nextPayload = { ...payload, finalExams:{...exams,[courseId]:nextRecord}, finalExamSessions:{...(payload.finalExamSessions||{}),[courseId]:null} };
     const updatedAt = Math.floor(Date.now()/1000);
