@@ -770,7 +770,7 @@ function lessonPracticePanel(id) {
   </div>
   <label class="lesson-practice-answer"><span>ТВОЙ ОТВЕТ</span><textarea data-practice-answer maxlength="2000" rows="5" placeholder="Опиши ход мысли и свой вариант решения…">${esc(draft)}</textarea></label>
   <div class="lesson-practice-actions"><small>До 2 000 символов · ответ проверит MAGNUS</small><button type="button" data-practice-send ${practicePending?"disabled":""}>${practicePending?"Разбираем…":"Проверить ответ"} ${icon("arrow")}</button></div>
-  ${saved?.feedback?`<div class="lesson-practice-feedback"><div><span>ОБРАТНАЯ СВЯЗЬ</span><b>Разбор от MAGNUS</b></div><p>${esc(saved.feedback)}</p><small>${Number(saved.attempts)||1} ${(Number(saved.attempts)||1)===1?"попытка":"попытки"} · Проверено ${esc(new Date(saved.reviewedAt||Date.now()).toLocaleString("ru-RU",{dateStyle:"medium",timeStyle:"short"}))}</small></div>`:""}
+  ${saved?.feedback?`<div class="lesson-practice-feedback ${saved.verdict==="pass"?"is-passed":"is-revision"}"><div><span>РЕЗУЛЬТАТ ПРОВЕРКИ</span><b>${saved.verdict==="pass"?"Зачтено":"Нужно доработать"}</b><strong class="practice-score">${Number(saved.totalScore)||0}<small>/ 6</small></strong></div>${saved.scores?`<div class="practice-rubric"><span>По теме <b>${Number(saved.scores.relevance)||0}/2</b></span><span>Полнота <b>${Number(saved.scores.completeness)||0}/2</b></span><span>Обоснование <b>${Number(saved.scores.reasoning)||0}/2</b></span></div>`:""}<p>${esc(saved.feedback)}</p><small>${Number(saved.attempts)||1} ${(Number(saved.attempts)||1)===1?"попытка":"попытки"} · Проверено ${esc(new Date(saved.reviewedAt||Date.now()).toLocaleString("ru-RU",{dateStyle:"medium",timeStyle:"short"}))}</small></div>`:""}
   ${saved?.answer?`<details class="lesson-practice-previous"><summary>Показать отправленный ответ</summary><p>${esc(saved.answer)}</p></details>`:""}
  </section>`;
 }
@@ -1271,7 +1271,13 @@ document.querySelectorAll("[data-admin-payment-refresh]").forEach(el=>el.addEven
         toast("Разбор получен в неполном виде. Попробуй отправить ответ ещё раз.");
         return;
       }
-      const saved=callCloudStudentData("savePracticeReview",{lessonId:targetLessonId,answer,feedback:reviewText},(saveError,saveResult)=>{
+      const assessment=result.assessment;
+      if(!assessment?.scores||!Number.isInteger(Number(assessment.totalScore))){
+        if(currentPage==="lesson"&&selectedLessonId===targetLessonId)render();
+        toast("Проверка не вернула оценку по критериям. Попробуй ещё раз.");
+        return;
+      }
+      const saved=callCloudStudentData("savePracticeReview",{lessonId:targetLessonId,answer,feedback:reviewText,assessment},(saveError,saveResult)=>{
         if(saveError||!saveResult?.ok){
           if(currentPage==="lesson"&&selectedLessonId===targetLessonId)render();
           toast(saveResult?.message||"Не удалось сохранить результат в учебном профиле.");
