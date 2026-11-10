@@ -149,10 +149,12 @@ export default async function (input, ctx) {
   }
   if (input?.action === 'saveAiSettings') {
     if (admin.role !== 'owner') return { ok: false, code: 'FORBIDDEN', message: 'Настройки ИИ доступны только владельцу.' };
-    const apiKey = cleanText(input.apiKey, 300);
+    const suppliedKey = cleanText(input.apiKey, 300);
     const model = cleanText(input.model || 'openai/gpt-oss-20b', 100);
-    if (!/^gsk_[A-Za-z0-9_-]{20,}$/.test(apiKey)) return { ok: false, code: 'INVALID_KEY', message: 'Проверь API-ключ Groq.' };
     if (!['openai/gpt-oss-20b','openai/gpt-oss-120b','qwen/qwen3.8-27b'].includes(model)) return { ok: false, code: 'INVALID_MODEL', message: 'Модель не входит в список разрешённых.' };
+    const existing = await db.select().from(aiSettings).where(eq(aiSettings.id, 'primary')).get();
+    const apiKey = suppliedKey || existing?.apiKey || '';
+    if (!/^gsk_[A-Za-z0-9_-]{20,}$/.test(apiKey)) return { ok: false, code: 'INVALID_KEY', message: 'Добавь корректный API-ключ Groq.' };
     const now = Math.floor(Date.now() / 1000);
     await db.insert(aiSettings).values({ id:'primary', provider:'groq', apiKey, model, updatedAt:now, updatedBy:tgId })
       .onConflictDoUpdate({ target:aiSettings.id, set:{ provider:'groq', apiKey, model, updatedAt:now, updatedBy:tgId } }).run();
