@@ -56,11 +56,15 @@ try {
       const map = document.querySelector(".learning-path");
       const nodes = [...document.querySelectorAll(".learning-node-wrap")];
       const cards = [...document.querySelectorAll(".learning-node-card")];
+      const chapters = [...document.querySelectorAll(".learning-chapter")];
+      const checkpoints = [...document.querySelectorAll(".learning-checkpoint")];
       const box = map.getBoundingClientRect();
       return {
         title: document.querySelector(".learning-path-head h2")?.textContent?.trim() || "",
         nodes: nodes.length,
         cardCount: cards.length,
+        chapterCount: chapters.length,
+        checkpointCount: checkpoints.length,
         mapLeft: box.left,
         mapRight: box.right,
         viewport: document.documentElement.clientWidth,
@@ -68,7 +72,8 @@ try {
       };
     });
     if (!mapCheck.title.includes("траектория")) failures.push(`${name}/map: отсутствует заголовок траектории`);
-    if (mapCheck.nodes !== 3 || mapCheck.cardCount !== 3) failures.push(`${name}/map: ожидалось 3 этапа, получено ${mapCheck.nodes}`);
+    if (mapCheck.nodes !== 6 || mapCheck.cardCount !== 6) failures.push(`${name}/map: ожидалось 6 занятий, получено ${mapCheck.nodes}`);
+    if (mapCheck.chapterCount !== 3 || mapCheck.checkpointCount !== 2) failures.push(`${name}/map: ожидалось 3 главы и 2 контрольные точки, получено ${mapCheck.chapterCount}/${mapCheck.checkpointCount}`);
     if (mapCheck.currentNodeCount !== 1) failures.push(`${name}/map: текущий этап выделен некорректно`);
     if (mapCheck.mapLeft < -1 || mapCheck.mapRight > mapCheck.viewport + 1) failures.push(`${name}/map: карта выходит за пределы экрана`);
     await assertNoHorizontalOverflow("map");
@@ -84,7 +89,7 @@ try {
     const lessonText = await page.locator(".lesson-reading").innerText();
     if (!lessonText.trim()) failures.push(`${name}/lesson: пустой учебный материал`);
     await page.close();
-    return { viewport: name, mapNodes: mapCheck.nodes, tutorBlock: Boolean(tutorVisible), mapWithinViewport: mapCheck.mapLeft >= -1 && mapCheck.mapRight <= mapCheck.viewport + 1 };
+    return { viewport: name, mapNodes: mapCheck.nodes, chapters: mapCheck.chapterCount, checkpoints: mapCheck.checkpointCount, tutorBlock: Boolean(tutorVisible), mapWithinViewport: mapCheck.mapLeft >= -1 && mapCheck.mapRight <= mapCheck.viewport + 1 };
   }
 
   const desktop = await testViewport("desktop", { width: 1440, height: 1000 });
