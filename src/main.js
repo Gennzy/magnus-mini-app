@@ -583,17 +583,17 @@ function courseDetailPage() {
  const nodes=lessons.map((lesson,index)=>{
   const done=Boolean(completedLessons[lesson[0]]),unlocked=lessonIsUnlocked(lessons,index),current=!done&&unlocked;
   const state=done?"Пройдено":current?"Твой следующий шаг":"Пока закрыто";
-  return \`<div class="learning-node-wrap \${index%2?"right":"left"} \${done?"is-done":current?"is-current":"is-locked"}">
+  return `<div class="learning-node-wrap ${index%2?"right":"left"} ${done?"is-done":current?"is-current":"is-locked"}">
    <span class="learning-path-connector" aria-hidden="true"></span>
-   <button type="button" class="learning-node" \${unlocked?\`data-lesson-open="\${esc(lesson[0])}"\`:"disabled"} aria-label="\${esc(lesson[1])}: \${state}">
-    <span class="learning-node-icon">\${done?"✓":unlocked?String(index+1).padStart(2,"0"):"⌑"}</span>
+   <button type="button" class="learning-node" ${unlocked?`data-lesson-open="${esc(lesson[0])}"`:"disabled"} aria-label="${esc(lesson[1])}: ${state}">
+    <span class="learning-node-icon">${done?"✓":unlocked?String(index+1).padStart(2,"0"):"⌑"}</span>
    </button>
    <div class="learning-node-card">
-    <div class="learning-node-kicker"><small>ЭТАП \${String(index+1).padStart(2,"0")} · \${esc(lesson[2].toUpperCase())}</small><span class="learning-node-status">\${done?"ЗАВЕРШЁН":current?"ТЕКУЩИЙ":"ЗАКРЫТ"}</span></div>
-    <b>\${esc(lesson[1])}</b>
-    <div class="learning-node-meta"><span>\${lesson[3]} минут</span><span>\${done?"Результат сохранён":current?"Можно начать":"Откроется после этапа "+index}</span></div>
+    <div class="learning-node-kicker"><small>ЭТАП ${String(index+1).padStart(2,"0")} · ${esc(lesson[2].toUpperCase())}</small><span class="learning-node-status">${done?"ЗАВЕРШЁН":current?"ТЕКУЩИЙ":"ЗАКРЫТ"}</span></div>
+    <b>${esc(lesson[1])}</b>
+    <div class="learning-node-meta"><span>${lesson[3]} минут</span><span>${done?"Результат сохранён":current?"Можно начать":"Откроется после этапа "+index}</span></div>
    </div>
-  </div>\`;
+  </div>`;
  }).join("");
  return `<main class="screen inner-screen course-detail-screen learning-map-screen ${c.color}">
  <button class="back-button" data-go="study">${icon("back")} Все программы</button>
@@ -602,7 +602,7 @@ function courseDetailPage() {
   <div class="learning-map-title"><span class="subtle-label">ТВОЯ УЧЕБНАЯ ПРОГРАММА</span><h1>${esc(c.title)}</h1><p>Проходи этапы последовательно. Каждый следующий откроется после завершения предыдущего.</p></div>
  </section>
  <section class="learning-progress-card"><div><span><small>ТВОЙ ПРОГРЕСС</small><b>${completed} из ${lessons.length} этапов</b></span><strong>${progress}%</strong></div><div class="learning-progress-track"><span style="width:${progress}%"></span></div></section>
- <section class="learning-path-section"><div class="learning-path-head"><div><span class="subtle-label">УЧЕБНЫЙ МАРШРУТ</span><h2>Твоя траектория</h2></div><span>\${lessons.length} этапа</span></div><div class="learning-path">
+ <section class="learning-path-section"><div class="learning-path-head"><div><span class="subtle-label">УЧЕБНЫЙ МАРШРУТ</span><h2>Твоя траектория</h2></div><span>${lessons.length} этапа</span></div><div class="learning-path">
   <div class="learning-path-map-label"><span>MAGNUS FIELD GUIDE</span><b>МАРШРУТ · 01</b></div>
   <svg class="learning-path-art" viewBox="0 0 600 560" preserveAspectRatio="none" aria-hidden="true">
    <defs><pattern id="map-dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#a6a18f" opacity=".3"/></pattern><linearGradient id="map-route-gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d99b6e"/><stop offset="1" stop-color="#b7a18a"/></linearGradient></defs>
@@ -612,7 +612,7 @@ function courseDetailPage() {
    <path d="M72 46C190 78 402 137 528 205S195 342 72 397C132 450 214 503 300 535" fill="none" stroke="url(#map-route-gradient)" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 11"/>
    <g fill="#fff" stroke="#c8a78d" stroke-width="2"><circle cx="72" cy="46" r="7"/><circle cx="528" cy="205" r="7"/><circle cx="72" cy="397" r="7"/><circle cx="300" cy="535" r="7"/></g>
   </svg>
-  \${nodes}<div class="learning-path-finish"><span>✦</span><b>Финиш маршрута</b><small>Все этапы программы завершены.</small></div>
+  ${nodes}<div class="learning-path-finish"><span>✦</span><b>Финиш маршрута</b><small>Все этапы программы завершены.</small></div>
  </div></section>
  ${completed===lessons.length?`<div class="learning-complete-note">Все доступные этапы пройдены. Новые материалы появятся в программе после публикации.</div>`:`<button class="learning-continue-button" data-lesson-open="${esc(nextLesson[0])}"><span><small>СЛЕДУЮЩИЙ ШАГ</small><b>${esc(nextLesson[1])}</b></span><strong>Продолжить ${icon("arrow")}</strong></button>`}
  <p class="demo-disclaimer">Сейчас в MAGNUS доступны ознакомительные учебные маршруты. Содержание и результаты каждого этапа отображаются в программе.</p>
