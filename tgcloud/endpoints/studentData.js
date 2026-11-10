@@ -71,6 +71,8 @@ export default async function (input, ctx) {
       interestedFaculties: cleanMap(payload.interestedFaculties),
       lessonQuizResults: cleanMap(payload.lessonQuizResults),
       completedLessons: cleanMap(payload.completedLessons),
+      lessonPracticeDrafts: cleanMap(payload.lessonPracticeDrafts),
+      lessonPracticeResults: cleanMap(payload.lessonPracticeResults),
       assignmentSubmissions: Array.isArray(payload.assignmentSubmissions) ? payload.assignmentSubmissions.slice(-50) : [],
       subscription: publicSubscription(subscriptionRow),
     };
@@ -84,6 +86,8 @@ export default async function (input, ctx) {
       interestedFaculties: cleanMap(input.interestedFaculties),
       lessonQuizResults: cleanMap(input.lessonQuizResults),
       completedLessons: cleanMap(input.completedLessons),
+      lessonPracticeDrafts: cleanMap(input.lessonPracticeDrafts),
+      lessonPracticeResults: cleanMap(input.lessonPracticeResults),
       assignmentSubmissions: Array.isArray(existing?.payload?.assignmentSubmissions) ? existing.payload.assignmentSubmissions.slice(-50) : [],
       studentProfile: {
         firstName: telegramProfile.firstName || existing?.payload?.studentProfile?.firstName || '',
