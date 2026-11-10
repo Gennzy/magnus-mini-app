@@ -584,48 +584,77 @@ function lessonIsUnlocked(lessons,index) {
  return index===0 || Boolean(completedLessons[lessons[index-1]?.[0]]);
 }
 function courseDetailPage() {
- const c=selectedCourse,lessons=courseLessons(c.id),completed=courseCompletionCount(c.id),progress=lessons.length?Math.round(completed/lessons.length*100):0;
+ const c=selectedCourse,lessons=courseLessons(c.id),completed=courseCompletionCount(c.id),chapterList=courseChapters[c.id]||[];
+ const progress=lessons.length?Math.round(completed/lessons.length*100):0;
  const nextIndex=lessons.findIndex((lesson,index)=>!completedLessons[lesson[0]]&&lessonIsUnlocked(lessons,index));
  const nextLesson=lessons[nextIndex>=0?nextIndex:Math.max(0,lessons.length-1)];
- const nodes=lessons.map((lesson,index)=>{
+ const mapItems=[];
+ lessons.forEach((lesson,index)=>{
+  const chapterIndex=Math.min(Math.floor(index/2),Math.max(0,chapterList.length-1));
+  const chapter=chapterList[chapterIndex]||{title:"Продолжение программы",subtitle:"Учебный этап",tag:"ЭТАП"};
+  if(index%2===0){
+   const chapterLessons=lessons.slice(chapterIndex*2,chapterIndex*2+2);
+   const chapterDone=chapterLessons.length>0&&chapterLessons.every(item=>Boolean(completedLessons[item[0]]));
+   const chapterCurrent=chapterLessons.some(item=>{
+    const itemIndex=lessons.findIndex(candidate=>candidate[0]===item[0]);
+    return !completedLessons[item[0]]&&lessonIsUnlocked(lessons,itemIndex);
+   });
+   mapItems.push(`<div class="learning-chapter ${chapterDone?"is-done":chapterCurrent?"is-current":""}">
+    <span class="learning-chapter-number">${String(chapterIndex+1).padStart(2,"0")}</span>
+    <div class="learning-chapter-copy"><small>ГЛАВА ${String(chapterIndex+1).padStart(2,"0")} · ${esc(chapter.tag)}</small><b>${esc(chapter.title)}</b><span>${esc(chapter.subtitle)}</span></div>
+    <span class="learning-chapter-count">${chapterLessons.length} занятия</span>
+   </div>`);
+  }
   const done=Boolean(completedLessons[lesson[0]]),unlocked=lessonIsUnlocked(lessons,index),current=!done&&unlocked;
   const state=done?"Пройдено":current?"Твой следующий шаг":"Пока закрыто";
-  return `<div class="learning-node-wrap ${index%2?"right":"left"} ${done?"is-done":current?"is-current":"is-locked"}">
+  mapItems.push(`<div class="learning-node-wrap ${index%2?"right":"left"} ${done?"is-done":current?"is-current":"is-locked"}">
    <span class="learning-path-connector" aria-hidden="true"></span>
    <button type="button" class="learning-node" ${unlocked?`data-lesson-open="${esc(lesson[0])}"`:"disabled"} aria-label="${esc(lesson[1])}: ${state}">
     <span class="learning-node-icon">${done?"✓":unlocked?String(index+1).padStart(2,"0"):'<svg class="learning-node-lock" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'}</span>
    </button>
    <div class="learning-node-card">
-    <div class="learning-node-kicker"><small>ЭТАП ${String(index+1).padStart(2,"0")} · ${esc(lesson[2].toUpperCase())}</small><span class="learning-node-status">${done?"ЗАВЕРШЁН":current?"ТЕКУЩИЙ":"ЗАКРЫТ"}</span></div>
+    <div class="learning-node-kicker"><small>ЗАНЯТИЕ ${String(index+1).padStart(2,"0")} · ${esc(lesson[2].toUpperCase())}</small><span class="learning-node-status">${done?"ЗАВЕРШЁН":current?"ТЕКУЩИЙ":"ЗАКРЫТ"}</span></div>
     <b>${esc(lesson[1])}</b>
-    <div class="learning-node-meta"><span>${lesson[3]} минут</span><span>${done?"Результат сохранён":current?"Можно начать":"Откроется после этапа "+index}</span></div>
+    <div class="learning-node-meta"><span>${lesson[3]} минут</span><span>${done?"Результат сохранён":current?"Можно начать":"Откроется после предыдущего"}</span></div>
    </div>
-  </div>`;
- }).join("");
+  </div>`);
+  if(index%2===1&&index<lessons.length-1){
+   const chapterStart=lessons[index-1],chapterEnd=lessons[index];
+   const chapterDone=Boolean(completedLessons[chapterStart[0]]&&completedLessons[chapterEnd[0]]);
+   const chapterCompletedCount=[chapterStart,chapterEnd].filter(item=>completedLessons[item[0]]).length;
+   const checkpointChapter=chapterList[chapterIndex]||chapter;
+   mapItems.push(`<div class="learning-checkpoint ${chapterDone?"is-done":""}" data-chapter-checkpoint="${chapterIndex+1}">
+    <span class="learning-checkpoint-icon">${chapterDone?'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>':'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'}</span>
+    <span class="learning-checkpoint-copy"><small>КОНТРОЛЬНАЯ ТОЧКА · ГЛАВА ${String(chapterIndex+1).padStart(2,"0")}</small><b>${chapterDone?"Глава завершена":esc(checkpointChapter.title)}</b><span>${chapterDone?"Оба занятия пройдены":chapterCompletedCount+" из 2 занятий завершено"}</span></span>
+    <strong>${chapterDone?"ГОТОВО":"РУБЕЖ"}</strong>
+   </div>`);
+  }
+ });
+ const nodes=mapItems.join("");
+ const chapterCount=chapterList.length||Math.ceil(lessons.length/2);
  return `<main class="screen inner-screen course-detail-screen learning-map-screen" data-map-course="${c.id}">
  <button class="back-button" data-go="study">${icon("back")} Все программы</button>
  <section class="learning-map-heading">
   <div class="learning-map-art ${c.color}">${courseArtwork(c)}<span>${esc(c.category)}</span></div>
-  <div class="learning-map-title"><span class="subtle-label">ТВОЯ УЧЕБНАЯ ПРОГРАММА</span><h1>${esc(c.title)}</h1><p>Проходи этапы последовательно. Каждый следующий откроется после завершения предыдущего.</p></div>
+  <div class="learning-map-title"><span class="subtle-label">ТВОЯ УЧЕБНАЯ ПРОГРАММА</span><h1>${esc(c.title)}</h1><p>${chapterCount} главы, ${lessons.length} занятий. Проходи главы последовательно и отмечай контрольные точки по мере обучения.</p></div>
  </section>
- <section class="learning-progress-card"><div><span><small>ТВОЙ ПРОГРЕСС</small><b>${completed} из ${lessons.length} этапов</b></span><strong>${progress}%</strong></div><div class="learning-progress-track"><span style="width:${progress}%"></span></div></section>
- <section class="learning-path-section"><div class="learning-path-head"><div><span class="subtle-label">УЧЕБНЫЙ МАРШРУТ</span><h2>Твоя траектория</h2></div><span>${lessons.length} этапа</span></div><div class="learning-path">
-  <div class="learning-path-map-label"><span>MAGNUS FIELD GUIDE</span><b>МАРШРУТ · 01</b></div>
-  <svg class="learning-path-art" viewBox="0 0 600 560" preserveAspectRatio="none" aria-hidden="true">
+ <section class="learning-progress-card"><div><span><small>ТВОЙ ПРОГРЕСС</small><b>${completed} из ${lessons.length} занятий</b></span><strong>${progress}%</strong></div><div class="learning-progress-track"><span style="width:${progress}%"></span></div></section>
+ <section class="learning-path-section"><div class="learning-path-head"><div><span class="subtle-label">УЧЕБНЫЙ МАРШРУТ</span><h2>Твоя траектория</h2></div><span>${chapterCount} главы · ${lessons.length} занятий</span></div><div class="learning-path">
+  <div class="learning-path-map-label"><span>MAGNUS FIELD GUIDE</span><b>${String(chapterCount).padStart(2,"0")} ГЛАВЫ · ${String(lessons.length).padStart(2,"0")} ЭТАПОВ</b></div>
+  <svg class="learning-path-art" viewBox="0 0 600 1370" preserveAspectRatio="none" aria-hidden="true">
    <defs><pattern id="map-dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#a6a18f" opacity=".3"/></pattern><linearGradient id="map-route-gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d99b6e"/><stop offset="1" stop-color="#b7a18a"/></linearGradient></defs>
-   <rect width="600" height="560" fill="url(#map-dots)"/>
-   <g fill="none" stroke="#bcb8aa" stroke-width="1.2" opacity=".3"><path d="M-30 112C80 30 184 45 231 113s143 84 236 32 129-56 165-13"/><path d="M-30 130C80 48 184 63 231 131s143 84 236 32 129-56 165-13"/><path d="M-30 148C80 66 184 81 231 149s143 84 236 32 129-56 165-13"/><path d="M-30 365c115-65 196-50 244 22s139 88 227 41 128-53 159-13"/><path d="M-30 385c115-65 196-50 244 22s139 88 227 41 128-53 159-13"/></g>
-   <path d="M72 46C190 78 402 137 528 205S195 342 72 397C132 450 214 503 300 535" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" opacity=".86"/>
-   <path d="M72 46C190 78 402 137 528 205S195 342 72 397C132 450 214 503 300 535" fill="none" stroke="url(#map-route-gradient)" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 11"/>
-   <g fill="#fff" stroke="#c8a78d" stroke-width="2"><circle cx="72" cy="46" r="7"/><circle cx="528" cy="205" r="7"/><circle cx="72" cy="397" r="7"/><circle cx="300" cy="535" r="7"/></g>
+   <rect width="600" height="1370" fill="url(#map-dots)"/>
+   <g fill="none" stroke="#bcb8aa" stroke-width="1.2" opacity=".3"><path d="M-30 190C80 75 184 90 231 190s143 105 236 45 129-56 165-13"/><path d="M-30 210C80 95 184 110 231 210s143 105 236 45 129-56 165-13"/><path d="M-30 230C80 115 184 130 231 230s143 105 236 45 129-56 165-13"/><path d="M-30 840c115-65 196-50 244 22s139 88 227 41 128-53 159-13"/><path d="M-30 860c115-65 196-50 244 22s139 88 227 41 128-53 159-13"/></g>
+   <path d="M58 120C220 135 405 225 542 270S220 465 58 520 405 615 542 670 220 865 58 920 405 1015 542 1070C470 1160 380 1220 300 1290" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" opacity=".86"/>
+   <path d="M58 120C220 135 405 225 542 270S220 465 58 520 405 615 542 670 220 865 58 920 405 1015 542 1070C470 1160 380 1220 300 1290" fill="none" stroke="url(#map-route-gradient)" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 11"/>
+   <g fill="#fff" stroke="#c8a78d" stroke-width="2"><circle cx="58" cy="120" r="7"/><circle cx="542" cy="270" r="7"/><circle cx="58" cy="520" r="7"/><circle cx="542" cy="670" r="7"/><circle cx="58" cy="920" r="7"/><circle cx="542" cy="1070" r="7"/></g>
   </svg>
-  ${nodes}<div class="learning-path-finish"><span>✦</span><b>Финиш маршрута</b><small>Все этапы программы завершены.</small></div>
+  ${nodes}<div class="learning-path-finish"><span>✦</span><b>Финиш маршрута</b><small>Все ${lessons.length} занятий программы завершены.</small></div>
  </div></section>
  ${completed===lessons.length?`<div class="learning-complete-note">Все доступные этапы пройдены. Новые материалы появятся в программе после публикации.</div>`:`<button class="learning-continue-button" data-lesson-open="${esc(nextLesson[0])}"><span><small>СЛЕДУЮЩИЙ ШАГ</small><b>${esc(nextLesson[1])}</b></span><strong>Продолжить ${icon("arrow")}</strong></button>`}
  <p class="demo-disclaimer">Сейчас в MAGNUS доступны ознакомительные учебные маршруты. Содержание и результаты каждого этапа отображаются в программе.</p>
  </main>`;
 }
-
 function lessonPage() {
  const c=selectedCourse,lesson=selectedLesson();if(!lesson)return courseDetailPage();
  const [id,title,type,duration,intro,h1,b1,h2,b2,question,options,answer]=lesson;
