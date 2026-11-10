@@ -467,8 +467,25 @@ export default async function (input, ctx) {
     }
     submissions.sort((a, b) => String(b.submittedAt).localeCompare(String(a.submittedAt)));
     const bot = await api.getMe();
-    const webhook = await api.getWebhookInfo();
-    const commands = await api.getMyCommands();
+
+    // getWebhookInfo недоступен в Telegram Serverless (403 restricted).
+    // Его отсутствие не должно блокировать загрузку всей админ-панели.
+    let webhook = null;
+    try {
+      webhook = await api.getWebhookInfo();
+    } catch (error) {
+      console.warn('MAGNUS: статус webhook недоступен в Telegram Serverless.', error);
+    }
+
+    // Список команд может быть ограничен отдельно — это необязательная информация.
+    let commands = [];
+    let commandsAvailable = true;
+    try {
+      commands = await api.getMyCommands();
+    } catch (error) {
+      commandsAvailable = false;
+      console.warn('MAGNUS: список команд Telegram недоступен.', error);
+    }
     const savedBotSettings = await db.select().from(botSettings).where(eq(botSettings.key, 'default')).get();
     return {
       ok: true,
@@ -482,9 +499,12 @@ export default async function (input, ctx) {
       submissions: submissions.slice(0, 100),
       bot: {
         id: bot.id, username: bot.username, firstName: bot.first_name,
-        webhookActive: Boolean(webhook.url), webhookPending: webhook.pending_update_count || 0,
-        lastError: webhook.last_error_message || '',
+        webhookActive: webhook ? Boolean(webhook.url) : null,
+        webhookCheckAvailable: Boolean(webhook),
+        webhookPending: webhook ? (Number(webhook.pending_update_count) || 0) : null,
+        lastError: webhook?.last_error_message || '',
         commands,
+        commandsAvailable,
       },
       botSettings: publicBotSettings(savedBotSettings),
     };
