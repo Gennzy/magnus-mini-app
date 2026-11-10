@@ -84,7 +84,6 @@ export default async function(input,ctx){
  ].join('\n');
  const userMessage=mode==='practice_review'?'Ответ ученика на практическое задание:\n'+question:question;
  const messages=mode==='practice_review'?[{role:'system',content:system},{role:'user',content:userMessage}]:[{role:'system',content:system},...historyItems(input.history),{role:'user',content:userMessage}];
- const messages=[{role:'system',content:system},...historyItems(input.history),{role:'user',content:question}];
  let response;
  try{
   response=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+settings.apiKey,'Content-Type':'application/json'},body:JSON.stringify({model:settings.model||'openai/gpt-oss-20b',messages,temperature:0.2,max_completion_tokens:420})});
