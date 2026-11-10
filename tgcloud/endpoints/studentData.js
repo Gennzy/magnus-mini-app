@@ -140,6 +140,12 @@ export default async function (input, ctx) {
     if (lessonIndex > 0 && !completedLessons[sequence[lessonIndex - 1]]) {
       return { ok: false, code: 'LESSON_LOCKED', message: 'Сначала заверши предыдущее занятие.' };
     }
+    const practiceResults = cleanMap(previousPayload.lessonPracticeResults);
+    let practiceResult = {};
+    try { practiceResult = JSON.parse(practiceResults[lessonId] || '{}'); } catch {}
+    if (practiceResult.verdict !== 'pass' || Number(practiceResult.totalScore) < 4) {
+      return { ok: false, code: 'PRACTICE_NOT_PASSED', message: 'Сначала выполни практическое задание и получи зачёт.' };
+    }
     const lessonQuizResults = cleanMap(previousPayload.lessonQuizResults);
     const previousQuiz = (() => {
       try { return JSON.parse(lessonQuizResults[lessonId] || '{}'); } catch { return {}; }
