@@ -902,6 +902,22 @@ function toast(message) {
 
 function bindEvents() {
   document.querySelectorAll("[data-admin-tab]").forEach(el=>el.addEventListener("click",()=>{adminTab=el.dataset.adminTab;if(adminTab==="students")loadAdminStudents();else if(adminTab==="support")loadAdminSupport();else if(adminTab==="payments")loadAdminPaymentPlans();else if(adminTab==="ai")loadAdminAiSettings();else if(adminTab==="audit")loadAdminAudit();else render();}));
+  document.querySelectorAll("[data-admin-ai-save]").forEach(button=>button.addEventListener("click",()=>{
+    const keyField=document.querySelector("[data-groq-key]");
+    const modelField=document.querySelector("[data-groq-model]");
+    const apiKey=(keyField?.value||"").trim();
+    const model=modelField?.value||"openai/gpt-oss-20b";
+    if(!adminAiConfigured&&!apiKey){toast("Сначала добавь API-ключ Groq.");return;}
+    if(apiKey&&!/^gsk_[A-Za-z0-9_-]{20,}$/.test(apiKey)){toast("Проверь формат ключа Groq: он должен начинаться с gsk_.");return;}
+    button.disabled=true;button.textContent="Сохраняем…";
+    const called=callAdminApi("saveAiSettings",{apiKey,model},(error,result)=>{
+      button.disabled=false;button.textContent="Сохранить подключение";
+      if(error||!result?.ok){toast(error?.message||result?.message||"Не удалось сохранить подключение.");return;}
+      adminAiConfigured=Boolean(result.configured);adminAiModel=result.model||model;
+      render();toast(result.message||"Учебная система подключена.");
+    });
+    if(!called){button.disabled=false;button.textContent="Сохранить подключение";toast("Открой панель из Telegram.");}
+  }));
   document.querySelectorAll("[data-admin-refresh]").forEach(el=>el.addEventListener("click",()=>{if(adminAccess.isAdmin)loadAdminDashboard();else loadAdminAccess(true);}));
   document.querySelectorAll("[data-admin-audit-refresh]").forEach(el=>el.addEventListener("click",loadAdminAudit));
   document.querySelectorAll("[data-admin-students-refresh]").forEach(el=>el.addEventListener("click",loadAdminStudents));
