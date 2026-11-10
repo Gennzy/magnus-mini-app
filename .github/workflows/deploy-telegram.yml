@@ -55,6 +55,16 @@ jobs:
       - name: Build Mini App
         run: npm run build
 
+      - name: Validate backend JavaScript syntax
+        run: |
+          node --check tgcloud/endpoints/tutor.js
+          node --check tgcloud/endpoints/studentData.js
+
+      - name: Compile backend modules in Telegram runtime
+        run: |
+          npx tgcloud run endpoints/tutor '{}' --ctx '{}'
+          npx tgcloud run endpoints/studentData '{}' --ctx '{}'
+
       - name: Sync deployed Telegram revision
         run: npx tgcloud fetch
 
