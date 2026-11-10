@@ -83,13 +83,29 @@ try {
     await page.waitForSelector(".lesson-screen .lesson-tutor", { timeout: 10000 });
     const tutorVisible = await page.locator(".lesson-tutor-heading h2").textContent();
     if (!tutorVisible?.includes("Разберём тему вместе")) failures.push(`${name}/lesson: не найден блок учебного помощника`);
+
+    await page.locator('[data-lesson-tab="practice"]').click();
+    const practiceVisible = await page.locator(".lesson-practice").count();
+    if (practiceVisible !== 1) failures.push(`${name}/practice: не появилась практическая карточка`);
+    await page.locator("[data-practice-hint]").click();
+    const hintVisible = await page.locator(".lesson-practice-hint p").count();
+    if (hintVisible !== 1) failures.push(`${name}/practice: не открылась подсказка`);
+    const practiceDraft = "Модель анализирует примеры и использует найденные закономерности для нового письма.";
+    await page.locator("[data-practice-answer]").fill(practiceDraft);
+    await page.locator('[data-lesson-tab="notes"]').click();
+    await page.locator('[data-lesson-tab="practice"]').click();
+    const restoredDraft = await page.locator("[data-practice-answer]").inputValue();
+    const practiceDraftPersistence = restoredDraft === practiceDraft;
+    if (!practiceDraftPersistence) failures.push(`${name}/practice: черновик не восстановился после переключения вкладки`);
+
+    await page.locator('[data-lesson-tab="lesson"]').click();
     await assertNoHorizontalOverflow("lesson");
     await page.screenshot({ path: `${artifacts}/${name}-lesson.png`, fullPage: true });
 
     const lessonText = await page.locator(".lesson-reading").innerText();
     if (!lessonText.trim()) failures.push(`${name}/lesson: пустой учебный материал`);
     await page.close();
-    return { viewport: name, mapNodes: mapCheck.nodes, chapters: mapCheck.chapterCount, checkpoints: mapCheck.checkpointCount, tutorBlock: Boolean(tutorVisible), mapWithinViewport: mapCheck.mapLeft >= -1 && mapCheck.mapRight <= mapCheck.viewport + 1 };
+    return { viewport: name, mapNodes: mapCheck.nodes, chapters: mapCheck.chapterCount, checkpoints: mapCheck.checkpointCount, tutorBlock: Boolean(tutorVisible), practicePanel: practiceVisible === 1, practiceDraftPersistence, mapWithinViewport: mapCheck.mapLeft >= -1 && mapCheck.mapRight <= mapCheck.viewport + 1 };
   }
 
   const desktop = await testViewport("desktop", { width: 1440, height: 1000 });
