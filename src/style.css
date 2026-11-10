@@ -6839,3 +6839,17 @@ body { background:#f6f6f3;color:#252b2d; }
 .admin-ai-settings input,.admin-ai-settings select{width:100%;min-height:43px;padding:10px 12px;border:1px solid #e4e2dc;border-radius:9px;background:#fbfaf8;color:#30383a;font:inherit;font-size:12px}
 .admin-ai-state{padding:6px 9px;border-radius:7px;background:#f5eee7;color:#9a653f;font-size:9px;font-weight:800}.admin-ai-state.is-ready{background:#eaf4ed;color:#39754c}
 .admin-ai-notice{display:flex;flex-direction:column;gap:5px;padding:13px;border-radius:10px;background:#f6f5f1;color:#636b6d;font-size:10px;line-height:1.55}.admin-ai-notice b{color:#30383a;font-size:11px}
+
+/* Lesson learning companion */
+.lesson-tutor{margin:24px 0;padding:17px;border:1px solid #e7e5df;border-radius:15px;background:#fff}
+.lesson-tutor-heading h2{margin:6px 0;font-size:19px;letter-spacing:-.4px}.lesson-tutor-heading p{margin:0;color:#737b7e;font-size:11px;line-height:1.55;max-width:560px}
+.lesson-tutor-messages{display:flex;flex-direction:column;gap:9px;max-height:360px;overflow-y:auto;margin:16px 0 12px}
+.lesson-tutor-message{max-width:92%;padding:10px 12px;border-radius:11px}.lesson-tutor-message small{font-size:8px;font-weight:850;letter-spacing:.8px;color:#838b8d}.lesson-tutor-message p{margin:5px 0 0;color:#343b3d;font-size:11px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.lesson-tutor-message.from-magnus{align-self:flex-start;background:#f4f3ef}.lesson-tutor-message.from-student{align-self:flex-end;background:#fff0e5}.lesson-tutor-message.from-student small{color:#b96631}
+.lesson-tutor-empty{padding:14px;border-radius:9px;background:#f7f6f2;color:#7c8385;font-size:10px}
+.lesson-tutor-thinking{display:flex;align-items:center;gap:5px;padding:10px 12px;color:#7d8587;font-size:10px}.lesson-tutor-thinking i{width:5px;height:5px;border-radius:50%;background:#df8a50;animation:tutorPulse .9s infinite alternate}.lesson-tutor-thinking i:nth-child(2){animation-delay:.2s}.lesson-tutor-thinking i:nth-child(3){animation-delay:.4s}.lesson-tutor-thinking span{margin-left:5px}
+@keyframes tutorPulse{to{opacity:.25;transform:translateY(-3px)}}
+.lesson-tutor-compose{display:flex;align-items:stretch;gap:8px}.lesson-tutor-compose textarea{flex:1;min-width:0;min-height:46px;max-height:110px;padding:10px 11px;border:1px solid #e3e1db;border-radius:9px;background:#fcfbf9;color:#30383a;font:inherit;font-size:11px;line-height:1.5;resize:vertical}.lesson-tutor-compose textarea:focus{outline:none;border-color:#dca77f}
+.lesson-tutor-compose button{display:flex;align-items:center;justify-content:center;gap:6px;align-self:stretch;padding:0 13px;border:0;border-radius:9px;background:#22282a;color:#fff;font-size:10px;font-weight:800;white-space:nowrap}.lesson-tutor-compose button:disabled{opacity:.55}.lesson-tutor-compose button svg{width:14px;height:14px}
+.lesson-tutor-footnote{display:block;margin-top:9px;color:#92999a;font-size:8px;line-height:1.5}
+@media(max-width:520px){.lesson-tutor{padding:13px}.lesson-tutor-compose{flex-direction:column}.lesson-tutor-compose button{min-height:39px}.lesson-tutor-message{max-width:96%}}
