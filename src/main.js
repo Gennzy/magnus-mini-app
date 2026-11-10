@@ -627,9 +627,9 @@ function schedulePanel() {
 
 function studyPage() {
   return `<main class="screen inner-screen study-screen">
-    ${heading("ОБУЧЕНИЕ", "Расписание<br><em>и курсы.</em>", "Выбирай курс, открывай уроки и работай с материалами.")}
-    ${schedulePanel()}
-    <section class="courses-section study-courses"><div class="section-title"><div><span class="subtle-label">УЧЕБНЫЕ ПРИМЕРЫ</span><h2>Примеры курсов</h2></div><span class="course-count">${courses.length} курса</span></div>${courses.map(c=>courseTile(c,true)).join("")}</section>
+    ${heading("ТВОЯ УЧЕБНАЯ СРЕДА", "Мои<br><em>программы.</em>", "Здесь собраны программы, к которым можно вернуться в любой момент.")}
+    ${dashboardContinueLearning()}
+    <section class="courses-section study-courses"><div class="section-title"><div><span class="subtle-label">ДОСТУПНЫЕ ПРОГРАММЫ</span><h2>Каталог обучения</h2></div><span class="course-count">${courses.length} программы</span></div>${courses.map(c=>courseTile(c,true)).join("")}</section>
   </main>`;
 }
 
@@ -768,7 +768,7 @@ function assignmentsPage() {
   const filtered = assignments.filter(a => {
     if (activeAssignmentFilter === "Черновики") return hasAssignmentDraft(a.id) && !hasAssignmentSubmission(a.id);
     if (activeAssignmentFilter === "Отправлено") return hasAssignmentSubmission(a.id);
-    if (activeAssignmentFilter === "Нужно выполнить") return !hasAssignmentDraft(a.id);
+    if (activeAssignmentFilter === "Нужно выполнить") return !hasAssignmentDraft(a.id) && !hasAssignmentSubmission(a.id);
     return true;
   });
   return `<main class="screen inner-screen assignments-screen">
