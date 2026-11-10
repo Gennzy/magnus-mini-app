@@ -565,14 +565,35 @@ function studyPage() {
 }
 
 
+function lessonIsUnlocked(lessons,index) {
+ return index===0 || Boolean(completedLessons[lessons[index-1]?.[0]]);
+}
 function courseDetailPage() {
  const c=selectedCourse,lessons=courseLessons(c.id),completed=courseCompletionCount(c.id),progress=lessons.length?Math.round(completed/lessons.length*100):0;
- return `<main class="screen inner-screen course-detail-screen"><button class="back-button" data-go="study">${icon("back")} Все курсы</button>
- <section class="course-detail-hero ${c.color}">${courseArtwork(c)}<span class="course-detail-kicker">${esc(c.category)}</span><div class="course-detail-mark">${esc(c.mark)}</div><div class="course-detail-bottom"><span>ОЗНАКОМИТЕЛЬНАЯ ПРОГРАММА</span></div></section>
- <div class="course-detail-title"><div class="kicker">УЧЕБНАЯ ПРОГРАММА · ПРИМЕР</div><h1>${esc(c.title)}</h1><p>Три занятия с материалами и вопросами для самопроверки.</p></div>
- <section class="course-detail-summary"><span class="subtle-label">ТВОЙ РЕЗУЛЬТАТ</span><b>${completed} из ${lessons.length} занятий отмечено</b><div class="curriculum-progress"><span style="width:${progress}%"></span></div><p>Ознакомительный материал, не официальная учебная программа.</p></section>
- <section class="module-section"><div class="section-title"><div><span class="subtle-label">СОДЕРЖАНИЕ</span><h2>Занятия</h2></div><span class="course-count">${lessons.length} урока</span></div><div class="module-list">${lessons.map((lesson,index)=>`<button class="module-row curriculum-lesson-row" data-lesson-open="${lesson[0]}"><span class="module-number">${completedLessons[lesson[0]]?"✓":String(index+1).padStart(2,"0")}</span><span class="curriculum-lesson-copy"><b>${esc(lesson[1])}</b><small>${esc(lesson[2])} · ${lesson[3]} минут</small></span><span class="curriculum-lesson-state">${completedLessons[lesson[0]]?"Пройдено":"Открыть"} ${icon("arrow")}</span></button>`).join("")}</div></section>
- <p class="demo-disclaimer">Материалы созданы для знакомства с форматом MAGNUS. Они не заменяют полноценную программу с преподавателем.</p></main>`;
+ const nextIndex=lessons.findIndex((lesson,index)=>!completedLessons[lesson[0]]&&lessonIsUnlocked(lessons,index));
+ const nextLesson=lessons[nextIndex>=0?nextIndex:Math.max(0,lessons.length-1)];
+ const nodes=lessons.map((lesson,index)=>{
+  const done=Boolean(completedLessons[lesson[0]]),unlocked=lessonIsUnlocked(lessons,index),current=!done&&unlocked;
+  const state=done?"Пройдено":current?"Продолжить":"Закрыто";
+  return `<div class="learning-node-wrap ${index%2?"right":"left"} ${done?"is-done":current?"is-current":"is-locked"}">
+   <span class="learning-path-connector" aria-hidden="true"></span>
+   <button type="button" class="learning-node" ${unlocked?`data-lesson-open="${esc(lesson[0])}"`:"disabled"} aria-label="${esc(lesson[1])}: ${state}">
+    <span class="learning-node-icon">${done?"✓":unlocked?String(index+1).padStart(2,"0"):"⌑"}</span>
+   </button>
+   <div class="learning-node-card"><small>ЭТАП ${String(index+1).padStart(2,"0")} · ${esc(lesson[2].toUpperCase())}</small><b>${esc(lesson[1])}</b><span>${lesson[3]} минут · ${state}</span></div>
+  </div>`;
+ }).join("");
+ return `<main class="screen inner-screen course-detail-screen learning-map-screen">
+ <button class="back-button" data-go="study">${icon("back")} Все программы</button>
+ <section class="learning-map-heading">
+  <div class="learning-map-art ${c.color}">${courseArtwork(c)}<span>${esc(c.category)}</span></div>
+  <div class="learning-map-title"><span class="subtle-label">ТВОЯ УЧЕБНАЯ ПРОГРАММА</span><h1>${esc(c.title)}</h1><p>Проходи этапы последовательно. Каждый следующий откроется после завершения предыдущего.</p></div>
+ </section>
+ <section class="learning-progress-card"><div><span><small>ТВОЙ ПРОГРЕСС</small><b>${completed} из ${lessons.length} этапов</b></span><strong>${progress}%</strong></div><div class="learning-progress-track"><span style="width:${progress}%"></span></div></section>
+ <section class="learning-path-section"><div class="learning-path-head"><div><span class="subtle-label">УЧЕБНЫЙ МАРШРУТ</span><h2>Путь обучения</h2></div><span>${lessons.length} этапа</span></div><div class="learning-path">${nodes}<div class="learning-path-finish"><span>✦</span><b>Этапы программы завершены</b><small>Ты прошёл весь доступный маршрут.</small></div></div></section>
+ ${completed===lessons.length?`<div class="learning-complete-note">Все доступные этапы пройдены. Новые материалы появятся в программе после публикации.</div>`:`<button class="learning-continue-button" data-lesson-open="${esc(nextLesson[0])}"><span><small>СЛЕДУЮЩИЙ ШАГ</small><b>${esc(nextLesson[1])}</b></span><strong>Продолжить ${icon("arrow")}</strong></button>`}
+ <p class="demo-disclaimer">Сейчас в MAGNUS доступны ознакомительные учебные маршруты. Содержание и результаты каждого этапа отображаются в программе.</p>
+ </main>`;
 }
 
 function lessonPage() {
