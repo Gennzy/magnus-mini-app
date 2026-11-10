@@ -1265,13 +1265,30 @@ document.querySelectorAll("[data-admin-payment-refresh]").forEach(el=>el.addEven
         toast(error?.message||result?.message||"Не удалось проверить ответ. Черновик сохранён.");
         return;
       }
-      lessonPracticeResults[targetLessonId]=JSON.stringify({answer,feedback:result.answer,reviewedAt:new Date().toISOString()});
-      lessonPracticeDrafts[targetLessonId]="";
-      writeStudentStorage("lessonPracticeResults",lessonPracticeResults);
-      writeStudentStorage("lessonPracticeDrafts",lessonPracticeDrafts);
-      scheduleCloudStudentDataSync();
-      if(currentPage==="lesson"&&selectedLessonId===targetLessonId)render();
-      toast("Разбор готов. Ответ сохранён в твоём прогрессе.");
+      const reviewText=String(result.answer||"").trim();
+      if(reviewText.length<20){
+        if(currentPage==="lesson"&&selectedLessonId===targetLessonId)render();
+        toast("Разбор получен в неполном виде. Попробуй отправить ответ ещё раз.");
+        return;
+      }
+      const saved=callCloudStudentData("savePracticeReview",{lessonId:targetLessonId,answer,feedback:reviewText},(saveError,saveResult)=>{
+        if(saveError||!saveResult?.ok){
+          if(currentPage==="lesson"&&selectedLessonId===targetLessonId)render();
+          toast(saveResult?.message||"Не удалось сохранить результат в учебном профиле.");
+          return;
+        }
+        lessonPracticeResults[targetLessonId]=JSON.stringify(saveResult.result||{answer,feedback:reviewText,reviewedAt:new Date().toISOString(),attempts:1});
+        lessonPracticeDrafts[targetLessonId]="";
+        writeStudentStorage("lessonPracticeResults",lessonPracticeResults);
+        writeStudentStorage("lessonPracticeDrafts",lessonPracticeDrafts);
+        scheduleCloudStudentDataSync();
+        if(currentPage==="lesson"&&selectedLessonId===targetLessonId)render();
+        toast("Разбор проверен и сохранён в учебном профиле.");
+      });
+      if(!saved){
+        if(currentPage==="lesson"&&selectedLessonId===targetLessonId)render();
+        toast("Не удалось связаться с учебной системой. Черновик сохранён.");
+      }
     });
     if(!called){practicePending=false;render();toast("Открой MAGNUS через Telegram.");}
   }));
