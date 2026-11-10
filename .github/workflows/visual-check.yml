@@ -1,0 +1,56 @@
+name: MAGNUS visual smoke tests
+
+on:
+  push:
+    branches:
+      - magnus-source-upload
+    paths:
+      - "src/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/visual-smoke.mjs"
+      - ".github/workflows/visual-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: magnus-source-upload
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+
+      - name: Run desktop and mobile browser checks
+        run: node scripts/visual-smoke.mjs
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: magnus-visual-smoke-screenshots
+          path: artifacts/*.png
+          if-no-files-found: warn
+          retention-days: 7
