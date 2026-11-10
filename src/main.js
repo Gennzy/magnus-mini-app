@@ -748,7 +748,7 @@ function lessonPage() {
   <small class="lesson-tutor-footnote">Ответы формируются автоматически по материалу текущего урока. Важные факты стоит перепроверять.</small>
  </section>
  <section class="lesson-quiz"><div class="kicker">ПРОВЕРЬ СЕБЯ</div><h2>${esc(question)}</h2><p>Выберите один вариант ответа.</p>${options.map((option,i)=>`<button type="button" class="quiz-option ${quizChoice===String(i)?"chosen":""}" data-quiz="${i}" aria-pressed="${quizChoice===String(i)}"><span>${String.fromCharCode(65+i)}</span>${esc(option)}${quizChoice===String(i)?"<b>✓</b>":""}</button>`).join("")}${quizChoice!==""?`<div class="quiz-feedback ${quizChoice===String(answer)?"correct":"incorrect"}" role="status">${quizChoice===String(answer)?"Верно. Ты правильно понял основную мысль.":"Пока неверно. Перечитай конспект и попробуй ещё раз."}</div>`:""}${quizResult?`<div class="quiz-saved-result">Последний результат: ${quizResult.correct?"верный ответ":"ответ неверный"} · попыток: ${quizResult.attempts}</div>`:""}</section>
- <div class="lesson-footer"><button class="lesson-finish" data-action="lesson-finish" ${lessonCompleted?"disabled":""}>${lessonCompleted?"Занятие отмечено пройденным":"Отметить занятие пройденным"} ${lessonCompleted?"":icon("arrow")}</button><small>${lessonCompleted?"Отметка сохранена.":"Отметка означает, что ты ознакомился с материалом; это не подтверждение квалификации."}</small></div>
+ <div class="lesson-footer"><button class="lesson-finish" data-action="lesson-finish" ${lessonCompleted||!((quizChoice===String(answer))||quizResult?.correct)?"disabled":""}>${lessonCompleted?"Занятие завершено":(quizChoice===String(answer))||quizResult?.correct?"Подтвердить завершение":"Сначала пройди проверку"} ${lessonCompleted?"":icon("arrow")}</button><small>${lessonCompleted?"Результат проверки сохранён в учебном прогрессе.":((quizChoice===String(answer))||quizResult?.correct)?"Правильный ответ подтверждён. Можно завершить занятие.":"Чтобы открыть следующий этап, правильно ответь на контрольный вопрос."}</small></div>
  <div class="lesson-sequence">${previous?`<button data-lesson-open="${previous[0]}">← Предыдущее занятие</button>`:"<span>Первое занятие</span>"}${next?`<button data-lesson-open="${next[0]}">Следующее занятие →</button>`:`<button data-go="courseDetail">К программе курса →</button>`}</div></main>`;
 }
 
@@ -1299,11 +1299,38 @@ document.querySelectorAll("[data-admin-payment-refresh]").forEach(el=>el.addEven
       return;
     }
     if (el.dataset.action === "lesson-finish") {
-      completedLessons[selectedLessonId] = new Date().toISOString();
-      const saved = storeCompletedLessons();
-      scheduleCloudStudentDataSync();
-      render();
-      toast(saved ? "Отметка о прохождении примера сохранена." : "Не удалось сохранить отметку.");
+      const lessonId = selectedLessonId;
+      let savedQuiz = null;
+      try { savedQuiz = JSON.parse(lessonQuizResults[lessonId] || "null"); } catch {}
+      const answerIndex = quizChoice !== "" ? Number(quizChoice) : Number(savedQuiz?.choice);
+      if (!savedQuiz?.correct && quizChoice !== String(selectedLesson()?.[11])) {
+        toast("Сначала ответь правильно на контрольный вопрос.");
+        return;
+      }
+      if (!telegramUser?.id) {
+        toast("Подтверждение прохождения доступно при открытии MAGNUS через Telegram.");
+        return;
+      }
+      el.disabled = true;
+      el.textContent = "Подтверждаем…";
+      const called = callCloudStudentData("completeLesson", { lessonId, answerIndex }, (error, result) => {
+        if (error || !result?.ok) {
+          toast(result?.message || "Не удалось подтвердить занятие. Попробуй ещё раз.");
+          render();
+          return;
+        }
+        completedLessons = { ...completedLessons, [lessonId]: result.completedAt || new Date().toISOString() };
+        if (result.completedLessons && typeof result.completedLessons === "object") {
+          completedLessons = { ...completedLessons, ...result.completedLessons };
+        }
+        storeCompletedLessons();
+        toast("Занятие завершено. Следующий этап открыт.");
+        render();
+      });
+      if (!called) {
+        render();
+        toast("Не удалось связаться с учебной системой.");
+      }
       return;
     }
     const actions = {notifications:"Система уведомлений пока не подключена.",course:"Раздел курсов пока демонстрационный.", "course-start":"Видеоурок пока недоступен.",settings:"Настройки появятся в следующем обновлении.",support:"Раздел поддержки скоро будет доступен.",about:"MAGNUS — пространство для знаний, открытий и развития."};
