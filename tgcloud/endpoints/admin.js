@@ -156,10 +156,23 @@ export default async function (input, ctx) {
     const apiKey = suppliedKey || existing?.apiKey || '';
     if (!/^gsk_[A-Za-z0-9_-]{20,}$/.test(apiKey)) return { ok: false, code: 'INVALID_KEY', message: 'Добавь корректный API-ключ Groq.' };
     const now = Math.floor(Date.now() / 1000);
-    await db.insert(aiSettings).values({ id:'primary', provider:'groq', apiKey, model, updatedAt:now, updatedBy:tgId })
-      .onConflictDoUpdate({ target:aiSettings.id, set:{ provider:'groq', apiKey, model, updatedAt:now, updatedBy:tgId } }).run();
-    await writeAuditSafely({ action:'ai.settings.updated', actorTgId:tgId, actorEmail:admin.email, targetType:'ai_settings', targetId:'primary', summary:'Обновлены настройки учебного ИИ', details:{ provider:'groq', model } });
-    return { ok:true, configured:true, model, message:'Подключение Groq сохранено. Ключ хранится только на сервере.' };
+    try {
+      await db.insert(aiSettings).values({ id:'primary', provider:'groq', apiKey, model, updatedAt:now, updatedBy:tgId })
+        .onConflictDoUpdate({ target:aiSettings.id, set:{ provider:'groq', apiKey, model, updatedAt:now, updatedBy:tgId } }).run();
+
+      // Подтверждаем сохранение отдельным чтением из облачной БД.
+      const persisted = await db.select().from(aiSettings).where(eq(aiSettings.id, 'primary')).get();
+      if (!persisted?.apiKey || persisted.apiKey !== apiKey || persisted.model !== model || persisted.provider !== 'groq') {
+        console.error('MAGNUS: Groq settings write verification failed.');
+        return { ok:false, code:'SAVE_NOT_CONFIRMED', message:'База не подтвердила сохранение Groq. Проверь миграцию таблицы ai_settings и повтори попытку.' };
+      }
+
+      await writeAuditSafely({ action:'ai.settings.updated', actorTgId:tgId, actorEmail:admin.email, targetType:'ai_settings', targetId:'primary', summary:'Обновлены настройки учебного ИИ', details:{ provider:'groq', model } });
+      return { ok:true, configured:true, model:persisted.model, verified:true, message:'Ключ Groq записан и повторно проверен в облачной базе.' };
+    } catch (error) {
+      console.error('MAGNUS: не удалось сохранить настройки Groq.', error);
+      return { ok:false, code:'SAVE_FAILED', message:'Не удалось записать ключ Groq в облачную базу. Проверь доступность таблицы ai_settings и повтори попытку.' };
+    }
   }
 
   if (input?.action === 'supportInbox') {
