@@ -131,6 +131,9 @@ let interestedFaculties = loadInterestedFaculties();
 let lessonQuizResults = loadLessonQuizResults();
 let completedLessons = loadCompletedLessons();
 let enrollments = readStudentStorage("enrollments");
+let finalExams = {};
+let activeExam = null;
+let examPending = false;
 let studentSubscription = { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
 let availableSubscriptionPlans = [];
 let paymentPlansLoading = false;
@@ -482,6 +485,7 @@ function initializeCloudStudentData() {
     lessonPracticeDrafts = { ...(result.lessonPracticeDrafts || {}), ...lessonPracticeDrafts };
     lessonPracticeResults = { ...(result.lessonPracticeResults || {}), ...lessonPracticeResults };
     enrollments = { ...(result.enrollments || {}), ...enrollments };
+    finalExams = result.finalExams && typeof result.finalExams === "object" ? result.finalExams : {};
     writeStudentStorage("enrollments", enrollments);
     studentSubscription = result.subscription || { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
     storeAssignmentDrafts();
@@ -751,6 +755,7 @@ function courseDetailPage() {
   ${nodes}<div class="learning-path-finish"><span>✦</span><b>Финиш маршрута</b><small>Все ${lessons.length} занятий программы завершены.</small></div>
  </div></section>
  ${completed===lessons.length?`<div class="learning-complete-note">Все доступные этапы пройдены. Новые материалы появятся в программе после публикации.</div>`:`<button class="learning-continue-button" data-lesson-open="${esc(nextLesson[0])}"><span><small>СЛЕДУЮЩИЙ ШАГ</small><b>${esc(nextLesson[1])}</b></span><strong>Продолжить ${icon("arrow")}</strong></button>`}
+ ${completed===lessons.length?(()=>{const state=finalExams[c.id]||{},attempts=Array.isArray(state.attempts)?state.attempts:[],last=attempts[attempts.length-1];return `<section class="final-exam-card"><span class="subtle-label">ИТОГОВАЯ АТТЕСТАЦИЯ</span><h2>${state.passed?"Программа завершена":"Финальный экзамен"}</h2><p>${state.passed?"Итоговая проверка успешно пройдена. Результат сохранён в твоём учебном профиле.":"Шесть вопросов по материалам программы. Для зачёта нужно набрать не менее 70%."}</p>${last?`<div class="final-exam-result ${last.passed?"passed":"failed"}"><b>${last.score}%</b><span>${last.passed?"Экзамен сдан":"Экзамен не сдан"} · ${last.correct} из ${last.total}</span></div>`:""}<div class="final-exam-actions"><small>Использовано попыток: ${attempts.length} из 3</small><button class="orange-button" data-exam-start="${c.id}" ${state.passed||attempts.length>=3?"disabled":""}>${state.passed?"Экзамен сдан":attempts.length?"Пересдать экзамен":"Начать экзамен"} ${icon("arrow")}</button></div></section>`;})():""}
  <p class="demo-disclaimer">Сейчас в MAGNUS доступны ознакомительные учебные маршруты. Содержание и результаты каждого этапа отображаются в программе.</p>
  </main>`;
 }
@@ -773,6 +778,12 @@ function lessonPracticePanel(id) {
   ${saved?.feedback?`<div class="lesson-practice-feedback ${saved.verdict==="pass"?"is-passed":"is-revision"}"><div><span>РЕЗУЛЬТАТ ПРОВЕРКИ</span><b>${saved.verdict==="pass"?"Зачтено":"Нужно доработать"}</b><strong class="practice-score">${Number(saved.totalScore)||0}<small>/ 6</small></strong></div>${saved.scores?`<div class="practice-rubric"><span>По теме <b>${Number(saved.scores.relevance)||0}/2</b></span><span>Полнота <b>${Number(saved.scores.completeness)||0}/2</b></span><span>Обоснование <b>${Number(saved.scores.reasoning)||0}/2</b></span></div>`:""}<p>${esc(saved.feedback)}</p><small>${Number(saved.attempts)||1} ${(Number(saved.attempts)||1)===1?"попытка":"попытки"} · Проверено ${esc(new Date(saved.reviewedAt||Date.now()).toLocaleString("ru-RU",{dateStyle:"medium",timeStyle:"short"}))}</small></div>`:""}
   ${saved?.answer?`<details class="lesson-practice-previous"><summary>Показать отправленный ответ</summary><p>${esc(saved.answer)}</p></details>`:""}
  </section>`;
+}
+
+function finalExamPage() {
+ const exam=activeExam;
+ if(!exam)return courseDetailPage();
+ return `<main class="screen inner-screen final-exam-screen"><button class="back-button" data-go="courseDetail">${icon("back")} К программе</button><div class="final-exam-heading"><span class="subtle-label">ИТОГОВАЯ АТТЕСТАЦИЯ · ${esc(selectedCourse.category.toUpperCase())}</span><h1>Проверь<br><em>свои знания.</em></h1><p>Ответь на все вопросы. Результат будет проверен и сохранён в учебной системе.</p></div><div class="final-exam-question-list">${exam.questions.map((q,index)=>`<fieldset class="final-exam-question"><legend><small>ВОПРОС ${index+1} ИЗ ${exam.questions.length}</small><b>${esc(q.text)}</b></legend>${q.options.map((option,choice)=>`<label><input type="radio" name="${esc(q.id)}" value="${choice}"><span>${esc(option)}</span></label>`).join("")}</fieldset>`).join("")}</div><button class="orange-button final-exam-submit" data-exam-submit ${examPending?"disabled":""}>${examPending?"Проверяем ответы…":"Завершить экзамен"} ${icon("arrow")}</button><p class="demo-disclaimer">Проходной результат — 70%. Доступно до трёх попыток. Это внутренняя аттестация MAGNUS, а не государственный экзамен.</p></main>`;
 }
 
 function lessonPage() {
@@ -1059,7 +1070,7 @@ function adminPage(){
 }
 
 function render() {
-  const pages = {home:homePage,faculties:facultiesPage,facultyDetail:facultyDetailPage,study:studyPage,courseDetail:courseDetailPage,lesson:lessonPage,assignments:assignmentsPage,assignmentDetail:assignmentDetailPage,documents:documentsPage,profile:profilePage,admin:adminPage};
+  const pages = {home:homePage,faculties:facultiesPage,facultyDetail:facultyDetailPage,study:studyPage,courseDetail:courseDetailPage,finalExam:finalExamPage,lesson:lessonPage,assignments:assignmentsPage,assignmentDetail:assignmentDetailPage,documents:documentsPage,profile:profilePage,admin:adminPage};
   document.querySelector("#app").innerHTML = `${topbar()}${(pages[currentPage] || homePage)()}${bottomNav()}<div class="toast" id="toast" role="status"></div>`;
   const screen=document.querySelector("#app > main.screen");
   if(screen){screen.classList.add("screen-enter");requestAnimationFrame(()=>screen.classList.add("screen-enter-active"));}
@@ -1076,6 +1087,33 @@ function toast(message) {
 }
 
 function bindEvents() {
+  document.querySelectorAll("[data-exam-start]").forEach(button=>button.addEventListener("click",()=>{
+    const courseId=button.dataset.examStart;
+    if(!telegramUser?.id){toast("Экзамен доступен при открытии MAGNUS через Telegram.");return;}
+    button.disabled=true;button.textContent="Подготавливаем экзамен…";
+    callCloudStudentData("startFinalExam",{courseId},(error,result)=>{
+      if(error||!result?.ok){button.disabled=false;toast(error?.message||result?.message||"Не удалось открыть экзамен.");return;}
+      if(result.passed){finalExams[courseId]={...(finalExams[courseId]||{}),passed:true};render();return;}
+      activeExam={courseId,sessionId:result.sessionId,questions:result.questions||[]};
+      currentPage="finalExam";render();window.scrollTo({top:0,behavior:"smooth"});
+    });
+  }));
+  document.querySelector("[data-exam-submit]")?.addEventListener("click",()=>{
+    if(!activeExam||examPending)return;
+    const answers={};
+    activeExam.questions.forEach(q=>{const checked=document.querySelector(`input[name="${CSS.escape(q.id)}"]:checked`);if(checked)answers[q.id]=Number(checked.value);});
+    if(Object.keys(answers).length!==activeExam.questions.length){toast("Ответь на каждый вопрос перед отправкой.");return;}
+    examPending=true;render();
+    callCloudStudentData("submitFinalExam",{courseId:activeExam.courseId,sessionId:activeExam.sessionId,answers},(error,result)=>{
+      examPending=false;
+      if(error||!result?.ok){toast(error?.message||result?.message||"Не удалось проверить экзамен.");render();return;}
+      const old=finalExams[activeExam.courseId]||{};
+      finalExams[activeExam.courseId]={...old,passed:Boolean(result.result?.passed),attempts:[...(old.attempts||[]),result.result]};
+      activeExam=null;currentPage="courseDetail";render();window.scrollTo({top:0,behavior:"smooth"});
+      toast(result.result?.passed?"Экзамен сдан. Результат сохранён.":"Пока не зачтено. Можно подготовиться и попробовать снова.");
+    });
+  });
+
   document.querySelectorAll("[data-admin-tab]").forEach(el=>el.addEventListener("click",()=>{adminTab=el.dataset.adminTab;if(adminTab==="students")loadAdminStudents();else if(adminTab==="support")loadAdminSupport();else if(adminTab==="payments")loadAdminPaymentPlans();else if(adminTab==="ai")loadAdminAiSettings();else if(adminTab==="audit")loadAdminAudit();else render();}));
   document.querySelectorAll("[data-admin-ai-save]").forEach(button=>button.addEventListener("click",()=>{
     const keyField=document.querySelector("[data-groq-key]");
