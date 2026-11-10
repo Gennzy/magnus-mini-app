@@ -88,6 +88,8 @@ let activeAssignmentFilter = "Все";
 let assignmentDrafts = loadAssignmentDrafts();
 let assignmentSubmissions = loadAssignmentSubmissions();
 let lessonNotes = loadLessonNotes();
+let tutorChats = readStudentStorage("tutorChats");
+let tutorPending = false;
 let interestedFaculties = loadInterestedFaculties();
 let lessonQuizResults = loadLessonQuizResults();
 let completedLessons = loadCompletedLessons();
@@ -235,6 +237,12 @@ function callCloudStudentData(action, payload, callback) {
   return true;
 }
 
+function callTutorApi(payload,callback){
+ const serverless=tg?.Serverless;
+ if(typeof serverless?.call!=="function")return false;
+ serverless.call("tutor",payload,(error,result)=>{if(typeof callback==="function")callback(error,result);});
+ return true;
+}
 function callPaymentApi(action,payload,callback){
  const serverless=tg?.Serverless;
  if(typeof serverless?.call!=="function")return false;
@@ -606,6 +614,13 @@ function lessonPage() {
  <div class="lesson-heading"><span class="subtle-label">${esc(c.category.toUpperCase())} · ЗАНЯТИЕ ${String(index+1).padStart(2,"0")} ИЗ ${lessons.length}</span><h1>${esc(title)}</h1><p>${esc(c.title)}</p><div class="lesson-meta-row"><span>${duration} минут</span><span>${esc(type)}</span><span>Конспект и тест</span></div></div>
  <div class="lesson-tabs" role="tablist" aria-label="Материалы урока">${[["lesson","Урок"],["materials","Конспект"],["notes","Заметки"]].map(([key,label])=>`<button type="button" role="tab" id="lesson-tab-${key}" aria-controls="lesson-panel" aria-selected="${lessonTab===key}" tabindex="${lessonTab===key?"0":"-1"}" class="${lessonTab===key?"selected":""}" data-lesson-tab="${key}">${label}</button>`).join("")}</div>
  <section class="lesson-content" id="lesson-panel" role="tabpanel" aria-labelledby="lesson-tab-${lessonTab}">${tabContent}</section>
+ <section class="lesson-tutor">
+  <div class="lesson-tutor-heading"><span class="subtle-label">ИНДИВИДУАЛЬНАЯ ПОМОЩЬ</span><h2>Разберём тему вместе</h2><p>Задай вопрос по этому уроку, попроси пример или объяснение сложного момента.</p></div>
+  <div class="lesson-tutor-messages" aria-live="polite">${(tutorChats[id]||[]).map(item=>`<article class="lesson-tutor-message ${item.role==='user'?'from-student':'from-magnus'}"><small>${item.role==='user'?'ТЫ':'MAGNUS'}</small><p>${esc(item.content)}</p></article>`).join('')||'<div class="lesson-tutor-empty">Например: «Объясни эту тему на простом примере».</div>'}
+  ${tutorPending?'<div class="lesson-tutor-thinking"><i></i><i></i><i></i><span>Подготавливаем объяснение…</span></div>':''}</div>
+  <div class="lesson-tutor-compose"><textarea data-tutor-input rows="2" maxlength="1200" placeholder="Напиши свой вопрос…"></textarea><button type="button" data-tutor-send ${tutorPending?'disabled':''}>${tutorPending?'…':'Отправить'} ${icon('arrow')}</button></div>
+  <small class="lesson-tutor-footnote">Ответы формируются автоматически по материалу текущего урока. Важные факты стоит перепроверять.</small>
+ </section>
  <section class="lesson-quiz"><div class="kicker">ПРОВЕРЬ СЕБЯ</div><h2>${esc(question)}</h2><p>Выберите один вариант ответа.</p>${options.map((option,i)=>`<button type="button" class="quiz-option ${quizChoice===String(i)?"chosen":""}" data-quiz="${i}" aria-pressed="${quizChoice===String(i)}"><span>${String.fromCharCode(65+i)}</span>${esc(option)}${quizChoice===String(i)?"<b>✓</b>":""}</button>`).join("")}${quizChoice!==""?`<div class="quiz-feedback ${quizChoice===String(answer)?"correct":"incorrect"}" role="status">${quizChoice===String(answer)?"Верно. Ты правильно понял основную мысль.":"Пока неверно. Перечитай конспект и попробуй ещё раз."}</div>`:""}${quizResult?`<div class="quiz-saved-result">Последний результат: ${quizResult.correct?"верный ответ":"ответ неверный"} · попыток: ${quizResult.attempts}</div>`:""}</section>
  <div class="lesson-footer"><button class="lesson-finish" data-action="lesson-finish" ${lessonCompleted?"disabled":""}>${lessonCompleted?"Занятие отмечено пройденным":"Отметить занятие пройденным"} ${lessonCompleted?"":icon("arrow")}</button><small>${lessonCompleted?"Отметка сохранена.":"Отметка означает, что ты ознакомился с материалом; это не подтверждение квалификации."}</small></div>
  <div class="lesson-sequence">${previous?`<button data-lesson-open="${previous[0]}">← Предыдущее занятие</button>`:"<span>Первое занятие</span>"}${next?`<button data-lesson-open="${next[0]}">Следующее занятие →</button>`:`<button data-go="courseDetail">К программе курса →</button>`}</div></main>`;
@@ -1018,6 +1033,27 @@ document.querySelectorAll("[data-admin-payment-refresh]").forEach(el=>el.addEven
     render();
   }));
   document.querySelectorAll("[data-lesson-tab]").forEach(el => el.addEventListener("click", () => { lessonTab=el.dataset.lessonTab; render(); }));
+  document.querySelectorAll("[data-tutor-send]").forEach(button=>button.addEventListener("click",()=>{
+    const field=document.querySelector("[data-tutor-input]"),question=(field?.value||"").trim();
+    if(question.length<2){toast("Напиши вопрос по уроку.");return;}
+    if(question.length>1200){toast("Вопрос слишком длинный.");return;}
+    if(!telegramUser?.id){toast("Учебная помощь доступна при открытии MAGNUS из Telegram.");return;}
+    if(tutorPending)return;
+    tutorPending=true;render();
+    const history=(tutorChats[selectedLessonId]||[]).slice(-6);
+    const called=callTutorApi({lessonId:selectedLessonId,message:question,history},(error,result)=>{
+      tutorPending=false;
+      if(error||!result?.ok){render();toast(error?.message||result?.message||"Не удалось получить объяснение.");return;}
+      tutorChats[selectedLessonId]=[...history,{role:"user",content:question},{role:"assistant",content:result.answer}].slice(-12);
+      writeStudentStorage("tutorChats",tutorChats);
+      render();
+      const box=document.querySelector(".lesson-tutor-messages");if(box)box.scrollTop=box.scrollHeight;
+    });
+    if(!called){tutorPending=false;render();toast("Открой MAGNUS через Telegram.");}
+  }));
+  document.querySelector("[data-tutor-input]")?.addEventListener("keydown",event=>{
+    if(event.key==="Enter"&&(event.ctrlKey||event.metaKey)){event.preventDefault();document.querySelector("[data-tutor-send]")?.click();}
+  });
   document.querySelectorAll("[data-quiz]").forEach(el => el.addEventListener("click", () => {
     quizChoice=el.dataset.quiz;
     const previous = lessonQuizResults[selectedLessonId] ? JSON.parse(lessonQuizResults[selectedLessonId]) : null;
