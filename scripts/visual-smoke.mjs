@@ -25,10 +25,14 @@ try {
 
   browser = await chromium.launch({ headless: true });
   const failures = [];
+  const expectedStandaloneWarnings = [];
 
   async function testViewport(name, viewport) {
     const page = await browser.newPage({ viewport, deviceScaleFactor: 1 });
-    page.on("pageerror", error => failures.push(`${name}: ${error.message}`));
+    page.on("pageerror", error => {
+      if (error.message.includes("WebAppServerlessInitDataUnavailable")) expectedStandaloneWarnings.push(`${name}: Telegram initData is unavailable outside Telegram`);
+      else failures.push(`${name}: ${error.message}`);
+    });
     await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.waitForSelector("#app .home-screen", { timeout: 15000 });
     await page.waitForTimeout(1900);
@@ -86,7 +90,7 @@ try {
   const desktop = await testViewport("desktop", { width: 1440, height: 1000 });
   const mobile = await testViewport("mobile", { width: 390, height: 844 });
 
-  console.log("VISUAL_SMOKE_RESULTS", JSON.stringify({ desktop, mobile, failures }, null, 2));
+  console.log("VISUAL_SMOKE_RESULTS", JSON.stringify({ desktop, mobile, expectedStandaloneWarnings, failures }, null, 2));
   if (failures.length) throw new Error(failures.join("\\n"));
 } finally {
   await browser?.close();
