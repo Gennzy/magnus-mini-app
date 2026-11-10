@@ -1,6 +1,6 @@
 import { db, api } from 'sdk';
 import { eq, desc } from 'sdk/db';
-import { adminUsers, studentData, botSettings, adminAuditLog, adminMessages, studentSubscriptions, subscriptionPlans, paymentOrders, supportRequests } from '../schema.js';
+import { adminUsers, studentData, botSettings, adminAuditLog, adminMessages, studentSubscriptions, subscriptionPlans, paymentOrders, supportRequests, aiSettings } from '../schema.js';
 import { DEFAULT_SUBSCRIPTION_PLANS, normalizePlan } from '../lib/subscriptionPlans.js';
 
 const APP_URL = 'https://app9020486965.tgcloud.ai/';
@@ -141,6 +141,24 @@ export default async function (input, ctx) {
   const admin = await db.select().from(adminUsers).where(eq(adminUsers.tgId, tgId)).get();
   if (!admin?.active) return { ok: false, code: 'FORBIDDEN', message: 'Нет доступа к панели MAGNUS.' };
 
+
+  if (input?.action === 'aiSettings') {
+    if (admin.role !== 'owner') return { ok: false, code: 'FORBIDDEN', message: 'Настройки ИИ доступны только владельцу.' };
+    const row = await db.select().from(aiSettings).where(eq(aiSettings.id, 'primary')).get();
+    return { ok: true, configured: Boolean(row?.apiKey), model: row?.model || 'openai/gpt-oss-20b' };
+  }
+  if (input?.action === 'saveAiSettings') {
+    if (admin.role !== 'owner') return { ok: false, code: 'FORBIDDEN', message: 'Настройки ИИ доступны только владельцу.' };
+    const apiKey = cleanText(input.apiKey, 300);
+    const model = cleanText(input.model || 'openai/gpt-oss-20b', 100);
+    if (!/^gsk_[A-Za-z0-9_-]{20,}$/.test(apiKey)) return { ok: false, code: 'INVALID_KEY', message: 'Проверь API-ключ Groq.' };
+    if (!['openai/gpt-oss-20b','openai/gpt-oss-120b','qwen/qwen3.8-27b'].includes(model)) return { ok: false, code: 'INVALID_MODEL', message: 'Модель не входит в список разрешённых.' };
+    const now = Math.floor(Date.now() / 1000);
+    await db.insert(aiSettings).values({ id:'primary', provider:'groq', apiKey, model, updatedAt:now, updatedBy:tgId })
+      .onConflictDoUpdate({ target:aiSettings.id, set:{ provider:'groq', apiKey, model, updatedAt:now, updatedBy:tgId } }).run();
+    await writeAuditSafely({ action:'ai.settings.updated', actorTgId:tgId, actorEmail:admin.email, targetType:'ai_settings', targetId:'primary', summary:'Обновлены настройки учебного ИИ', details:{ provider:'groq', model } });
+    return { ok:true, configured:true, model, message:'Подключение Groq сохранено. Ключ хранится только на сервере.' };
+  }
 
   if (input?.action === 'supportInbox') {
     const rows = await db.select().from(supportRequests)
