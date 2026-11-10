@@ -962,10 +962,32 @@ function bindEvents() {
     if(apiKey&&!/^gsk_[A-Za-z0-9_-]{20,}$/.test(apiKey)){toast("Проверь формат ключа Groq: он должен начинаться с gsk_.");return;}
     button.disabled=true;button.textContent="Сохраняем…";
     const called=callAdminApi("saveAiSettings",{apiKey,model},(error,result)=>{
-      button.disabled=false;button.textContent="Сохранить подключение";
-      if(error||!result?.ok){toast(error?.message||result?.message||"Не удалось сохранить подключение.");return;}
+      if(error||!result?.ok){
+        button.disabled=false;button.textContent="Сохранить подключение";
+        adminAiError=error?.message||result?.message||"Не удалось сохранить подключение.";
+        render();toast(adminAiError);return;
+      }
+
+      // Не считаем подключение готовым, пока отдельный запрос не прочитал запись обратно.
+      adminAiLoading=true;adminAiError="";
       adminAiConfigured=Boolean(result.configured);adminAiModel=result.model||model;
-      render();toast(result.message||"Учебная система подключена.");
+      render();
+
+      const verified=callAdminApi("aiSettings",{},(verifyError,verifyResult)=>{
+        adminAiLoading=false;
+        button.disabled=false;
+        if(verifyError||!verifyResult?.ok||!verifyResult.configured||verifyResult.model!==model){
+          adminAiError=verifyError?.message||verifyResult?.message||"Запись Groq прошла, но повторное чтение из базы не подтвердило настройки.";
+          render();toast(adminAiError);return;
+        }
+        adminAiConfigured=true;adminAiModel=verifyResult.model;adminAiError="";
+        render();toast("Ключ Groq сохранён и проверен в облачной базе.");
+      });
+      if(!verified){
+        adminAiLoading=false;button.disabled=false;
+        adminAiError="Не удалось повторно проверить настройки. Открой MAGNUS через Telegram.";
+        render();toast(adminAiError);
+      }
     });
     if(!called){button.disabled=false;button.textContent="Сохранить подключение";toast("Открой панель из Telegram.");}
   }));
