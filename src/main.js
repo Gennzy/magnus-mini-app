@@ -171,8 +171,8 @@ function topbar() {
 }
 
 function bottomNav() {
-  const items = [["home","home","Главная"],["faculties","faculty","Факультеты"],["study","study","Обучение"],["documents","docs","Документы"],["profile","profile","Профиль"]];
-  return `<nav class="bottom-nav">${items.map(([id,ic,label]) => `<button data-go="${id}" class="nav-item ${currentPage===id || (currentPage==="facultyDetail"&&id==="faculties") || (currentPage==="courseDetail"&&id==="study") || (currentPage==="lesson"&&id==="study") || (currentPage==="assignments"&&id==="study") || (currentPage==="assignmentDetail"&&id==="study")?"active":""}">${icon(ic)}<span>${label}</span></button>`).join("")}</nav>`;
+  const items = [["home","home","Главная"],["faculties","faculty","Каталог"],["study","study","Обучение"],["assignments","docs","Задания"],["profile","profile","Профиль"]];
+  return `<nav class="bottom-nav" aria-label="Основная навигация">${items.map(([id,ic,label]) => `<button data-go="${id}" class="nav-item ${currentPage===id || (currentPage==="facultyDetail"&&id==="faculties") || (currentPage==="courseDetail"&&id==="study") || (currentPage==="lesson"&&id==="study") || (currentPage==="assignmentDetail"&&id==="assignments")?"active":""}" ${currentPage===id?"aria-current=\"page\"":""}>${icon(ic)}<span>${label}</span></button>`).join("")}</nav>`;
 }
 
 function heading(kicker, title, desc="") {
@@ -995,6 +995,8 @@ function adminPage(){
 function render() {
   const pages = {home:homePage,faculties:facultiesPage,facultyDetail:facultyDetailPage,study:studyPage,courseDetail:courseDetailPage,lesson:lessonPage,assignments:assignmentsPage,assignmentDetail:assignmentDetailPage,documents:documentsPage,profile:profilePage,admin:adminPage};
   document.querySelector("#app").innerHTML = `${topbar()}${(pages[currentPage] || homePage)()}${bottomNav()}<div class="toast" id="toast" role="status"></div>`;
+  const screen=document.querySelector("#app > main.screen");
+  if(screen){screen.classList.add("screen-enter");requestAnimationFrame(()=>screen.classList.add("screen-enter-active"));}
   bindEvents();
 }
 
