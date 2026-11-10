@@ -69,8 +69,10 @@ export default async function(input,ctx){
   'Ты — учебный наставник MAGNUS. Отвечай по-русски, спокойно, конкретно и доброжелательно.',
   'Проверь черновик ученика по практическому заданию. Это развивающая обратная связь, а не экзаменационный вердикт.',
   'Сопоставляй ответ с критериями, но учитывай, что допустимы разные корректные решения. Не придумывай факты и не требуй единственной формулировки.',
-  'Сначала отметь один конкретный сильный момент. Затем назови, что стоит уточнить или добавить, ссылаясь на материал урока. В конце предложи один понятный следующий шаг.',
-  'Пиши 3–5 коротких предложений. Не выставляй баллы, не делай вид, что ответ проверил человек, и не переписывай всё за ученика.',
+  'Оцени ответ по трём измерениям: relevance (насколько ответ решает именно поставленную задачу), completeness (насколько раскрыты обязательные элементы критериев), reasoning (качество объяснения, примеров и обоснования). Каждое измерение оцени целым числом от 0 до 2: 0 — отсутствует или неверно, 1 — частично, 2 — выполнено уверенно.',
+  'Итоговый балл — сумма трёх измерений от 0 до 6. Вердикт pass только при сумме не менее 4 и отсутствии нулей; иначе revise. Это формирующая проверка ИИ, не официальная аттестация. Не завышай баллы за объём текста.',
+  'В feedback дай 3–5 коротких предложений: один конкретный сильный момент, что уточнить со ссылкой на критерии и один следующий шаг. Не переписывай ответ за ученика.',
+  'Верни только валидный JSON без markdown: {"scores":{"relevance":0,"completeness":0,"reasoning":0},"totalScore":0,"verdict":"revise","feedback":"..."}. Значения scores — целые числа 0–2, totalScore — их сумма.',
   'Практическое задание: '+practice.task,
   'Критерии разбора: '+practice.criteria,
   context
@@ -89,7 +91,19 @@ export default async function(input,ctx){
   response=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+settings.apiKey,'Content-Type':'application/json'},body:JSON.stringify({model:settings.model||'openai/gpt-oss-20b',messages,temperature:0.2,max_completion_tokens:420})});
  }catch{return{ok:false,code:'NETWORK_ERROR',message:'Учебная система временно недоступна. Попробуй ещё раз.'};}
  if(!response.ok){return{ok:false,code:response.status===429?'RATE_LIMIT':response.status===401?'PROVIDER_AUTH':'PROVIDER_ERROR',message:response.status===429?'Сейчас много обращений. Попробуй немного позже.':response.status===401?'Не удалось авторизовать учебную систему. Проверь настройки подключения.':'Не удалось получить ответ. Попробуй ещё раз.'};}
- const result=await response.json(),answer=clean(result?.choices?.[0]?.message?.content,4000);
- if(!answer)return{ok:false,code:'EMPTY_RESPONSE',message:'Не удалось сформировать ответ. Попробуй переформулировать вопрос.'};
- return{ok:true,answer,remaining:24-used};
+ const result=await response.json(),rawAnswer=clean(result?.choices?.[0]?.message?.content,4000);
+ if(!rawAnswer)return{ok:false,code:'EMPTY_RESPONSE',message:'Не удалось сформировать ответ. Попробуй переформулировать вопрос.'};
+ if(mode==='practice_review'){
+  let assessment;
+  try{assessment=JSON.parse(rawAnswer);}catch{return{ok:false,code:'INVALID_ASSESSMENT',message:'Не удалось оформить оценку. Попробуй отправить ответ ещё раз.'};}
+  const scores=assessment?.scores||{};
+  const values=['relevance','completeness','reasoning'].map(key=>Number(scores[key]));
+  if(values.some(value=>!Number.isInteger(value)||value<0||value>2))return{ok:false,code:'INVALID_ASSESSMENT',message:'Проверка вернула некорректную оценку. Попробуй ещё раз.'};
+  const totalScore=values.reduce((sum,value)=>sum+value,0);
+  const verdict=totalScore>=4&&values.every(value=>value>0)?'pass':'revise';
+  const feedback=clean(assessment.feedback,3000);
+  if(feedback.length<20)return{ok:false,code:'INVALID_ASSESSMENT',message:'Не удалось сформировать обратную связь. Попробуй ещё раз.'};
+  return{ok:true,answer:feedback,assessment:{scores:{relevance:values[0],completeness:values[1],reasoning:values[2]},totalScore,verdict},remaining:24-used};
+ }
+ return{ok:true,answer:rawAnswer,remaining:24-used};
 }
