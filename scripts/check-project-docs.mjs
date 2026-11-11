@@ -32,7 +32,7 @@ requireText(state, /^## 5\. Текущая активная задача/m, "PRO
 requireText(state, /magnus-source-upload/, "PROJECT_STATE does not identify the working branch");
 requireText(state, /docs\/MASTER_ROADMAP\.md/, "PROJECT_STATE does not point to the master roadmap");
 
-requireText(template, /^# Шаблон Work Package \\(WP\\)/m, "WP_TEMPLATE has no title");
+if (!template.startsWith("# Шаблон Work Package (WP)")) errors.push("WP_TEMPLATE has no title");
 for (const section of [
   "Идентификация",
   "Цель и ожидаемый результат",
@@ -48,7 +48,7 @@ for (const section of [
 ]) {
   if (!template.includes(section)) errors.push(`WP_TEMPLATE is missing section: ${section}`);
 }
-requireText(roadmap, /docs\\/WP_TEMPLATE\\.md/, "MASTER_ROADMAP does not require the WP template");
+if (!roadmap.includes("docs/WP_TEMPLATE.md")) errors.push("MASTER_ROADMAP does not require the WP template");
 
 const activeMatch = state.match(/^\*\*Текущий WP: ([A-Z]+-\d+) —/m);
 if (!activeMatch) {
