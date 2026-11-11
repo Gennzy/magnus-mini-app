@@ -8055,3 +8055,71 @@ textarea { line-height: 1.6; }
  .passport-refresh-row{align-items:flex-start}
 }
 @media(prefers-reduced-motion:reduce){.passport-loader{animation:none}}
+
+
+/* UX-001 · Telegram shell and home composition correction */
+.telegram-webapp .topbar{display:none}
+.telegram-webapp .home-screen{padding-top:20px}
+.telegram-webapp .greeting-row{align-items:center;gap:14px;min-width:0}
+.telegram-webapp .greeting-row>div:first-child{min-width:0;flex:1}
+.telegram-webapp .greeting-row h1{max-width:100%;overflow-wrap:anywhere;word-break:normal}
+.telegram-webapp .greeting-row p{max-width:42ch;line-height:1.5}
+.telegram-webapp .home-avatar{width:46px;height:46px;flex:none;border-radius:15px;overflow:hidden}
+.telegram-webapp .home-avatar img{width:100%;height:100%;display:block;object-fit:cover}
+.dashboard-continue{
+  min-width:0;
+  min-height:300px;
+  padding:30px 32px 32px;
+  border:1px solid rgba(255,255,255,.08);
+  background:
+    radial-gradient(ellipse at 78% 45%,rgba(190,130,82,.17),transparent 38%),
+    linear-gradient(118deg,#202724 0%,#292d29 54%,#34332d 100%);
+  box-shadow:0 16px 38px rgba(28,30,26,.12);
+}
+.dashboard-continue-copy{width:58%;max-width:520px;min-width:0}
+.dashboard-continue .subtle-label{color:#d9a77d;font-size:9px;letter-spacing:1.55px}
+.dashboard-continue-course{display:block;margin-top:15px;color:#d5c4b5;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.dashboard-continue h2{max-width:440px;margin:9px 0 8px;font-size:clamp(26px,3.2vw,36px);line-height:1.12;letter-spacing:-1.05px;overflow-wrap:anywhere}
+.dashboard-continue p{max-width:390px;color:#c3c5bf;font-size:12px;line-height:1.55}
+.dashboard-continue-progress{display:flex;align-items:center;gap:12px;margin:18px 0 17px;min-width:0}
+.dashboard-continue-progress>span{height:6px;min-width:70px;flex:1;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.16)}
+.dashboard-continue-progress>span>i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#c58b5c,#e0b58a)}
+.dashboard-continue-progress>small{flex:none;color:#c9c9c1;font-size:10px;font-variant-numeric:tabular-nums}
+.dashboard-continue .orange-button{min-height:44px;padding:0 18px;background:#bd8050;box-shadow:0 6px 16px rgba(0,0,0,.18);font-size:11px}
+.dashboard-owl-stage{right:2%;width:39%;height:270px}
+.dashboard-owl{
+  filter:sepia(.34) saturate(.72) hue-rotate(344deg) brightness(.96) contrast(1.04) drop-shadow(0 18px 24px rgba(0,0,0,.34));
+}
+.dashboard-owl-orbit{border-color:rgba(216,171,132,.22)}
+.dashboard-owl-orbit-two{border-color:rgba(255,255,255,.1)}
+.dashboard-owl-star{color:#d9ad82;text-shadow:0 0 16px rgba(217,173,130,.35)}
+.dashboard-owl-caption{color:#cbb39d;font-size:8px;letter-spacing:1.2px}
+@media(max-width:759px){
+  .telegram-webapp .home-screen{padding-top:18px}
+  .telegram-webapp .greeting-row{margin:0 0 5px;min-height:58px}
+  .telegram-webapp .greeting-row h1{font-size:clamp(23px,6vw,29px);line-height:1.12;letter-spacing:-.8px}
+  .telegram-webapp .greeting-row p{font-size:12px}
+  .dashboard-continue{min-height:0;padding:21px 18px 20px;border-radius:19px}
+  .dashboard-continue-copy{width:100%;max-width:none;padding-bottom:112px}
+  .dashboard-continue-course{max-width:100%;font-size:11px}
+  .dashboard-continue h2{max-width:100%;font-size:clamp(23px,6vw,28px);line-height:1.12}
+  .dashboard-continue p{max-width:100%;font-size:11px}
+  .dashboard-continue-progress{align-items:flex-start;flex-direction:column;gap:7px;margin:14px 0}
+  .dashboard-continue-progress>span{width:100%;flex:none}
+  .dashboard-continue-progress>small{font-size:9px}
+  .dashboard-continue .orange-button{position:relative;z-index:4;min-height:44px;font-size:10px;padding:0 14px}
+  .dashboard-owl-stage{right:0;bottom:4px;top:auto;transform:none;width:116px;height:126px;opacity:.96}
+  .dashboard-owl-caption{display:none}
+  .dashboard-owl-orbit{width:82%;height:35%}
+  .dashboard-owl-orbit-two{width:96%;height:44%}
+}
+@media(max-width:359px){
+  .telegram-webapp .home-screen{padding-left:13px;padding-right:13px}
+  .dashboard-continue{padding-left:15px;padding-right:15px}
+  .dashboard-continue-copy{padding-bottom:105px}
+  .dashboard-owl-stage{width:104px;height:114px}
+  .dashboard-continue .orange-button{max-width:100%;white-space:normal}
+}
+@media(prefers-reduced-motion:reduce){
+  .dashboard-owl{animation:none}
+}

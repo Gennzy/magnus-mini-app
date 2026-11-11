@@ -8,6 +8,8 @@ tg?.setHeaderColor?.("#f7f7f5");
 tg?.setBackgroundColor?.("#f7f7f5");
 
 const telegramUser = tg?.initDataUnsafe?.user;
+const telegramWebAppMode = Boolean(tg?.initData || telegramUser);
+document.documentElement.classList.toggle("telegram-webapp", telegramWebAppMode);
 const firstName = telegramUser?.first_name || "друг";
 const username = telegramUser?.username ? `@${telegramUser.username}` : "Студент MAGNUS";
 const avatarLetter = telegramUser?.first_name?.trim().charAt(0).toUpperCase() || "M";
@@ -603,7 +605,7 @@ function homePage() {
   const notesTotal = Object.values(lessonNotes).filter(value => String(value || "").trim()).length;
   const draftsTotal = Object.keys(assignmentDrafts).filter(id => hasAssignmentDraft(id) && !hasAssignmentSubmission(id)).length;
   return `<main class="screen home-screen">
-    <section class="greeting-row"><div><div class="subtle-label">ЛИЧНЫЙ КАБИНЕТ · MAGNUS</div><h1>Привет, ${esc(firstName)}!</h1><p>Продолжим с того места, где остановились?</p></div><div class="home-avatar">${telegramPhotoUrl ? `<img src="${esc(telegramPhotoUrl)}" alt="">` : icon("profile")}</div></section>
+    <section class="greeting-row"><div><div class="subtle-label">ТВОЁ ПРОСТРАНСТВО ДЛЯ РОСТА</div><h1>Привет, ${esc(firstName)}!</h1><p>Продолжим с того места, где остановились?</p></div><div class="home-avatar">${telegramPhotoUrl ? `<img src="${esc(telegramPhotoUrl)}" alt="">` : icon("profile")}</div></section>
     ${dashboardContinueLearning()}
     <section class="dashboard-progress-strip">
       <article><b>${completedTotal}</b><span>Занятий пройдено</span></article>
