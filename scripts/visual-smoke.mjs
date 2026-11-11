@@ -50,6 +50,43 @@ try {
     await assertNoHorizontalOverflow("home");
 
     // The passport must degrade cleanly outside Telegram without inventing student records.
+        // Check every major student-facing screen instead of only the home and lesson flow.
+    await page.locator('.bottom-nav [data-go="faculties"]').click();
+    await page.waitForSelector(".faculty-grid", { timeout: 10000 });
+    await assertNoHorizontalOverflow("catalog");
+    await page.screenshot({ path: artifacts + "/" + name + "-catalog.png", fullPage: true });
+
+    await page.locator('.faculty-card[data-faculty="it"]').click();
+    await page.waitForSelector(".detail-screen", { timeout: 10000 });
+    await assertNoHorizontalOverflow("faculty-detail");
+
+    await page.locator('.bottom-nav [data-go="assignments"]').click();
+    await page.waitForSelector(".assignments-screen", { timeout: 10000 });
+    await assertNoHorizontalOverflow("assignments");
+    await page.locator("[data-assignment-open]").first().click();
+    await page.waitForSelector(".assignment-detail-screen", { timeout: 10000 });
+    await assertNoHorizontalOverflow("assignment-detail");
+    await page.screenshot({ path: artifacts + "/" + name + "-assignment-detail.png", fullPage: true });
+
+    await page.locator('.bottom-nav [data-go="profile"]').click();
+    await page.waitForSelector(".profile-screen", { timeout: 10000 });
+    await assertNoHorizontalOverflow("profile");
+    await page.locator('.profile-menu [data-go="documents"]').click();
+    await page.waitForSelector(".documents-screen", { timeout: 10000 });
+    await assertNoHorizontalOverflow("documents");
+    await page.screenshot({ path: artifacts + "/" + name + "-documents.png", fullPage: true });
+
+    const desktopNavCheck = await page.evaluate(() => {
+      const nav = document.querySelector(".bottom-nav");
+      const screen = document.querySelector("main.screen");
+      const navRect = nav.getBoundingClientRect();
+      const screenRect = screen.getBoundingClientRect();
+      return { navBottom: navRect.bottom, screenTop: screenRect.top, position: getComputedStyle(nav).position };
+    });
+    if (viewport.width >= 760 && (desktopNavCheck.position !== "sticky" || desktopNavCheck.navBottom > desktopNavCheck.screenTop + 1)) {
+      failures.push(name + "/navigation: desktop nav overlaps page content " + JSON.stringify(desktopNavCheck));
+    }
+
     await page.locator('.avatar-button[data-go="profile"]').click();
     await page.waitForSelector(".profile-screen", { timeout: 10000 });
     await page.locator('[data-go="academicPassport"]').click();
@@ -143,7 +180,20 @@ try {
   const desktop = await testViewport("desktop", { width: 1440, height: 1000 });
   const mobile = await testViewport("mobile", { width: 390, height: 844 });
 
-  console.log("VISUAL_SMOKE_RESULTS", JSON.stringify({ desktop, mobile, expectedStandaloneWarnings, failures }, null, 2));
+  const breakpointPage = await browser.newPage({ viewport: { width: 320, height: 844 }, deviceScaleFactor: 1 });
+  const breakpointResults = [];
+  for (const width of [320, 360, 430, 768, 1024]) {
+    await breakpointPage.setViewportSize({ width, height: 844 });
+    await breakpointPage.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await breakpointPage.waitForSelector("#app .home-screen", { timeout: 15000 });
+    const dimensions = await breakpointPage.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth }));
+    if (dimensions.document > dimensions.viewport + 1) failures.push("breakpoint-" + width + "/home: horizontal overflow " + dimensions.document + "px at viewport " + dimensions.viewport + "px");
+    breakpointResults.push({ width, ...dimensions });
+    if (width === 320) await breakpointPage.screenshot({ path: artifacts + "/breakpoint-320-home.png", fullPage: true });
+  }
+  await breakpointPage.close();
+
+  console.log("VISUAL_SMOKE_RESULTS", JSON.stringify({ desktop, mobile, breakpointResults, expectedStandaloneWarnings, failures }, null, 2));
   if (failures.length) throw new Error(failures.join("\\n"));
 } finally {
   await browser?.close();

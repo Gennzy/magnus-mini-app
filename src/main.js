@@ -1259,7 +1259,7 @@ function adminPage(){
 
 function render() {
   const pages = {home:homePage,faculties:facultiesPage,facultyDetail:facultyDetailPage,study:studyPage,courseDetail:courseDetailPage,finalExam:finalExamPage,lesson:lessonPage,assignments:assignmentsPage,assignmentDetail:assignmentDetailPage,documents:documentsPage,profile:profilePage,academicPassport:academicPassportPage,admin:adminPage};
-  document.querySelector("#app").innerHTML = `${topbar()}${(pages[currentPage] || homePage)()}${bottomNav()}<div class="toast" id="toast" role="status"></div>`;
+  document.querySelector("#app").innerHTML = `${topbar()}${bottomNav()}${(pages[currentPage] || homePage)()}<div class="toast" id="toast" role="status"></div>`;
   const screen=document.querySelector("#app > main.screen");
   if(screen){screen.classList.add("screen-enter");requestAnimationFrame(()=>screen.classList.add("screen-enter-active"));}
   bindEvents();

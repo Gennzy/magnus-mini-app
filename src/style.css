@@ -8088,7 +8088,7 @@ textarea { line-height: 1.6; }
 .dashboard-continue .orange-button{min-height:44px;padding:0 18px;background:#bd8050;box-shadow:0 6px 16px rgba(0,0,0,.18);font-size:11px}
 .dashboard-owl-stage{right:2%;width:39%;height:270px}
 .dashboard-owl{
-  filter:sepia(.78) saturate(.82) hue-rotate(350deg) brightness(.96) contrast(1.06) drop-shadow(0 18px 24px rgba(0,0,0,.34));
+  filter:grayscale(.72) sepia(.72) saturate(.82) hue-rotate(350deg) brightness(.96) contrast(1.06) drop-shadow(0 18px 24px rgba(0,0,0,.34));
 }
 .dashboard-owl-orbit{border-color:rgba(216,171,132,.22)}
 .dashboard-owl-orbit-two{border-color:rgba(255,255,255,.1)}
@@ -8100,7 +8100,7 @@ textarea { line-height: 1.6; }
   .telegram-webapp .greeting-row h1{font-size:clamp(23px,6vw,29px);line-height:1.12;letter-spacing:-.8px}
   .telegram-webapp .greeting-row p{font-size:12px}
   .dashboard-continue{min-height:0;padding:21px 18px 20px;border-radius:19px}
-  .dashboard-continue-copy{width:100%;max-width:none;padding-bottom:112px}
+  .dashboard-continue-copy{width:100%;max-width:none;padding-bottom:134px}
   .dashboard-continue-course{max-width:100%;font-size:11px}
   .dashboard-continue h2{max-width:100%;font-size:clamp(23px,6vw,28px);line-height:1.12}
   .dashboard-continue p{max-width:100%;font-size:11px}
@@ -8108,7 +8108,7 @@ textarea { line-height: 1.6; }
   .dashboard-continue-progress>span{width:100%;flex:none}
   .dashboard-continue-progress>small{font-size:9px}
   .dashboard-continue .orange-button{position:relative;z-index:4;min-height:44px;font-size:10px;padding:0 14px}
-  .dashboard-owl-stage{right:0;bottom:4px;top:auto;transform:none;width:116px;height:126px;opacity:.96}
+  .dashboard-owl-stage{right:0;bottom:4px;top:auto;transform:none;width:144px;height:150px;opacity:.98}
   .dashboard-owl-caption{display:none}
   .dashboard-owl-orbit{width:82%;height:35%}
   .dashboard-owl-orbit-two{width:96%;height:44%}
@@ -8116,10 +8116,17 @@ textarea { line-height: 1.6; }
 @media(max-width:359px){
   .telegram-webapp .home-screen{padding-left:13px;padding-right:13px}
   .dashboard-continue{padding-left:15px;padding-right:15px}
-  .dashboard-continue-copy{padding-bottom:105px}
-  .dashboard-owl-stage{width:104px;height:114px}
+  .dashboard-continue-copy{padding-bottom:120px}
+  .dashboard-owl-stage{width:132px;height:140px}
   .dashboard-continue .orange-button{max-width:100%;white-space:normal}
 }
 @media(prefers-reduced-motion:reduce){
   .dashboard-owl{animation:none}
+}
+
+
+/* UX-001 · Desktop navigation stays in document flow */
+@media(min-width:760px){
+  .bottom-nav{position:sticky;top:70px;bottom:auto;left:auto;right:auto;width:min(820px,calc(100% - 48px));max-width:820px;margin:12px auto 24px;transform:none;z-index:18}
+  .telegram-webapp .bottom-nav{top:8px}
 }
