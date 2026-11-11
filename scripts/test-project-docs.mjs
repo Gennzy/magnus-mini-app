@@ -52,7 +52,7 @@ const cases = [
   }, false],
   ["completed active WP fails consistency check", dir => {
     const path = join(dir, "docs/MASTER_ROADMAP.md");
-    writeFileSync(path, readFileSync(path, "utf8").replace("- [~] PROD-001", "- [x] PROD-001"));
+    writeFileSync(path, readFileSync(path, "utf8").replace("- [ ] PROD-002", "- [x] PROD-002"));
   }, false],
 ];
 
