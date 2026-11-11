@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 const root = resolve(process.argv[2] || process.cwd());
 const filePath = path => resolve(root, path);
 
-const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md"];
+const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md"];
 const errors = [];
 
 for (const file of requiredFiles) {
@@ -21,6 +21,8 @@ const state = readFileSync(filePath(requiredFiles[1]), "utf8");
 const packageJson = JSON.parse(readFileSync(filePath("package.json"), "utf8"));
 const template = readFileSync(filePath("docs/WP_TEMPLATE.md"), "utf8");
 const workflow = readFileSync(filePath(".github/workflows/visual-check.yml"), "utf8");
+const adrIndex = readFileSync(filePath("docs/adr/README.md"), "utf8");
+const adrTemplate = readFileSync(filePath("docs/adr/ADR-TEMPLATE.md"), "utf8");
 
 const requireText = (text, pattern, label) => {
   if (!pattern.test(text)) errors.push(label);
@@ -53,6 +55,15 @@ for (const section of [
   if (!template.includes(section)) errors.push(`WP_TEMPLATE is missing section: ${section}`);
 }
 if (!roadmap.includes("docs/WP_TEMPLATE.md")) errors.push("MASTER_ROADMAP does not require the WP template");
+
+if (!adrIndex.startsWith("# Архитектурные решения MAGNUS (ADR)")) errors.push("ADR index has no title");
+if (!adrIndex.includes("ADR-TEMPLATE.md")) errors.push("ADR index does not link to the ADR template");
+for (const id of ["ADR-0001", "ADR-0002", "ADR-0003", "ADR-0004", "ADR-0005"]) {
+  if (!adrIndex.includes(id)) errors.push(`ADR index is missing ${id}`);
+}
+for (const section of ["Контекст", "Решение", "Рассмотренные альтернативы", "Последствия", "Подтверждение"]) {
+  if (!adrTemplate.includes(section)) errors.push(`ADR template is missing section: ${section}`);
+}
 
 const activeMatch = state.match(/^\*\*Текущий WP: ([A-Z]+-\d+) —/m);
 if (!activeMatch) {
