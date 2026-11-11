@@ -50,6 +50,15 @@ const cases = [
     const path = join(dir, "docs/WP_TEMPLATE.md");
     writeFileSync(path, readFileSync(path, "utf8").replace("## 7. План тестирования", "## 7. Тесты"));
   }, false],
+  ["active WP cross-reference is not mistaken for a roadmap item", dir => {
+    const path = join(dir, "docs/MASTER_ROADMAP.md");
+    const roadmap = readFileSync(path, "utf8");
+    const active = readFileSync(join(dir, "docs/PROJECT_STATE.md"), "utf8").match(/^\*\*Текущий WP: ([A-Z]+-\d+) —/m);
+    assert.ok(active, "fixture must declare one active WP");
+    const exactItem = new RegExp("^- \\[[ x~!]\] " + active[1] + "(?=\\s|—).*\\n?", "m");
+    assert.match(roadmap, exactItem, "roadmap must contain the active WP item");
+    writeFileSync(path, roadmap.replace(exactItem, ""));
+  }, false],
   ["completed active WP fails consistency check", dir => {
     const statePath = join(dir, "docs/PROJECT_STATE.md");
     const roadmapPath = join(dir, "docs/MASTER_ROADMAP.md");

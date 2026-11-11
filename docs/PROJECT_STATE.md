@@ -14,7 +14,7 @@
 
 ## 2. Текущий HEAD и публикация
 
-- PROD-002 закрыта финальным полным visual CI: [run 43001055233](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001055233), SHA `552ba7c4af2a7b64d2aab3ab6b0cf3bf6c87c3c3`. PROD-003 проверена полным visual CI [run 43001680516](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001680516), SHA `dd160784f4f163c92c873eb790befaec625c0bb6`; все проверки, включая desktop/mobile smoke, завершились успешно.
+- PROD-002 закрыта финальным полным visual CI: [run 43001055233](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001055233), SHA `552ba7c4af2a7b64d2aab3ab6b0cf3bf6c87c3c3`. PROD-003: основной CI [run 43001680516](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001680516), SHA `dd160784f4f163c92c873eb790befaec625c0bb6`, прошёл; закрывающий CI [run 43001964159](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001964159) выявил false-positive в checker: он сопоставлял ID через `includes()` и считал упоминание PROD-004 в описании PROD-003 пунктом PROD-004. Исправление и регрессионный тест включены в PROD-003.
 - Этот CI включал документационный checker и негативные тесты, tutor coverage, payment invariants, backend syntax, production build и desktop/mobile Playwright smoke.
 - **Последний ранее подтверждённый runtime commit:** `c23dfa43b81047b58ae1f2168881bb2eb93c5afa`; в нём административный gradebook переведён на единый `ACADEMIC_CATALOG`.
 - **Последний подтверждённый Telegram deploy:** [run 42970888891](https://github.com/Gennzy/magnus-mini-app/actions/runs/42970888891), app SHA `90798104fb29df89ff05d1064a26ef07e3977fa7`.
@@ -60,23 +60,22 @@
 
 - **GOV-001…GOV-007 — DONE:** карта разработки, состояние проекта, правило одной активной задачи, документационный CI, шаблон WP, ADR и реестр известных дефектов.
 - **STU-003 — DONE:** академический паспорт, серверная авторизация по Telegram initData и проверенное пользователем гостевое состояние.
-- **PROD-003 — DONE:** жизненный цикл абитуриента и студента описан в `docs/STUDENT_LIFECYCLE.md`; разделены профиль, интерес, зачисление, обучение по программе, академический статус, завершение и подписка. Текущие расхождения кода переданы в PROD-004.
+- **PROD-003 — In progress:** модель жизненного цикла описана в `docs/STUDENT_LIFECYCLE.md`; закрытие WP ожидает исправления checker false-positive и повторного полного CI.
 - **PROD-001 — DONE:** позиционирование и аудитории зафиксированы в `docs/PRODUCT_POSITIONING.md`; финальный CI run [42984319752](https://github.com/Gennzy/magnus-mini-app/actions/runs/42984319752) прошёл.
 
 Подробная последовательность и оставшиеся задачи — в `docs/MASTER_ROADMAP.md`.
 
 ## 5. Текущая активная задача
 
-**Текущий WP: PROD-004 — определить академические статусы и допустимые переходы.**
+**Текущий WP: PROD-003 — определить жизненный цикл абитуриента и студента.**
 
-- **Статус:** [ ] Planned; не начат.
-- **Последняя завершённая задача:** PROD-003 — [x] DONE.
-- **Решение PROD-003:** `docs/STUDENT_LIFECYCLE.md`.
-- **WP PROD-003:** `docs/work-packages/PROD-003.md`.
-- **Проверка PROD-003:** полный visual CI [run 43001680516](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001680516), SHA `dd160784f4f163c92c873eb790befaec625c0bb6` — SUCCESS.
-- **Выявленные вопросы для PROD-004:** синхронизация статуса после первого зачисления; разделение person-level статуса и program-level результата; таблица допустимых переходов, ролей и оснований; ограничения текущей админ-команды изменения статуса.
-- **Границы PROD-003:** изменялись только документы. UI, runtime, API, схема БД, student records и Telegram deploy не затрагивались.
-- **Следующая задача:** сначала оформить PROD-004 по `docs/WP_TEMPLATE.md`, исследовать текущие статусы и только затем принимать решение о переходах. Не начинать PROD-005 или реализацию интерфейса до закрытия PROD-004.
+- **Статус:** [~] In progress.
+- **Модель:** `docs/STUDENT_LIFECYCLE.md` описывает профиль, зачисление, обучение по отдельным программам, завершение, академический статус и подписочный доступ.
+- **WP:** `docs/work-packages/PROD-003.md`.
+- **Предыдущая проверка модели:** full CI [run 43001680516](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001680516), SHA `dd160784f4f163c92c873eb790befaec625c0bb6` — SUCCESS.
+- **Блокер закрытия:** контрольный run [43001964159](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001964159) выявил false-positive в scripts/check-project-docs.mjs: поиск активного WP по подстроке считал упоминание PROD-004 внутри описания PROD-003 совпадением с пунктом roadmap. Исправление точного сопоставления ID и регрессионный тест входят в текущий WP.
+- **Границы:** UI/runtime/API/БД и Telegram deploy не меняются.
+- **Следующая задача после закрытия:** PROD-004 — определить академические статусы и допустимые переходы. PROD-004 остаётся Planned и не начата.
 
 ## 6. Как продолжать в новом чате
 

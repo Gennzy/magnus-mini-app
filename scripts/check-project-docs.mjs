@@ -80,7 +80,7 @@ if (!activeMatch) {
   errors.push("PROJECT_STATE must declare exactly one active WP using '**Текущий WP: ID — ...**'");
 } else {
   const activeId = activeMatch[1];
-  const roadmapLine = roadmap.split("\n").find(line => line.includes(activeId) && /^- \[[ x~!]\]/.test(line));
+  const roadmapLine = roadmap.split("\n").find(line => line.match(/^- \[[ x~!]\]\s+([A-Z]+-\d+)(?=\s|—)/)?.[1] === activeId);
   if (!roadmapLine) errors.push(`Active WP ${activeId} is missing from MASTER_ROADMAP`);
   else if (!roadmapLine.startsWith("- [ ]") && !roadmapLine.startsWith("- [~]")) {
     errors.push(`Active WP ${activeId} is marked complete/blocked in MASTER_ROADMAP: ${roadmapLine}`);
