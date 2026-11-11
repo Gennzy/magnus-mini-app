@@ -701,9 +701,14 @@ function studyPage() {
         <h3>${esc(program?.title||course.title)}</h3>
         <p>${done} из ${lessons.length} занятий завершено</p>
         <div class="enrolled-progress"><span style="width:${progress}%"></span></div>
-        ${terms.map(term=>`<div class="plan-term"><div class="plan-term-heading"><span>БЛОК ${String(term.order).padStart(2,"0")}</span><b>${esc(term.title)}</b></div>${term.subjects.map(subject=>{
+        ${terms.map(term=>`<div class="plan-term"><div class="plan-term-heading"><span>МОДУЛЬ ${String(term.order).padStart(2,"0")}</span><b>${esc(term.title)}</b></div>${term.subjects.map(subject=>{
           const subjectDone=subject.lessonIds.filter(id=>Boolean(completedLessons[id])).length;
-          return `<div class="plan-subject"><div><strong>${esc(subject.title)}</strong><small>${subjectDone} из ${subject.lessonIds.length} занятий</small></div><span>${subjectDone===subject.lessonIds.length?"Завершено":subjectDone?"В процессе":"Впереди"}</span></div>`;
+          const subjectLessons=subject.lessonIds.map(id=>lessons.find(item=>item[0]===id)).filter(Boolean);
+          return `<div class="plan-subject"><div class="plan-subject-heading"><div><strong>${esc(subject.title)}</strong><small>${subjectDone} из ${subject.lessonIds.length} занятий завершено</small></div><span class="plan-subject-state">${subjectDone===subject.lessonIds.length?"Завершено":subjectDone?"В процессе":"Впереди"}</span></div><div class="plan-lesson-list">${subjectLessons.map(lesson=>{
+            const lessonIndex=lessons.findIndex(item=>item[0]===lesson[0]);
+            const done=Boolean(completedLessons[lesson[0]]),unlocked=lessonIsUnlocked(lessons,lessonIndex);
+            return `<button class="plan-lesson-row ${done?"is-done":unlocked?"is-open":"is-locked"}" data-lesson-open="${esc(lesson[0])}" ${unlocked?"":"disabled"}><span class="plan-lesson-status">${done?"✓":String(lessonIndex+1).padStart(2,"0")}</span><span class="plan-lesson-title">${esc(lesson[1])}</span><span class="plan-lesson-action">${done?"Пройдено":unlocked?"Открыть":"Закрыто"}</span></button>`;
+          }).join("")}</div></div>`;
         }).join("")}</div>`).join("")}
         <button data-course="${course.id}">Открыть занятия ${icon("arrow")}</button>
       </article>`;
