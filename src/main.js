@@ -183,7 +183,7 @@ function topbar() {
 
 function bottomNav() {
   const items = [["home","home","Главная"],["faculties","faculty","Каталог"],["study","study","Обучение"],["assignments","docs","Задания"],["profile","profile","Профиль"]];
-  return `<nav class="bottom-nav" aria-label="Основная навигация">${items.map(([id,ic,label]) => `<button data-go="${id}" class="nav-item ${currentPage===id || (currentPage==="facultyDetail"&&id==="faculties") || (currentPage==="courseDetail"&&id==="study") || (currentPage==="lesson"&&id==="study") || (currentPage==="assignmentDetail"&&id==="assignments")?"active":""}" ${currentPage===id?"aria-current=\"page\"":""}>${icon(ic)}<span>${label}</span></button>`).join("")}</nav>`;
+  return `<nav class="bottom-nav" aria-label="Основная навигация">${items.map(([id,ic,label]) => `<button data-go="${id}" class="nav-item ${currentPage===id || (currentPage==="academicPassport"&&id==="profile") || (currentPage==="facultyDetail"&&id==="faculties") || (currentPage==="courseDetail"&&id==="study") || (currentPage==="lesson"&&id==="study") || (currentPage==="assignmentDetail"&&id==="assignments")?"active":""}" ${currentPage===id?"aria-current=\"page\"":""}>${icon(ic)}<span>${label}</span></button>`).join("")}</nav>`;
 }
 
 function heading(kicker, title, desc="") {
