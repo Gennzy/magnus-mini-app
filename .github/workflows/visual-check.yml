@@ -16,6 +16,7 @@ on:
       - "scripts/visual-smoke.mjs"
       - "scripts/check-tutor-curriculum.mjs"
       - ".github/workflows/visual-check.yml"
+      - ".github/workflows/deploy-telegram.yml"
   workflow_dispatch:
 
 permissions:
