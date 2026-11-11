@@ -39,6 +39,8 @@ jobs:
 
       - name: Check tutor coverage for every course lesson
         run: npm run check:tutor
+      - name: Check payment and subscription safety invariants
+        run: npm run check:payments
 
       - name: Build production bundle
         run: npm run build
