@@ -27,6 +27,25 @@ function cleanMap(value) {
 }
 
 export default async function (input, ctx) {
+  if (input?.action === 'verifyCertificate') {
+    const certificateId = String(input.certificateId || '').trim().toUpperCase();
+    if (!/^MAG-[0-9]{4}-[A-Z0-9]{10,20}$/.test(certificateId)) return { ok: true, valid: false };
+    const rows = await db.select().from(studentData).limit(5000).all();
+    for (const row of rows) {
+      const certificates = row.payload?.certificates && typeof row.payload.certificates === 'object' ? row.payload.certificates : {};
+      const certificate = Object.values(certificates).find(item => item?.certificateId === certificateId);
+      if (certificate) return { ok: true, valid: true, certificate: {
+        certificateId: certificate.certificateId,
+        studentName: certificate.studentName,
+        programTitle: certificate.programTitle,
+        issuedAt: certificate.issuedAt,
+        finalScore: certificate.finalScore,
+        status: 'valid',
+      } };
+    }
+    return { ok: true, valid: false };
+  }
+
   const telegramId = ctx.initData?.user?.id;
   if (telegramId == null) {
     return { assignmentDrafts: {}, lessonNotes: {} };
@@ -116,6 +135,40 @@ export default async function (input, ctx) {
     await db.insert(studentData).values({ tgId, payload: nextPayload, updatedAt })
       .onConflictDoUpdate({ target: studentData.tgId, set: { payload: nextPayload, updatedAt } }).run();
     return { ok: true, lessonId, result: record };
+  }
+
+  if (input?.action === 'issueCertificate') {
+    const courseId = String(input.courseId || '');
+    const programs = {
+      ai: { title: 'Искусственный интеллект', faculty: 'Факультет технологий' },
+      mind: { title: 'Психология и мышление', faculty: 'Факультет психологии' },
+      brand: { title: 'Бренд и маркетинг', faculty: 'Факультет маркетинга' },
+    };
+    const program = programs[courseId];
+    if (!program) return { ok: false, code: 'INVALID_PROGRAM', message: 'Программа не найдена.' };
+    const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
+    const payload = existing?.payload || {};
+    if (!cleanMap(payload.enrollments)[courseId]) return { ok: false, code: 'NOT_ENROLLED', message: 'Нет зачисления на программу.' };
+    const lessonIds = ['01','02','03','04','05','06'].map(n => courseId + '-' + n);
+    const completed = cleanMap(payload.completedLessons);
+    if (!lessonIds.every(id => Boolean(completed[id]))) return { ok: false, code: 'LESSONS_INCOMPLETE', message: 'Не все занятия завершены.' };
+    const exam = payload.finalExams?.[courseId];
+    if (!exam?.passed) return { ok: false, code: 'EXAM_NOT_PASSED', message: 'Сначала сдай итоговый экзамен.' };
+    const certificates = payload.certificates && typeof payload.certificates === 'object' ? payload.certificates : {};
+    if (certificates[courseId]) return { ok: true, certificate: certificates[courseId], alreadyIssued: true };
+    const attempts = Array.isArray(exam.attempts) ? exam.attempts : [];
+    const last = attempts[attempts.length - 1] || {};
+    const certificateId = 'MAG-' + new Date().getFullYear() + '-' + (Date.now().toString(36) + Math.random().toString(36).slice(2, 10)).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(-14).padStart(10, '0');
+    const studentName = [telegramProfile.firstName, telegramProfile.lastName].filter(Boolean).join(' ').slice(0, 160) || 'Студент MAGNUS';
+    const certificate = {
+      certificateId, studentName, programTitle: program.title, faculty: program.faculty,
+      issuedAt: new Date().toISOString(), finalScore: Number(last.score) || 0,
+      totalLessons: 6, status: 'valid', issuer: 'MAGNUS University',
+    };
+    const nextPayload = { ...payload, certificates: { ...certificates, [courseId]: certificate } };
+    const updatedAt = Math.floor(Date.now() / 1000);
+    await db.insert(studentData).values({ tgId, payload: nextPayload, updatedAt }).onConflictDoUpdate({ target: studentData.tgId, set: { payload: nextPayload, updatedAt } }).run();
+    return { ok: true, certificate };
   }
 
   if (input?.action === 'startFinalExam' || input?.action === 'submitFinalExam') {
@@ -334,6 +387,7 @@ export default async function (input, ctx) {
       lessonPracticeDrafts: cleanMap(payload.lessonPracticeDrafts),
       lessonPracticeResults: cleanMap(payload.lessonPracticeResults),
       finalExams: payload.finalExams && typeof payload.finalExams === 'object' ? payload.finalExams : {},
+      certificates: payload.certificates && typeof payload.certificates === 'object' ? payload.certificates : {},
       assignmentSubmissions: Array.isArray(payload.assignmentSubmissions) ? payload.assignmentSubmissions.slice(-50) : [],
       subscription: publicSubscription(subscriptionRow),
     };
