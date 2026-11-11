@@ -41,6 +41,14 @@ jobs:
         run: npm run check:tutor
       - name: Check payment and subscription safety invariants
         run: npm run check:payments
+      - name: Validate backend JavaScript syntax
+        run: |
+          node --check tgcloud/endpoints/admin.js
+          node --check tgcloud/endpoints/payments.js
+          node --check tgcloud/endpoints/studentData.js
+          node --check tgcloud/endpoints/tutor.js
+          node --check tgcloud/handlers/message.js
+          node --check tgcloud/handlers/pre_checkout_query.js
 
       - name: Build production bundle
         run: npm run build
