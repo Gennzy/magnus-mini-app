@@ -411,7 +411,22 @@ function adminPaymentPlansPage(){
  if(adminPaymentPlansLoading)return '<section><div class="admin-loading">Загружаем тарифы…</div></section>'+adminPaymentOrdersSection();
  if(adminPaymentPlansError)return '<section><div class="admin-error">'+esc(adminPaymentPlansError)+'</div></section>'+adminPaymentOrdersSection();
  const labels={ 'monthly-30d':'30 дней','quarterly-90d':'90 дней','annual-365d':'365 дней' };
- return `<section class="admin-payment-plans"><div class="admin-section-head"><div><span>TELEGRAM STARS · XTR</span><h2>Тарифы MAGNUS</h2></div><button data-admin-payment-refresh>Обновить ${icon('refresh')}</button></div><p class="admin-payment-intro">Укажи стоимость каждого тарифа в Telegram Stars. Цена 0 или выключенный переключатель скрывает тариф от студентов. Оплата цифрового доступа внутри Telegram принимается только в Stars.</p><div class="admin-payment-plan-list">${adminPaymentPlans.map(plan=>`<article class="admin-payment-plan"><div><span>${esc(labels[plan.planId]||plan.title)}</span><b>${plan.starsPrice?plan.starsPrice+' ⭐':'Цена не задана'}</b></div><label>Цена, Stars<input type="number" min="0" max="100000" step="1" value="${Number(plan.starsPrice)||0}" data-payment-price="${esc(plan.planId)}"></label><label class="admin-payment-toggle"><input type="checkbox" data-payment-enabled="${esc(plan.planId)}" ${plan.enabled?'checked':''}> Показывать студентам</label></article>`).join('')}</div><div class="admin-settings-actions"><button class="orange-button" data-admin-payment-save>Сохранить тарифы</button><small>Доступ включается только после подтверждённого successful_payment от Telegram.</small></div></section>`+adminPaymentOrdersSection();
+ const canManagePayments=adminAccess.role==="owner";
+ const plans=adminPaymentPlans.map(plan=>{
+  const label=esc(labels[plan.planId]||plan.title);
+  const price=Number(plan.starsPrice)||0;
+  if(!canManagePayments){
+   return `<article class="admin-payment-plan"><div><span>${label}</span><b>${price?price+' ⭐':'Цена не задана'} · ${plan.enabled?'Включён':'Выключен'}</b></div></article>`;
+  }
+  return `<article class="admin-payment-plan"><div><span>${label}</span><b>${price?price+' ⭐':'Цена не задана'}</b></div><label>Цена, Stars<input type="number" min="0" max="100000" step="1" value="${price}" data-payment-price="${esc(plan.planId)}"></label><label class="admin-payment-toggle"><input type="checkbox" data-payment-enabled="${esc(plan.planId)}" ${plan.enabled?'checked':''}> Показывать студентам</label></article>`;
+ }).join('');
+ const controls=canManagePayments
+  ? `<div class="admin-settings-actions"><button class="orange-button" data-admin-payment-save>Сохранить тарифы</button><small>Доступ включается только после подтверждённого successful_payment от Telegram.</small></div>`
+  : '<p class="admin-payment-intro">Настройки цен и доступности доступны только владельцу проекта. Здесь показаны сохранённые значения без возможности изменить их.</p>';
+ const intro=canManagePayments
+  ? 'Укажи стоимость каждого тарифа в Telegram Stars. Цена 0 или выключенный переключатель скрывает тариф от студентов. Оплата цифрового доступа внутри Telegram принимается только в Stars.'
+  : 'Тарифы и платёжный реестр доступны для просмотра. Изменять цены и включать продажи может только владелец.';
+ return `<section class="admin-payment-plans"><div class="admin-section-head"><div><span>TELEGRAM STARS · XTR</span><h2>Тарифы MAGNUS</h2></div><button data-admin-payment-refresh>Обновить ${icon('refresh')}</button></div><p class="admin-payment-intro">${intro}</p><div class="admin-payment-plan-list">${plans}</div>${controls}</section>`+adminPaymentOrdersSection();
 }
 
 function loadAdminSupport(){
