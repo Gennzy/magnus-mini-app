@@ -14,7 +14,7 @@
 
 ## 2. Текущий HEAD и публикация
 
-- PROD-002 закрыта финальным полным visual CI: [run 43001055233](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001055233), SHA `552ba7c4af2a7b64d2aab3ab6b0cf3bf6c87c3c3`. PROD-003 закрыта после исправления false-positive в checker и нового регрессионного теста: полный visual CI [run 43002543794](https://github.com/Gennzy/magnus-mini-app/actions/runs/43002543794), SHA `cb2e08d328829c934f0d2e6033bd7c1ebd188629` — SUCCESS, включая desktop/mobile smoke.
+- PROD-002 закрыта финальным полным visual CI: [run 43001055233](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001055233), SHA `552ba7c4af2a7b64d2aab3ab6b0cf3bf6c87c3c3`. PROD-003 закрыта после исправления false-positive в checker и нового регрессионного теста: полный visual CI [run 43002543794](https://github.com/Gennzy/magnus-mini-app/actions/runs/43002543794), SHA `cb2e08d328829c934f0d2e6033bd7c1ebd188629` — SUCCESS. Финальный HEAD после синхронизации статусов: `0a7187a5850c5ce66a118fe3f561ba3dacba19e2`; проверка [run 43002935812](https://github.com/Gennzy/magnus-mini-app/actions/runs/43002935812) — SUCCESS.
 - Этот CI включал документационный checker и негативные тесты, tutor coverage, payment invariants, backend syntax, production build и desktop/mobile Playwright smoke.
 - **Последний ранее подтверждённый runtime commit:** `c23dfa43b81047b58ae1f2168881bb2eb93c5afa`; в нём административный gradebook переведён на единый `ACADEMIC_CATALOG`.
 - **Последний подтверждённый Telegram deploy:** [run 42970888891](https://github.com/Gennzy/magnus-mini-app/actions/runs/42970888891), app SHA `90798104fb29df89ff05d1064a26ef07e3977fa7`.
@@ -69,14 +69,15 @@
 
 **Текущий WP: PROD-004 — определить академические статусы и допустимые переходы.**
 
-- **Статус:** [ ] Planned; не начат.
-- **Последняя завершённая задача:** PROD-003 — [x] DONE.
-- **Модель жизненного цикла:** `docs/STUDENT_LIFECYCLE.md`.
-- **WP PROD-003:** `docs/work-packages/PROD-003.md`.
-- **Подтверждение PROD-003:** полный visual CI [run 43002543794](https://github.com/Gennzy/magnus-mini-app/actions/runs/43002543794), SHA `cb2e08d328829c934f0d2e6033bd7c1ebd188629` — SUCCESS; точный матч активного WP и новый негативный тест прошли.
-- **Выявленные вопросы PROD-004:** синхронизация статуса после первого зачисления; разделение person-level статуса и program-level результата; таблица разрешённых переходов, ролей и оснований; ограничения текущей админ-команды изменения статуса.
-- **Границы PROD-003:** изменялись документы и documentation checker/tests. UI, backend runtime, API, схема БД, student records и Telegram deploy не затрагивались.
-- **Следующая задача:** оформить PROD-004 по `docs/WP_TEMPLATE.md`, изучить статусы и переходы; не начинать PROD-005 или реализацию UI до закрытия PROD-004.
+- **Статус:** [~] In progress.
+- **Базовая модель:** `docs/STUDENT_LIFECYCLE.md`.
+- **WP:** `docs/work-packages/PROD-004.md`.
+- **Исходный HEAD:** `0a7187a5850c5ce66a118fe3f561ba3dacba19e2`.
+- **Предыдущий полный CI:** [run 43002935812](https://github.com/Gennzy/magnus-mini-app/actions/runs/43002935812) — SUCCESS.
+- **Наблюдаемая проблема:** `academicStatus` хранится глобально, `enrollments` не содержит программных статусов, а административная команда не проверяет полную матрицу переходов.
+- **Направление решения:** статусы будут относиться к отдельным программам; сводка профиля вычисляется из программ; подписка и ограничения платформы остаются отдельными механизмами. Runtime пока не изменялся.
+- **Границы:** документация и documentation CI/checker/tests; без runtime/API/БД и Telegram deploy.
+- **Следующая задача после закрытия:** PROD-005 — определить активность и участие в самостоятельном обучении. До закрытия PROD-004 не начинать.
 
 ## 6. Как продолжать в новом чате
 
