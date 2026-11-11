@@ -14,7 +14,7 @@
 
 ## 2. Текущий HEAD и публикация
 
-- Перед началом PROD-002 проверены branch HEAD `82f8373065f83c0af7eac2f491efbafc14f6166b` и успешный полный visual CI run [42984319752](https://github.com/Gennzy/magnus-mini-app/actions/runs/42984319752) на том же SHA.
+- PROD-002 прошла полный visual CI: [run 43000786477](https://github.com/Gennzy/magnus-mini-app/actions/runs/43000786477), SHA `1149b3af32371bd39b173f2b1c3bc0d36c0d07b2`. Все шаги завершились успешно: documentation checks, tutor coverage, payment invariants, backend syntax, production build, desktop/mobile smoke и screenshots.
 - Этот CI включал документационный checker и негативные тесты, tutor coverage, payment invariants, backend syntax, production build и desktop/mobile Playwright smoke.
 - **Последний ранее подтверждённый runtime commit:** `c23dfa43b81047b58ae1f2168881bb2eb93c5afa`; в нём административный gradebook переведён на единый `ACADEMIC_CATALOG`.
 - **Последний подтверждённый Telegram deploy:** [run 42970888891](https://github.com/Gennzy/magnus-mini-app/actions/runs/42970888891), app SHA `90798104fb29df89ff05d1064a26ef07e3977fa7`.
@@ -60,22 +60,20 @@
 
 - **GOV-001…GOV-007 — DONE:** карта разработки, состояние проекта, правило одной активной задачи, документационный CI, шаблон WP, ADR и реестр известных дефектов.
 - **STU-003 — DONE:** академический паспорт, серверная авторизация по Telegram initData и проверенное пользователем гостевое состояние.
-- **PROD-001 — DONE по результату:** позиционирование и аудитории описаны в `docs/PRODUCT_POSITIONING.md`; финальный CI run [42984319752](https://github.com/Gennzy/magnus-mini-app/actions/runs/42984319752) прошёл на SHA `82f8373065f83c0af7eac2f491efbafc14f6166b`. В этом WP остаётся синхронизировать служебный статус документа с фактическим закрытием.
+- **PROD-001 — DONE:** позиционирование и аудитории зафиксированы в `docs/PRODUCT_POSITIONING.md`; финальный CI run [42984319752](https://github.com/Gennzy/magnus-mini-app/actions/runs/42984319752) прошёл.
 
 Подробная последовательность и оставшиеся задачи — в `docs/MASTER_ROADMAP.md`.
 
 ## 5. Текущая активная задача
 
-**Текущий WP: PROD-002 — определить основную модель обучения MAGNUS.**
+**Текущий WP: PROD-003 — определить жизненный цикл абитуриента и студента.**
 
-- **Статус:** [~] In progress.
-- **Решение:** самостоятельное асинхронное обучение в индивидуальном темпе с академической структурой.
-- **Почему:** текущий каталог, последовательное открытие занятий, серверная проверка и AI-тьютор поддерживают такой путь; когорты, расписание, живые занятия и кураторы ещё не реализованы.
-- **Групповой слой:** возможное будущее расширение, не часть текущего продуктового обещания.
-- **Документы:** `docs/LEARNING_MODEL.md`, `docs/work-packages/PROD-002.md`.
-- **Runtime/API/БД:** не изменяются.
-- **Проверки:** автоматический CI должен пройти на итоговом SHA перед закрытием.
-- **Следующая задача после закрытия:** PROD-003 — жизненный цикл абитуриента и студента. До завершения PROD-002 не начинать.
+- **Статус:** [ ] Planned; не начат.
+- **Последняя завершённая задача:** PROD-002 — [x] DONE. Утверждена самостоятельная асинхронная модель с индивидуальным темпом и академической структурой.
+- **Документ решения:** `docs/LEARNING_MODEL.md`.
+- **WP и критерии закрытия:** `docs/work-packages/PROD-002.md`.
+- **Проверка PROD-002:** полный CI run [43000786477](https://github.com/Gennzy/magnus-mini-app/actions/runs/43000786477), SHA `1149b3af32371bd39b173f2b1c3bc0d36c0d07b2` — SUCCESS.
+- **Следующая задача:** сначала оформить PROD-003 по `docs/WP_TEMPLATE.md`, затем работать только в его границах. До отдельного начала PROD-003 не менять его код и продуктовые правила.
 
 ## 6. Как продолжать в новом чате
 
