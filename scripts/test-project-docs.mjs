@@ -10,6 +10,13 @@ const sourceFiles = [
   "docs/MASTER_ROADMAP.md",
   "docs/PROJECT_STATE.md",
   "docs/WP_TEMPLATE.md",
+  "docs/adr/README.md",
+  "docs/adr/ADR-TEMPLATE.md",
+  "docs/adr/ADR-0001-telegram-mini-app-client.md",
+  "docs/adr/ADR-0002-telegram-serverless-backend.md",
+  "docs/adr/ADR-0003-single-academic-catalog.md",
+  "docs/adr/ADR-0004-server-authoritative-student-records.md",
+  "docs/adr/ADR-0005-server-side-ai-provider.md",
   "package.json",
   ".github/workflows/visual-check.yml",
 ];
@@ -32,6 +39,7 @@ function run(dir) {
 const cases = [
   ["valid documentation passes", dir => {}, true],
   ["missing template fails", dir => rmSync(join(dir, "docs/WP_TEMPLATE.md")), false],
+  ["missing ADR record fails", dir => rmSync(join(dir, "docs/adr/ADR-0003-single-academic-catalog.md")), false],
   ["missing required template section fails", dir => {
     const path = join(dir, "docs/WP_TEMPLATE.md");
     writeFileSync(path, readFileSync(path, "utf8").replace("## 7. План тестирования", "## 7. Тесты"));
