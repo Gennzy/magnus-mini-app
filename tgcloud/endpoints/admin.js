@@ -373,7 +373,7 @@ export default async function (input, ctx) {
     const status = String(input.status || '');
     const note = cleanText(input.note, 500);
     const allowedStatuses = ['applicant','active','academic_leave','expelled','graduated'];
-    if (!/^\\d{5,20}$/.test(studentId) || !allowedStatuses.includes(status)) {
+    if (!/^\d{5,20}$/.test(studentId) || !allowedStatuses.includes(status)) {
       return { ok: false, code: 'INVALID_ACADEMIC_UPDATE', message: 'Проверь студента и выбранный академический статус.' };
     }
     const row = await db.select().from(studentData).where(eq(studentData.tgId, studentId)).get();
