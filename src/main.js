@@ -928,6 +928,7 @@ function profilePage() {
       <span class="profile-sync-state ${cloudSyncReady?"active":""}">${cloudSyncReady?"ОНЛАЙН":"ЛОКАЛЬНО"}</span>
     </section>
     <section class="profile-menu">
+      <button data-go="documents"><span class="menu-icon">${icon("docs")}</span><span><b>Сертификаты и документы</b><small>${Object.keys(certificates).length?Object.keys(certificates).length+" выдано":"Академические достижения"}</small></span>${icon("arrow")}</button>
       <button data-action="settings"><span class="menu-icon">⚙</span><span><b>Настройки</b><small>Внешний вид и предпочтения</small></span>${icon("arrow")}</button>
       <button data-action="notifications"><span class="menu-icon">♧</span><span><b>Уведомления</b><small>Важные события и напоминания</small></span>${icon("arrow")}</button>
       <button data-action="support"><span class="menu-icon">?</span><span><b>Поддержка</b><small>Помощь и обратная связь</small></span>${icon("arrow")}</button>
