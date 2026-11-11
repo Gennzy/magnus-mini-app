@@ -71,15 +71,18 @@
 
 ## 5. Текущая активная задача
 
-**Текущий WP: PROD-008 — определить правила заморозки, продления, возврата и прекращения доступа.**
+**Текущий WP: PROD-008 — жизненный цикл подписки и учебного доступа.**
 
-- **Статус:** [ ] Planned; не начат.
+- **Статус:** [~] In progress.
 - **Последняя завершённая задача:** PROD-007 — [x] DONE.
-- **Решение PROD-007:** `docs/ASSESSMENT_POLICY.md`.
-- **WP PROD-007:** `docs/work-packages/PROD-007.md`.
-- **Подтверждение PROD-007:** полный visual CI [run 43026406876](https://github.com/Gennzy/magnus-mini-app/actions/runs/43026406876), SHA `f3ee840817d1cacc0bf1bcf243db7984b8b6e335` — SUCCESS. Документационный checker и негативные тесты, tutor coverage, payment invariants, backend syntax, production build, desktop/mobile Playwright smoke и screenshots прошли.
-- **Границы PROD-007:** только продуктовая политика и documentation checker/tests. Runtime, API, БД, UI, student records и Telegram deploy не затрагивались.
-- **Следующая задача:** оформить PROD-008 по `docs/WP_TEMPLATE.md`, проверить текущие подписки, payment orders, доступ к материалам и ограничения, затем определить заморозку, продление, возврат и прекращение доступа. До закрытия PROD-008 не начинать PROD-009.
+- **Решение PROD-007:** docs/ASSESSMENT_POLICY.md.
+- **WP PROD-007:** docs/work-packages/PROD-007.md.
+- **Подтверждение PROD-007:** полный visual CI [run 43026661171](https://github.com/Gennzy/magnus-mini-app/actions/runs/43026661171), SHA 54b36c13d5b7ad8d514c0e9bddd3ed6b0102e003 — SUCCESS.
+- **Решение PROD-008:** docs/SUBSCRIPTION_AND_ACCESS_POLICY.md — подготовлена политика разового срока, продления, отсутствия автопродления, заморозки, истечения, возвратов, сохранения академических записей и разделения причин недоступности.
+- **WP PROD-008:** docs/work-packages/PROD-008.md.
+- **Подтверждённые runtime-ограничения:** entitlement не проверяется сквозным образом в учебных/AI endpoints; возвраты Stars не реализованы; BL-008 и BL-009 блокируют реальные продажи. Тарифы по умолчанию выключены. Документ не означает готовность этих функций.
+- **Границы:** только продуктовая политика, WP и документационный checker/tests. Runtime, API, БД, UI, student records, цены и Telegram deploy не затрагиваются.
+- **Следующий WP:** PROD-009 — смысл и ограничения внутреннего сертификата MAGNUS. До закрытия PROD-008 не начинать PROD-009.
 
 ## 6. Как продолжать в новом чате
 
