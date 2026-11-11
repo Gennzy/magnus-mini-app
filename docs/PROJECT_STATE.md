@@ -14,7 +14,7 @@
 
 ## 2. Текущий HEAD и публикация
 
-- PROD-002 закрыта финальным полным visual CI: [run 43001055233](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001055233), SHA `552ba7c4af2a7b64d2aab3ab6b0cf3bf6c87c3c3`. Все шаги завершились успешно: documentation checks, tutor coverage, payment invariants, backend syntax, production build, desktop/mobile smoke и screenshots.
+- PROD-002 закрыта финальным полным visual CI: [run 43001055233](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001055233), SHA `552ba7c4af2a7b64d2aab3ab6b0cf3bf6c87c3c3`. PROD-003 проверена полным visual CI [run 43001680516](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001680516), SHA `dd160784f4f163c92c873eb790befaec625c0bb6`; все проверки, включая desktop/mobile smoke, завершились успешно.
 - Этот CI включал документационный checker и негативные тесты, tutor coverage, payment invariants, backend syntax, production build и desktop/mobile Playwright smoke.
 - **Последний ранее подтверждённый runtime commit:** `c23dfa43b81047b58ae1f2168881bb2eb93c5afa`; в нём административный gradebook переведён на единый `ACADEMIC_CATALOG`.
 - **Последний подтверждённый Telegram deploy:** [run 42970888891](https://github.com/Gennzy/magnus-mini-app/actions/runs/42970888891), app SHA `90798104fb29df89ff05d1064a26ef07e3977fa7`.
@@ -60,23 +60,23 @@
 
 - **GOV-001…GOV-007 — DONE:** карта разработки, состояние проекта, правило одной активной задачи, документационный CI, шаблон WP, ADR и реестр известных дефектов.
 - **STU-003 — DONE:** академический паспорт, серверная авторизация по Telegram initData и проверенное пользователем гостевое состояние.
+- **PROD-003 — DONE:** жизненный цикл абитуриента и студента описан в `docs/STUDENT_LIFECYCLE.md`; разделены профиль, интерес, зачисление, обучение по программе, академический статус, завершение и подписка. Текущие расхождения кода переданы в PROD-004.
 - **PROD-001 — DONE:** позиционирование и аудитории зафиксированы в `docs/PRODUCT_POSITIONING.md`; финальный CI run [42984319752](https://github.com/Gennzy/magnus-mini-app/actions/runs/42984319752) прошёл.
 
 Подробная последовательность и оставшиеся задачи — в `docs/MASTER_ROADMAP.md`.
 
 ## 5. Текущая активная задача
 
-**Текущий WP: PROD-003 — определить жизненный цикл абитуриента и студента.**
+**Текущий WP: PROD-004 — определить академические статусы и допустимые переходы.**
 
-- **Статус:** [~] In progress.
-- **Последняя завершённая задача:** PROD-002 — [x] DONE. Самостоятельная асинхронная модель с индивидуальным темпом зафиксирована в `docs/LEARNING_MODEL.md`.
-- **Подтверждение PROD-002:** полный visual CI [run 43001055233](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001055233), SHA `552ba7c4af2a7b64d2aab3ab6b0cf3bf6c87c3c3` — SUCCESS.
-- **Модель PROD-003:** `docs/STUDENT_LIFECYCLE.md`.
-- **WP:** `docs/work-packages/PROD-003.md`.
-- **Рабочие границы:** документация, анализ текущих сценариев; без UI/runtime/API/БД и Telegram deploy.
-- **Выявлено для PROD-004:** синхронизация общего статуса при первом зачислении; общая область действия `academicStatus` при нескольких программах; неполная матрица административных переходов; отсутствие формальной заявки и student-facing workflow прекращения/восстановления. Это описано в STUDENT_LIFECYCLE.md; код не менялся.
-- **Проверки PROD-003:** документационный checker и полный visual CI должны пройти на итоговом SHA.
-- **Следующая задача после закрытия:** PROD-004 — определить академические статусы и допустимые переходы. До закрытия PROD-003 не начинать.
+- **Статус:** [ ] Planned; не начат.
+- **Последняя завершённая задача:** PROD-003 — [x] DONE.
+- **Решение PROD-003:** `docs/STUDENT_LIFECYCLE.md`.
+- **WP PROD-003:** `docs/work-packages/PROD-003.md`.
+- **Проверка PROD-003:** полный visual CI [run 43001680516](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001680516), SHA `dd160784f4f163c92c873eb790befaec625c0bb6` — SUCCESS.
+- **Выявленные вопросы для PROD-004:** синхронизация статуса после первого зачисления; разделение person-level статуса и program-level результата; таблица допустимых переходов, ролей и оснований; ограничения текущей админ-команды изменения статуса.
+- **Границы PROD-003:** изменялись только документы. UI, runtime, API, схема БД, student records и Telegram deploy не затрагивались.
+- **Следующая задача:** сначала оформить PROD-004 по `docs/WP_TEMPLATE.md`, исследовать текущие статусы и только затем принимать решение о переходах. Не начинать PROD-005 или реализацию интерфейса до закрытия PROD-004.
 
 ## 6. Как продолжать в новом чате
 
