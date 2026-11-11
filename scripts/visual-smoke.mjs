@@ -644,7 +644,6 @@ try {
     }, {delay:scenario.delay,valid:scenario.valid,certificate:scenario.certificate});
     await certificatePage.goto(baseUrl + "?certificate=" + encodeURIComponent(scenario.id), { waitUntil: "domcontentloaded", timeout: 30000 });
     await certificatePage.waitForSelector(".certificate-verify-panel h2", { timeout: 15000 });
-    await certificatePage.locator(".startup-screen").waitFor({ state: "detached", timeout: 5000 });
     const loadingLabel = await certificatePage.locator(".certificate-verify-panel h2").innerText();
     if (!loadingLabel.includes("Проверяем сертификат")) failures.push("certificate-" + scenario.name + ": loading state is not displayed while verification is pending");
     const expectedTitle = scenario.valid ? "Сертификат подлинный" : "Сертификат не найден";
@@ -662,6 +661,7 @@ try {
     }
     const certificateOverflow = await certificatePage.evaluate(() => ({viewport:document.documentElement.clientWidth,document:document.documentElement.scrollWidth}));
     if (certificateOverflow.document > certificateOverflow.viewport + 1) failures.push("certificate-" + scenario.name + ": horizontal overflow " + JSON.stringify(certificateOverflow));
+    await certificatePage.locator(".startup-screen").waitFor({ state: "detached", timeout: 5000 });
     await captureSettled(certificatePage, { path: artifacts + "/telegram-certificate-" + scenario.name + ".png", fullPage: true });
     await certificatePage.locator("[data-cert-clear]").click();
     await certificatePage.waitForSelector(".certificate-verify-panel", { state: "detached", timeout: 5000 });
