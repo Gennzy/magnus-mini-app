@@ -248,8 +248,18 @@ try {
   const examOptionCount = await examPage.locator(".final-exam-question input[type=radio]").count();
   if (examQuestionCount !== 6 || examOptionCount !== 18) failures.push("telegram-exam: expected 6 questions and 18 options, found " + examQuestionCount + "/" + examOptionCount);
   await examPage.evaluate(() => document.querySelector(".startup-screen")?.remove());
+  await examPage.evaluate(() => window.scrollTo(0, 0));
+  await examPage.waitForTimeout(120);
   const examOverflow = await examPage.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth }));
   if (examOverflow.document > examOverflow.viewport + 1) failures.push("telegram-exam: horizontal overflow " + JSON.stringify(examOverflow));
+  const examNav = await examPage.evaluate(() => {
+    const nav = document.querySelector(".bottom-nav");
+    const screen = document.querySelector("main.screen");
+    const navRect = nav.getBoundingClientRect();
+    const screenRect = screen.getBoundingClientRect();
+    return { position: getComputedStyle(nav).position, navBottom: navRect.bottom, screenTop: screenRect.top };
+  });
+  if (examNav.position !== "sticky" || examNav.navBottom > examNav.screenTop + 1) failures.push("telegram-exam: navigation overlaps the exam content " + JSON.stringify(examNav));
   await examPage.screenshot({ path: artifacts + "/telegram-final-exam.png", fullPage: true });
   await examPage.close();
   const breakpointPage = await browser.newPage({ viewport: { width: 320, height: 844 }, deviceScaleFactor: 1 });
