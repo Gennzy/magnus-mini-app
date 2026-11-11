@@ -71,19 +71,17 @@
 
 ## 5. Текущая активная задача
 
-**Последняя завершённая задача: PROD-008 — жизненный цикл подписки и учебного доступа.**
+**Текущий WP: PROD-008 — жизненный цикл подписки и учебного доступа.**
 
-- **Статус:** [x] DONE.
-- **Последняя завершённая задача до неё:** PROD-007 — [x] DONE.
-- **Решение PROD-007:** `docs/ASSESSMENT_POLICY.md`.
-- **WP PROD-007:** `docs/work-packages/PROD-007.md`.
-- **Подтверждение PROD-007:** полный visual CI [run 43026661171](https://github.com/Gennzy/magnus-mini-app/actions/runs/43026661171), SHA `54b36c13d5b7ad8d514c0e9bddd3ed6b0102e003` — SUCCESS.
-- **Решение PROD-008:** `docs/SUBSCRIPTION_AND_ACCESS_POLICY.md` — утверждены правила срока, продления, отсутствия автопродления, заморозки, истечения, возвратов, сохранения академических записей и разделения entitlement/security/academic status.
-- **WP PROD-008:** `docs/work-packages/PROD-008.md` — DONE.
-- **Подтверждение PROD-008:** полный visual CI [run 43042811277](https://github.com/Gennzy/magnus-mini-app/actions/runs/43042811277), SHA `678b8c5116befd507290246cdd4a4505cde66000` — SUCCESS; прошли docs checker, негативные тесты, tutor coverage, payment invariants, backend syntax, production build и desktop/mobile browser checks.
-- **Ограничения перед продажами:** entitlement не проверяется сквозным образом в учебных/AI endpoints; возвраты Stars не реализованы; BL-008/009 блокируют реальные продажи. Тарифы выключены, цены не менялись.
-- **Границы PROD-008:** только политика, WP и документационный checker/tests. Runtime, API, БД, UI, student records, цены и Telegram deploy не затрагивались.
-- **Следующий WP:** PROD-009 — смысл и ограничения внутреннего сертификата MAGNUS. Он будет начат отдельным шагом после закрывающего CI.
+- **Статус:** [~] In progress; политика и документационные проверки подготовлены, ожидается закрывающий полный CI.
+- **Предыдущая завершённая задача:** PROD-007 — [x] DONE; финальный CI [run 43026661171](https://github.com/Gennzy/magnus-mini-app/actions/runs/43026661171) — SUCCESS.
+- **Политика:** `docs/SUBSCRIPTION_AND_ACCESS_POLICY.md`.
+- **WP:** `docs/work-packages/PROD-008.md`.
+- **Предыдущий полный CI PROD-008:** [run 43042811277](https://github.com/Gennzy/magnus-mini-app/actions/runs/43042811277), SHA `678b8c5116befd507290246cdd4a4505cde66000` — SUCCESS.
+- **Закрывающий CI:** run [43045514085](https://github.com/Gennzy/magnus-mini-app/actions/runs/43045514085) выявил ошибку согласованности документации: checker требует активный WP до подтверждения полного CI. Исправляется порядок закрытия, не runtime.
+- **Подтверждённые ограничения перед продажами:** entitlement не проверяется сквозным образом в учебных/AI endpoints; возвраты Stars не реализованы; BL-008/009 блокируют реальные продажи. Тарифы выключены.
+- **Границы:** только продуктовая политика, WP и документационный checker/tests. Runtime, API, БД, UI, student records, цены и Telegram deploy не затрагиваются.
+- **Следующий WP после закрытия:** PROD-009 — смысл и ограничения внутреннего сертификата MAGNUS. Не начинать до DONE PROD-008.
 
 ## 6. Как продолжать в новом чате
 
