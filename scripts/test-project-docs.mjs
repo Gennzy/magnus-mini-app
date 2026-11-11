@@ -23,6 +23,7 @@ const sourceFiles = [
   "docs/ASSESSMENT_AND_COMPLETION_POLICY.md",
   "docs/ASSESSMENT_POLICY.md",
   "docs/SUBSCRIPTION_AND_ACCESS_POLICY.md",
+  "docs/CERTIFICATE_POLICY.md",
   "docs/work-packages/PROD-008.md",
   "docs/work-packages/PROD-009.md",
   "package.json",
@@ -54,6 +55,11 @@ const cases = [
   ["missing assessment and completion policy fails", dir => rmSync(join(dir, "docs/ASSESSMENT_AND_COMPLETION_POLICY.md")), false],
   ["missing grading and appeals policy fails", dir => rmSync(join(dir, "docs/ASSESSMENT_POLICY.md")), false],
   ["missing subscription and access policy fails", dir => rmSync(join(dir, "docs/SUBSCRIPTION_AND_ACCESS_POLICY.md")), false],
+  ["missing certificate policy fails", dir => rmSync(join(dir, "docs/CERTIFICATE_POLICY.md")), false],
+  ["certificate policy cannot claim state diploma", dir => {
+    const path = join(dir, "docs/CERTIFICATE_POLICY.md");
+    writeFileSync(path, readFileSync(path, "utf8").replace("не является государственным дипломом", "является государственным дипломом"));
+  }, false],
   ["missing active work package document fails", dir => rmSync(join(dir, "docs/work-packages/PROD-009.md")), false],
   ["missing freeze policy concept fails", dir => {
     const path = join(dir, "docs/SUBSCRIPTION_AND_ACCESS_POLICY.md");

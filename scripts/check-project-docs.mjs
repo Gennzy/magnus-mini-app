@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 const root = resolve(process.argv[2] || process.cwd());
 const filePath = path => resolve(root, path);
 
-const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md", "docs/KNOWN_ISSUES.md", "docs/ACADEMIC_STATUS_MODEL.md", "docs/LEARNING_ACTIVITY_MODEL.md", "docs/ASSESSMENT_AND_COMPLETION_POLICY.md", "docs/ASSESSMENT_POLICY.md", "docs/SUBSCRIPTION_AND_ACCESS_POLICY.md"];
+const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md", "docs/KNOWN_ISSUES.md", "docs/ACADEMIC_STATUS_MODEL.md", "docs/LEARNING_ACTIVITY_MODEL.md", "docs/ASSESSMENT_AND_COMPLETION_POLICY.md", "docs/ASSESSMENT_POLICY.md", "docs/SUBSCRIPTION_AND_ACCESS_POLICY.md", "docs/CERTIFICATE_POLICY.md"];
 const errors = [];
 
 for (const file of requiredFiles) {
@@ -28,6 +28,7 @@ const learningActivityModel = readFileSync(filePath("docs/LEARNING_ACTIVITY_MODE
 const assessmentPolicy = readFileSync(filePath("docs/ASSESSMENT_AND_COMPLETION_POLICY.md"), "utf8");
 const gradingPolicy = readFileSync(filePath("docs/ASSESSMENT_POLICY.md"), "utf8");
 const subscriptionPolicy = readFileSync(filePath("docs/SUBSCRIPTION_AND_ACCESS_POLICY.md"), "utf8");
+const certificatePolicy = readFileSync(filePath("docs/CERTIFICATE_POLICY.md"), "utf8");
 const adrTemplate = readFileSync(filePath("docs/adr/ADR-TEMPLATE.md"), "utf8");
 
 const requireText = (text, pattern, label) => {
@@ -117,6 +118,15 @@ for (const section of ["## 1. Основное решение", "## 2. Срок 
 for (const concept of ["entitlement", "автоматического продления", "заморозки нет", "не удалять", "Возврат Stars не реализован", "BL-008", "BL-009", "академический статус"]) {
   if (!subscriptionPolicy.toLowerCase().includes(concept.toLowerCase())) errors.push("SUBSCRIPTION_AND_ACCESS_POLICY is missing rule/concept: " + concept);
 }
+
+if (!roadmap.includes("docs/CERTIFICATE_POLICY.md")) errors.push("MASTER_ROADMAP does not link to the certificate policy");
+for (const section of ["## 1. Значение сертификата", "## 2. Что подтверждает сертификат", "## 4. Условия выдачи", "## 6. Публичная проверка и персональные данные", "## 8. Текущее состояние реализации и ограничения"]) {
+  if (!certificatePolicy.includes(section)) errors.push("CERTIFICATE_POLICY is missing section: " + section);
+}
+for (const concept of ["внутренний документ", "не является государственным дипломом", "зачисление", "шесть занятий", "итоговый экзамен", "версия программы", "персональные данные", "не реализован", "MAGNUS University"]) {
+  if (!certificatePolicy.toLowerCase().includes(concept.toLowerCase())) errors.push("CERTIFICATE_POLICY is missing rule/concept: " + concept);
+}
+
 const activeMatch = state.match(/^\*\*Текущий WP: ([A-Z]+-\d+) —/m);
 if (!activeMatch) {
   errors.push("PROJECT_STATE must declare exactly one active WP using '**Текущий WP: ID — ...**'");
