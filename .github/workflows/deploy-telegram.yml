@@ -12,6 +12,7 @@ on:
       - "package.json"
       - "package-lock.json"
       - "tgcloud.jsonc"
+      - ".github/workflows/deploy-telegram.yml"
 
 permissions:
   contents: read
