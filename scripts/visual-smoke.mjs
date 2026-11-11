@@ -215,6 +215,43 @@ try {
   const desktop = await testViewport("desktop", { width: 1440, height: 1000 });
   const mobile = await testViewport("mobile", { width: 390, height: 844 });
 
+  // Exercise the final-exam screen with a deterministic Telegram Mini App test bridge.
+  const examPage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+  await examPage.route("https://telegram.org/js/telegram-web-app.js", route => route.fulfill({ status: 200, contentType: "application/javascript", body: "" }));
+  await examPage.addInitScript(() => {
+    const completedLessons = Object.fromEntries(["ai-01","ai-02","ai-03","ai-04","ai-05","ai-06"].map(id => [id, "2026-11-11T00:00:00.000Z"]));
+    const questions = Array.from({ length: 6 }, (_, index) => ({ id: "smoke-q" + (index + 1), text: "Проверочный вопрос " + (index + 1), options: ["Вариант A", "Вариант B", "Вариант C"] }));
+    window.Telegram = { WebApp: {
+      initData: "smoke-init-data",
+      initDataUnsafe: { user: { id: 770001, first_name: "Тест", username: "magnus_smoke" } },
+      ready() {}, expand() {}, setHeaderColor() {}, setBackgroundColor() {},
+      HapticFeedback: { impactOccurred() {} },
+      Serverless: { call(service, payload, callback) {
+        if (service === "admin") { callback(null, { isAdmin: false }); return; }
+        if (service === "payments") { callback(null, { ok: true, plans: [] }); return; }
+        if (service === "studentData" && payload.action === "load") { callback(null, { completedLessons, enrollments: { ai: "active" } }); return; }
+        if (service === "studentData" && payload.action === "startFinalExam") { callback(null, { ok: true, sessionId: "smoke-session", questions }); return; }
+        callback(null, { ok: false, message: "Unsupported visual smoke action" });
+      } }
+    } };
+  });
+  await examPage.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await examPage.waitForSelector("#app .home-screen", { timeout: 15000 });
+  await examPage.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
+  await examPage.locator('.bottom-nav [data-go="study"]').click();
+  await examPage.waitForSelector(".study-screen", { timeout: 10000 });
+  await examPage.locator('.study-screen [data-course="ai"]').click();
+  await examPage.waitForSelector(".learning-map-screen .learning-path", { timeout: 10000 });
+  await examPage.locator('[data-exam-start="ai"]').click();
+  await examPage.waitForSelector(".final-exam-screen", { timeout: 10000 });
+  const examQuestionCount = await examPage.locator(".final-exam-question").count();
+  const examOptionCount = await examPage.locator(".final-exam-question input[type=radio]").count();
+  if (examQuestionCount !== 6 || examOptionCount !== 18) failures.push("telegram-exam: expected 6 questions and 18 options, found " + examQuestionCount + "/" + examOptionCount);
+  await examPage.evaluate(() => document.querySelector(".startup-screen")?.remove());
+  const examOverflow = await examPage.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth }));
+  if (examOverflow.document > examOverflow.viewport + 1) failures.push("telegram-exam: horizontal overflow " + JSON.stringify(examOverflow));
+  await examPage.screenshot({ path: artifacts + "/telegram-final-exam.png", fullPage: true });
+  await examPage.close();
   const breakpointPage = await browser.newPage({ viewport: { width: 320, height: 844 }, deviceScaleFactor: 1 });
   const breakpointResults = [];
   for (const width of [320, 360, 430, 768, 1024]) {
