@@ -123,7 +123,7 @@ if (!roadmap.includes("docs/CERTIFICATE_POLICY.md")) errors.push("MASTER_ROADMAP
 for (const section of ["## 1. Значение сертификата", "## 2. Что подтверждает сертификат", "## 4. Условия выдачи", "## 6. Публичная проверка и персональные данные", "## 8. Текущее состояние реализации и ограничения"]) {
   if (!certificatePolicy.includes(section)) errors.push("CERTIFICATE_POLICY is missing section: " + section);
 }
-for (const concept of ["внутренний документ", "не является государственным дипломом", "зачисление", "шесть занятий", "итоговый экзамен", "версия программы", "персональные данные", "не реализован", "MAGNUS University"]) {
+for (const concept of ["внутренний документ", "не является государственным дипломом", "зачисление", "шести занятий", "итоговый экзамен", "версия программы", "персональные данные", "не реализован", "MAGNUS University"]) {
   if (!certificatePolicy.toLowerCase().includes(concept.toLowerCase())) errors.push("CERTIFICATE_POLICY is missing rule/concept: " + concept);
 }
 
