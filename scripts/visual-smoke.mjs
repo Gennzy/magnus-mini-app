@@ -269,6 +269,55 @@ try {
   await examPage.screenshot({ path: artifacts + "/telegram-final-exam.png", fullPage: true });
   await examPage.screenshot({ path: artifacts + "/telegram-final-exam-result.png", fullPage: true });
   await examPage.close();
+  // Audit the administrative interface in an isolated Telegram owner session.
+  const adminPage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+  await adminPage.route("https://telegram.org/js/telegram-web-app.js", route => route.fulfill({ status: 200, contentType: "application/javascript", body: "" }));
+  await adminPage.addInitScript(() => {
+    window.Telegram = { WebApp: {
+      initData: "admin-smoke-init-data",
+      initDataUnsafe: { user: { id: 770002, first_name: "Owner", username: "magnus_owner" } },
+      ready() {}, expand() {}, setHeaderColor() {}, setBackgroundColor() {},
+      HapticFeedback: { impactOccurred() {} },
+      Serverless: { call(service, payload, callback) {
+        if (service === "admin") {
+          const action = payload.action;
+          if (action === "status") { callback(null, { isAdmin: true, role: "owner" }); return; }
+          if (action === "overview") { callback(null, { ok: true, admin: { email: "owner@example.test", role: "owner" }, stats: { students: 0, submissions: 0, pending: 0, reviewed: 0 }, submissions: [], botSettings: { welcomeMessage: "Welcome", description: "MAGNUS", shortDescription: "Учёба", menuButtonText: "Открыть MAGNUS" }, bot: { firstName: "MAGNUS", username: "magnus_test", webhookActive: true, commands: [{ command: "start", description: "Запуск" }] } }); return; }
+          if (action === "students") { callback(null, { ok: true, students: [] }); return; }
+          if (action === "supportInbox") { callback(null, { ok: true, requests: [] }); return; }
+          if (action === "paymentPlans") { callback(null, { ok: true, plans: [{ planId: "monthly-30d", title: "30 дней", starsPrice: 0, enabled: false }] }); return; }
+          if (action === "paymentOrders") { callback(null, { ok: true, orders: [], summary: { paidOrders: 0, paidStars: 0, pendingOrders: 0 } }); return; }
+          if (action === "aiSettings") { callback(null, { ok: true, configured: false, model: "openai/gpt-oss-20b" }); return; }
+          if (action === "auditLog") { callback(null, { ok: true, entries: [] }); return; }
+          callback(null, { ok: true }); return;
+        }
+        if (service === "studentData" && payload.action === "load") { callback(null, {}); return; }
+        if (service === "payments") { callback(null, { ok: true, plans: [] }); return; }
+        callback(null, { ok: true });
+      } }
+    } };
+  });
+  await adminPage.goto(baseUrl + "?admin=1", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await adminPage.waitForSelector(".admin-screen .admin-header", { timeout: 15000 });
+  await adminPage.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
+  await adminPage.waitForSelector(".admin-stat-grid", { timeout: 10000 });
+  for (const [tab, selector] of [["overview", ".admin-stat-grid"], ["reviews", ".admin-screen section"], ["students", ".admin-students-section"], ["support", ".admin-support-section"], ["payments", ".admin-payment-plans"], ["ai", ".admin-ai-settings"], ["bot", ".admin-bot-settings"], ["audit", ".admin-audit-section"]]) {
+    await adminPage.locator('.admin-tabs [data-admin-tab="' + tab + '"]').click();
+    await adminPage.waitForSelector(selector, { timeout: 10000 });
+    const adminDimensions = await adminPage.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, navBottom: document.querySelector(".bottom-nav").getBoundingClientRect().bottom, screenTop: document.querySelector("main.screen").getBoundingClientRect().top }));
+    if (adminDimensions.document > adminDimensions.viewport + 1) failures.push("admin-" + tab + ": horizontal overflow " + JSON.stringify(adminDimensions));
+    if (adminDimensions.navBottom > adminDimensions.screenTop + 1) failures.push("admin-" + tab + ": primary navigation overlaps admin content " + JSON.stringify(adminDimensions));
+    if (tab === "overview") await adminPage.screenshot({ path: artifacts + "/admin-mobile-overview.png", fullPage: true });
+  }
+  await adminPage.setViewportSize({ width: 1440, height: 1000 });
+  await adminPage.goto(baseUrl + "?admin=1", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await adminPage.waitForSelector(".admin-screen .admin-header", { timeout: 15000 });
+  await adminPage.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
+  await adminPage.waitForSelector(".admin-stat-grid", { timeout: 10000 });
+  const adminDesktop = await adminPage.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, navBottom: document.querySelector(".bottom-nav").getBoundingClientRect().bottom, screenTop: document.querySelector("main.screen").getBoundingClientRect().top }));
+  if (adminDesktop.document > adminDesktop.viewport + 1 || adminDesktop.navBottom > adminDesktop.screenTop + 1) failures.push("admin-desktop: layout overflow or navigation overlap " + JSON.stringify(adminDesktop));
+  await adminPage.screenshot({ path: artifacts + "/admin-desktop-overview.png", fullPage: true });
+  await adminPage.close();
   const breakpointPage = await browser.newPage({ viewport: { width: 320, height: 844 }, deviceScaleFactor: 1 });
   const breakpointResults = [];
   for (const width of [320, 360, 430, 768, 1024]) {
