@@ -169,7 +169,7 @@ const icon = (name, cls="") => {
     back:'<path d="m15 18-6-6 6-6"/>',
     refresh:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.7-2L20 12M4 12l2.7 5a7 7 0 0 0 11.7-2"/>',
     settings:'<circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.2 1-1.4 2.4-1.5-.6a7.7 7.7 0 0 1-1.7 1l-.2 1.6h-2.8l-.2-1.6a7.7 7.7 0 0 1-1.7-1l-1.5.6-1.4-2.4 1.2-1a7.7 7.7 0 0 1 0-2l-1.2-1 1.4-2.4 1.5.6a7.7 7.7 0 0 1 1.7-1l.2-1.6h2.8l.2 1.6a7.7 7.7 0 0 1 1.7 1l1.5-.6 1.4 2.4-1.2 1a7.7 7.7 0 0 1 0 2Z"/>',
-    help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.3 1.7c-1 .9-1.9 1.3-1.9 2.8M12 17h.01',
+    help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.3 1.7c-1 .9-1.9 1.3-1.9 2.8M12 17h.01"/>',
     close:'<path d="m18 6-12 12M6 6l12 12"/>'
   };
   return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.arrow}</svg>`;
