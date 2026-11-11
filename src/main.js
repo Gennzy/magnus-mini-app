@@ -133,6 +133,7 @@ let completedLessons = loadCompletedLessons();
 let enrollments = readStudentStorage("enrollments");
 let finalExams = {};
 let certificates = {};
+let academicCatalog = null;
 let certificateVerification = null;
 let certificateIssuePending = false;
 let activeExam = null;
@@ -490,6 +491,7 @@ function initializeCloudStudentData() {
     enrollments = { ...(result.enrollments || {}), ...enrollments };
     finalExams = result.finalExams && typeof result.finalExams === "object" ? result.finalExams : {};
     certificates = result.certificates && typeof result.certificates === "object" ? result.certificates : {};
+    academicCatalog = result.academicCatalog?.programs?.length ? result.academicCatalog : academicCatalog;
     writeStudentStorage("enrollments", enrollments);
     studentSubscription = result.subscription || { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
     storeAssignmentDrafts();
@@ -679,9 +681,26 @@ function schedulePanel() {
 }
 
 function studyPage() {
+  const catalogPrograms = academicCatalog?.programs || [];
+  const programMeta = (id) => catalogPrograms.find(item => item.id === id);
+  const enrolled = courses.filter(course => isProgramEnrolled(course.id));
   return `<main class="screen inner-screen study-screen">
     ${heading("ТВОЯ УЧЕБНАЯ СРЕДА", "Мои<br><em>программы.</em>", "Здесь собраны программы, к которым можно вернуться в любой момент.")}
-    ${Object.keys(enrollments).some(id=>courses.some(course=>course.id===id)) ? `<section class="enrolled-programs"><div class="section-title"><div><span class="subtle-label">ТВОЁ ЗАЧИСЛЕНИЕ</span><h2>Учебный план</h2></div><span class="course-count">${Object.keys(enrollments).filter(id=>courses.some(course=>course.id===id)).length} активных</span></div>${courses.filter(course=>isProgramEnrolled(course.id)).map(course=>{const lessons=courseLessons(course.id),done=courseCompletionCount(course.id),progress=lessons.length?Math.round(done/lessons.length*100):0;return `<article class="enrolled-program-card"><div class="enrolled-program-top"><span>${esc(course.category)}</span><b>${progress}%</b></div><h3>${esc(course.title)}</h3><p>${done} из ${lessons.length} занятий завершено</p><div class="enrolled-progress"><span style="width:${progress}%"></span></div><button data-course="${course.id}">Открыть учебный план ${icon("arrow")}</button></article>`;}).join("")}</section>` : `<section class="enrollment-empty"><span class="subtle-label">ТВОЙ СЛЕДУЮЩИЙ ШАГ</span><h2>Выбери программу и оформи зачисление</h2><p>После зачисления программа появится здесь. Прогресс будет сохраняться в твоём Telegram-профиле.</p><button class="orange-button" data-go="faculties">Выбрать факультет ${icon("arrow")}</button></section>`}
+    ${enrolled.length ? `<section class="enrolled-programs"><div class="section-title"><div><span class="subtle-label">ТВОЁ ЗАЧИСЛЕНИЕ</span><h2>Учебный план</h2></div><span class="course-count">${enrolled.length} активных</span></div>${enrolled.map(course=>{
+      const lessons=courseLessons(course.id),done=courseCompletionCount(course.id),progress=lessons.length?Math.round(done/lessons.length*100):0;
+      const program=programMeta(course.id),terms=program?.terms||[];
+      return `<article class="enrolled-program-card academic-plan-card">
+        <div class="enrolled-program-top"><span>${esc(course.category)} · ${esc(program?.code||"MAGNUS")}</span><b>${progress}%</b></div>
+        <h3>${esc(program?.title||course.title)}</h3>
+        <p>${done} из ${lessons.length} занятий завершено</p>
+        <div class="enrolled-progress"><span style="width:${progress}%"></span></div>
+        ${terms.map(term=>`<div class="plan-term"><div class="plan-term-heading"><span>БЛОК ${String(term.order).padStart(2,"0")}</span><b>${esc(term.title)}</b></div>${term.subjects.map(subject=>{
+          const subjectDone=subject.lessonIds.filter(id=>Boolean(completedLessons[id])).length;
+          return `<div class="plan-subject"><div><strong>${esc(subject.title)}</strong><small>${subjectDone} из ${subject.lessonIds.length} занятий</small></div><span>${subjectDone===subject.lessonIds.length?"Завершено":subjectDone?"В процессе":"Впереди"}</span></div>`;
+        }).join("")}</div>`).join("")}
+        <button data-course="${course.id}">Открыть занятия ${icon("arrow")}</button>
+      </article>`;
+    }).join("")}</section>` : `<section class="enrollment-empty"><span class="subtle-label">ТВОЙ СЛЕДУЮЩИЙ ШАГ</span><h2>Выбери программу и оформи зачисление</h2><p>После зачисления программа появится здесь. Прогресс будет сохраняться в твоём Telegram-профиле.</p><button class="orange-button" data-go="faculties">Выбрать факультет ${icon("arrow")}</button></section>`}
     <section class="courses-section study-courses"><div class="section-title"><div><span class="subtle-label">ОБРАЗОВАТЕЛЬНЫЙ КАТАЛОГ</span><h2>Все программы</h2></div><span class="course-count">${courses.length} ознакомительных</span></div>${courses.map(c=>courseTile(c,true)).join("")}</section>
   </main>`;
 }
