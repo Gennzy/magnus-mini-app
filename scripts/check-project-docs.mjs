@@ -122,22 +122,22 @@ if (!activeMatch) {
   errors.push("PROJECT_STATE must declare exactly one active WP using '**Текущий WP: ID — ...**'");
 } else {
   const activeId = activeMatch[1];
-  const activeWorkPackagePath = \`docs/work-packages/\${activeId}.md\`;
+  const activeWorkPackagePath = "docs/work-packages/" + activeId + ".md";
   if (!existsSync(filePath(activeWorkPackagePath))) {
-    errors.push(\`Active WP document is missing: \${activeWorkPackagePath}\`);
+    errors.push("Active WP document is missing: " + activeWorkPackagePath);
   } else {
     const activeWorkPackage = readFileSync(filePath(activeWorkPackagePath), "utf8");
     for (const section of ["## 1. Цель и ожидаемый результат", "## 3. Границы", "## 5. Затрагиваемые файлы и области", "## 6. Критерии приёмки", "## 7. План тестирования", "## 10. Закрытие WP"]) {
-      if (!activeWorkPackage.includes(section)) errors.push(\`\${activeId} WP is missing section: \${section}\`);
+      if (!activeWorkPackage.includes(section)) errors.push(activeId + " WP is missing section: " + section);
     }
     if (!/^\*\*Статус:\*\* (?:\[~\] In progress|\[ \] Planned)/m.test(activeWorkPackage)) {
-      errors.push(\`Current WP \${activeId} must be Planned or In progress, not complete/blocked\`);
+      errors.push("Current WP " + activeId + " must be Planned or In progress, not complete/blocked");
     }
   }
   const roadmapLine = roadmap.split("\n").find(line => line.match(/^- \[[ x~!]\]\s+([A-Z]+-\d+)(?=\s|—)/)?.[1] === activeId);
-  if (!roadmapLine) errors.push(\`Active WP \${activeId} is missing from MASTER_ROADMAP\`);
+  if (!roadmapLine) errors.push("Active WP " + activeId + " is missing from MASTER_ROADMAP");
   else if (!roadmapLine.startsWith("- [ ]") && !roadmapLine.startsWith("- [~]")) {
-    errors.push(\`Active WP \${activeId} is marked complete/blocked in MASTER_ROADMAP: \${roadmapLine}\`);
+    errors.push("Active WP " + activeId + " is marked complete/blocked in MASTER_ROADMAP: " + roadmapLine);
   }
 }
 
