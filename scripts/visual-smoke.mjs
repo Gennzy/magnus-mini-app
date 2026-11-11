@@ -231,6 +231,7 @@ try {
         if (service === "payments") { callback(null, { ok: true, plans: [] }); return; }
         if (service === "studentData" && payload.action === "load") { callback(null, { completedLessons, enrollments: { ai: "active" } }); return; }
         if (service === "studentData" && payload.action === "startFinalExam") { callback(null, { ok: true, sessionId: "smoke-session", questions }); return; }
+        if (service === "studentData" && payload.action === "submitFinalExam") { callback(null, { ok: true, result: { passed: true, score: 100, correct: 6, total: 6 } }); return; }
         callback(null, { ok: false, message: "Unsupported visual smoke action" });
       } }
     } };
@@ -247,6 +248,11 @@ try {
   const examQuestionCount = await examPage.locator(".final-exam-question").count();
   const examOptionCount = await examPage.locator(".final-exam-question input[type=radio]").count();
   if (examQuestionCount !== 6 || examOptionCount !== 18) failures.push("telegram-exam: expected 6 questions and 18 options, found " + examQuestionCount + "/" + examOptionCount);
+  for (let index = 1; index <= 6; index++) await examPage.locator('input[name="smoke-q' + index + '"][value="0"]').check();
+  await examPage.locator("[data-exam-submit]").click();
+  await examPage.waitForSelector(".final-exam-result.passed", { timeout: 10000 });
+  const examResultText = await examPage.locator(".final-exam-result.passed").innerText();
+  if (!examResultText.includes("100%")) failures.push("telegram-exam: passed result did not display 100 percent");
   await examPage.evaluate(() => document.querySelector(".startup-screen")?.remove());
   await examPage.evaluate(() => window.scrollTo(0, 0));
   await examPage.waitForTimeout(120);
@@ -261,6 +267,7 @@ try {
   });
   if (examNav.position !== "sticky" || examNav.navBottom > examNav.screenTop + 1) failures.push("telegram-exam: navigation overlaps the exam content " + JSON.stringify(examNav));
   await examPage.screenshot({ path: artifacts + "/telegram-final-exam.png", fullPage: true });
+  await examPage.screenshot({ path: artifacts + "/telegram-final-exam-result.png", fullPage: true });
   await examPage.close();
   const breakpointPage = await browser.newPage({ viewport: { width: 320, height: 844 }, deviceScaleFactor: 1 });
   const breakpointResults = [];
