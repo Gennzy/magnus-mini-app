@@ -80,7 +80,50 @@ function summarizeStudent(row) {
     quizAnswersCount: Object.keys(quizResults).length,
     quizAttempts,
     interestedFacultiesCount: Object.keys(plainMap(payload.interestedFaculties)).length,
+    academicStatus: buildAcademicRecord(payload).status,
+    enrolledProgramsCount: Object.keys(plainMap(payload.enrollments)).length,
   };
+}
+
+
+function parseRecord(value) {
+  if (value && typeof value === 'object') return value;
+  try { return JSON.parse(value || '{}'); } catch { return {}; }
+}
+
+function buildAcademicRecord(payload) {
+  const enrollments = plainMap(payload.enrollments);
+  const completed = plainMap(payload.completedLessons);
+  const practices = plainMap(payload.lessonPracticeResults);
+  const exams = plainMap(payload.finalExams);
+  const programs = {
+    ai: { title: 'Искусственный интеллект', faculty: 'Факультет технологий' },
+    mind: { title: 'Психология и мышление', faculty: 'Факультет психологии' },
+    brand: { title: 'Бренд и маркетинг', faculty: 'Факультет маркетинга' },
+  };
+  const courses = Object.keys(enrollments).filter(id => programs[id]).map(courseId => {
+    const lessonIds = ['01','02','03','04','05','06'].map(n => courseId + '-' + n);
+    const scores = lessonIds.map(id => parseRecord(practices[id])).filter(item => Number.isFinite(Number(item.totalScore)) && item.verdict === 'pass').map(item => Number(item.totalScore));
+    const exam = parseRecord(exams[courseId]);
+    const attempts = Array.isArray(exam.attempts) ? exam.attempts : [];
+    const lastAttempt = attempts[attempts.length - 1] || {};
+    return {
+      courseId, ...programs[courseId], enrolledAt: enrollments[courseId],
+      completedLessons: lessonIds.filter(id => Boolean(completed[id])).length,
+      totalLessons: 6,
+      practiceAverage: scores.length ? Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length * 10) / 10 : null,
+      practicePassed: scores.length,
+      examPassed: Boolean(exam.passed),
+      examScore: Number(lastAttempt.score ?? exam.score) || 0,
+      examAttempts: attempts.length,
+      completion: lessonIds.every(id => Boolean(completed[id])) && Boolean(exam.passed),
+    };
+  });
+  const storedStatus = cleanText(payload.academicStatus, 24);
+  const status = ['applicant','active','academic_leave','expelled','graduated'].includes(storedStatus)
+    ? storedStatus : (courses.length ? 'active' : 'applicant');
+  const history = Array.isArray(payload.academicHistory) ? payload.academicHistory.slice(-30).reverse() : [];
+  return { status, enrollments, courses, history };
 }
 
 async function writeAudit(entry) {
@@ -325,6 +368,33 @@ export default async function (input, ctx) {
     })) };
   }
 
+  if (input?.action === 'updateAcademicStatus') {
+    const studentId = String(input.studentId || '').trim();
+    const status = String(input.status || '');
+    const note = cleanText(input.note, 500);
+    const allowedStatuses = ['applicant','active','academic_leave','expelled','graduated'];
+    if (!/^\\d{5,20}$/.test(studentId) || !allowedStatuses.includes(status)) {
+      return { ok: false, code: 'INVALID_ACADEMIC_UPDATE', message: 'Проверь студента и выбранный академический статус.' };
+    }
+    const row = await db.select().from(studentData).where(eq(studentData.tgId, studentId)).get();
+    if (!row) return { ok: false, code: 'STUDENT_NOT_FOUND', message: 'Студент не найден в базе.' };
+    const payload = plainMap(row.payload);
+    const current = buildAcademicRecord(payload);
+    if (status === 'graduated' && (!current.courses.length || !current.courses.every(course => course.completion))) {
+      return { ok: false, code: 'GRADUATION_REQUIREMENTS_NOT_MET', message: 'Нельзя отметить выпуск: по каждой зачисленной программе должны быть завершены все занятия и сдан итоговый экзамен.' };
+    }
+    if (status === 'active' && !Object.keys(plainMap(payload.enrollments)).length) {
+      return { ok: false, code: 'NO_ENROLLMENT', message: 'Нельзя активировать студента без зачисления на программу.' };
+    }
+    const now = Math.floor(Date.now() / 1000);
+    const history = Array.isArray(payload.academicHistory) ? payload.academicHistory.slice(-49) : [];
+    const entry = { id: 'acad-' + now + '-' + Math.random().toString(36).slice(2, 8), from: current.status, to: status, note, changedAt: now, changedBy: tgId, changedByEmail: admin.email };
+    const nextPayload = { ...payload, academicStatus: status, academicHistory: [...history, entry] };
+    await db.update(studentData).set({ payload: nextPayload, updatedAt: now }).where(eq(studentData.tgId, studentId)).run();
+    await writeAuditSafely({ action: 'academic.status.updated', actorTgId: tgId, actorEmail: admin.email, targetType: 'student', targetId: studentId, summary: 'Изменён академический статус студента', details: { from: current.status, to: status, note } });
+    return { ok: true, academic: buildAcademicRecord(nextPayload), message: 'Академический статус обновлён.' };
+  }
+
   if (input?.action === 'studentDetail') {
     const studentId = String(input.studentId || '').trim();
     if (!/^\d{5,20}$/.test(studentId)) {
@@ -341,6 +411,7 @@ export default async function (input, ctx) {
       ok: true,
       student: { ...summarizeStudent(row), subscription: publicSubscription(subscriptionRow) },
       subscription: publicSubscription(subscriptionRow),
+      academic: buildAcademicRecord(payload),
       profile: {
         firstName: cleanText(profile.firstName, 80),
         lastName: cleanText(profile.lastName, 80),
