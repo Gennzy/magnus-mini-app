@@ -182,13 +182,18 @@ try {
 
     const desktopNavCheck = await page.evaluate(() => {
       const nav = document.querySelector(".bottom-nav");
-      const screen = document.querySelector("main.screen");
-      const navRect = nav.getBoundingClientRect();
-      const screenRect = screen.getBoundingClientRect();
-      return { navBottom: navRect.bottom, screenTop: screenRect.top, position: getComputedStyle(nav).position };
+      const rect = nav.getBoundingClientRect();
+      const expectedBottom = window.innerHeight - (window.innerWidth >= 760 ? 16 : 0);
+      return {
+        position: getComputedStyle(nav).position,
+        navBottom: rect.bottom,
+        expectedBottom,
+        navHeight: rect.height,
+        bodyPaddingBottom: parseFloat(getComputedStyle(document.body).paddingBottom) || 0
+      };
     });
-    if (desktopNavCheck.position !== "sticky" || desktopNavCheck.navBottom > desktopNavCheck.screenTop + 1) {
-      failures.push(name + "/navigation: desktop nav overlaps page content " + JSON.stringify(desktopNavCheck));
+    if (desktopNavCheck.position !== "fixed" || Math.abs(desktopNavCheck.navBottom - desktopNavCheck.expectedBottom) > 2 || desktopNavCheck.bodyPaddingBottom < desktopNavCheck.navHeight + 12) {
+      failures.push(name + "/navigation: primary navigation is not pinned to the viewport bottom with content clearance " + JSON.stringify(desktopNavCheck));
     }
 
     await page.locator('.avatar-button[data-go="profile"]').click();
@@ -335,12 +340,16 @@ try {
   if (examOverflow.document > examOverflow.viewport + 1) failures.push("telegram-exam: horizontal overflow " + JSON.stringify(examOverflow));
   const examNav = await examPage.evaluate(() => {
     const nav = document.querySelector(".bottom-nav");
-    const screen = document.querySelector("main.screen");
-    const navRect = nav.getBoundingClientRect();
-    const screenRect = screen.getBoundingClientRect();
-    return { position: getComputedStyle(nav).position, navBottom: navRect.bottom, screenTop: screenRect.top };
+    const rect = nav.getBoundingClientRect();
+    return {
+      position: getComputedStyle(nav).position,
+      navBottom: rect.bottom,
+      expectedBottom: window.innerHeight - (window.innerWidth >= 760 ? 16 : 0),
+      navHeight: rect.height,
+      bodyPaddingBottom: parseFloat(getComputedStyle(document.body).paddingBottom) || 0
+    };
   });
-  if (examNav.position !== "sticky" || examNav.navBottom > examNav.screenTop + 1) failures.push("telegram-exam: navigation overlaps the exam content " + JSON.stringify(examNav));
+  if (examNav.position !== "fixed" || Math.abs(examNav.navBottom - examNav.expectedBottom) > 2 || examNav.bodyPaddingBottom < examNav.navHeight + 12) failures.push("telegram-exam: navigation is not pinned to the viewport bottom with content clearance " + JSON.stringify(examNav));
   await captureSettled(examPage, { path: artifacts + "/telegram-final-exam.png", fullPage: true });
   await captureSettled(examPage, { path: artifacts + "/telegram-final-exam-result.png", fullPage: true });
   await examPage.close();
@@ -383,10 +392,22 @@ try {
   for (const [tab, selector] of [["overview", ".admin-stat-grid"], ["reviews", ".admin-screen section"], ["students", ".admin-students-section"], ["support", ".admin-support-section"], ["payments", ".admin-payment-plans"], ["ai", ".admin-ai-settings"], ["bot", ".admin-bot-settings"], ["audit", ".admin-audit-section"]]) {
     await adminPage.locator('.admin-tabs [data-admin-tab="' + tab + '"]').click();
     await adminPage.waitForSelector(selector, { timeout: 10000 });
-    const adminDimensions = await adminPage.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, navBottom: document.querySelector(".bottom-nav").getBoundingClientRect().bottom, screenTop: document.querySelector("main.screen").getBoundingClientRect().top }));
+    const adminDimensions = await adminPage.evaluate(() => {
+      const nav = document.querySelector(".bottom-nav");
+      const rect = nav.getBoundingClientRect();
+      return {
+        viewport: document.documentElement.clientWidth,
+        document: document.documentElement.scrollWidth,
+        navBottom: rect.bottom,
+        expectedBottom: window.innerHeight - (window.innerWidth >= 760 ? 16 : 0),
+        navPosition: getComputedStyle(nav).position,
+        navHeight: rect.height,
+        bodyPaddingBottom: parseFloat(getComputedStyle(document.body).paddingBottom) || 0
+      };
+    });
     if (tab === "bot" && await adminPage.locator(".admin-bot-icon svg").count() !== 1) failures.push("admin-bot: expected the shared owl brand mark instead of a text monogram");
     if (adminDimensions.document > adminDimensions.viewport + 1) failures.push("admin-" + tab + ": horizontal overflow " + JSON.stringify(adminDimensions));
-    if (adminDimensions.navBottom > adminDimensions.screenTop + 1) failures.push("admin-" + tab + ": primary navigation overlaps admin content " + JSON.stringify(adminDimensions));
+    if (adminDimensions.navPosition !== "fixed" || Math.abs(adminDimensions.navBottom - adminDimensions.expectedBottom) > 2 || adminDimensions.bodyPaddingBottom < adminDimensions.navHeight + 12) failures.push("admin-" + tab + ": primary navigation is not pinned to the viewport bottom with content clearance " + JSON.stringify(adminDimensions));
     await captureSettled(adminPage, { path: artifacts + "/admin-mobile-" + tab + ".png", fullPage: true });
   }
   await adminPage.setViewportSize({ width: 1440, height: 1000 });
@@ -394,8 +415,20 @@ try {
   await adminPage.waitForSelector(".admin-screen .admin-header", { timeout: 15000 });
   await adminPage.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
   await adminPage.waitForSelector(".admin-stat-grid", { timeout: 10000 });
-  const adminDesktop = await adminPage.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, navBottom: document.querySelector(".bottom-nav").getBoundingClientRect().bottom, screenTop: document.querySelector("main.screen").getBoundingClientRect().top }));
-  if (adminDesktop.document > adminDesktop.viewport + 1 || adminDesktop.navBottom > adminDesktop.screenTop + 1) failures.push("admin-desktop: layout overflow or navigation overlap " + JSON.stringify(adminDesktop));
+  const adminDesktop = await adminPage.evaluate(() => {
+    const nav = document.querySelector(".bottom-nav");
+    const rect = nav.getBoundingClientRect();
+    return {
+      viewport: document.documentElement.clientWidth,
+      document: document.documentElement.scrollWidth,
+      navBottom: rect.bottom,
+      expectedBottom: window.innerHeight - 16,
+      navPosition: getComputedStyle(nav).position,
+      navHeight: rect.height,
+      bodyPaddingBottom: parseFloat(getComputedStyle(document.body).paddingBottom) || 0
+    };
+  });
+  if (adminDesktop.document > adminDesktop.viewport + 1 || adminDesktop.navPosition !== "fixed" || Math.abs(adminDesktop.navBottom - adminDesktop.expectedBottom) > 2 || adminDesktop.bodyPaddingBottom < adminDesktop.navHeight + 12) failures.push("admin-desktop: layout overflow or primary navigation bottom anchoring/clearance failure " + JSON.stringify(adminDesktop));
   await captureSettled(adminPage, { path: artifacts + "/admin-desktop-overview.png", fullPage: true });
   await adminPage.close();
   const breakpointPage = await browser.newPage({ viewport: { width: 320, height: 844 }, deviceScaleFactor: 1 });
@@ -406,29 +439,42 @@ try {
     await breakpointPage.waitForSelector("#app .home-screen", { timeout: 15000 });
     await breakpointPage.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
     const dimensions = await breakpointPage.evaluate(() => {
-      const nav = document.querySelector(".bottom-nav").getBoundingClientRect();
-      const screen = document.querySelector("main.screen");
-      const firstContent = screen?.firstElementChild;
-      return { viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, navBottom: nav.bottom, screenTop: firstContent?.getBoundingClientRect().top ?? screen.getBoundingClientRect().top, navPosition: getComputedStyle(document.querySelector(".bottom-nav")).position };
+      const nav = document.querySelector(".bottom-nav");
+      const rect = nav.getBoundingClientRect();
+      return {
+        viewport: document.documentElement.clientWidth,
+        document: document.documentElement.scrollWidth,
+        navBottom: rect.bottom,
+        expectedBottom: window.innerHeight - (window.innerWidth >= 760 ? 16 : 0),
+        navPosition: getComputedStyle(nav).position,
+        navHeight: rect.height,
+        bodyPaddingBottom: parseFloat(getComputedStyle(document.body).paddingBottom) || 0
+      };
     });
     if (dimensions.document > dimensions.viewport + 1) failures.push("breakpoint-" + width + "/home: horizontal overflow " + dimensions.document + "px at viewport " + dimensions.viewport + "px");
-    if (dimensions.navPosition !== "sticky" || dimensions.navBottom > dimensions.screenTop + 1) failures.push("breakpoint-" + width + "/navigation: nav overlaps home content " + JSON.stringify(dimensions));
+    if (dimensions.navPosition !== "fixed" || Math.abs(dimensions.navBottom - dimensions.expectedBottom) > 2 || dimensions.bodyPaddingBottom < dimensions.navHeight + 12) failures.push("breakpoint-" + width + "/navigation: nav is not anchored to the viewport bottom with content clearance " + JSON.stringify(dimensions));
     const checkStage = async (stage) => {
       await breakpointPage.evaluate(() => window.scrollTo(0, 0));
       await breakpointPage.waitForTimeout(150);
       const result = await breakpointPage.evaluate(() => {
         const screen = document.querySelector("main.screen");
         const firstContent = screen?.firstElementChild;
+        const nav = document.querySelector(".bottom-nav");
+        const navRect = nav.getBoundingClientRect();
         return {
           viewport: document.documentElement.clientWidth,
           document: document.documentElement.scrollWidth,
           screen: screen?.getBoundingClientRect().width ?? 0,
-          navBottom: document.querySelector(".bottom-nav")?.getBoundingClientRect().bottom ?? 0,
+          navBottom: navRect.bottom,
+          expectedNavBottom: window.innerHeight - (window.innerWidth >= 760 ? 16 : 0),
+          navPosition: getComputedStyle(nav).position,
+          navHeight: navRect.height,
+          bodyPaddingBottom: parseFloat(getComputedStyle(document.body).paddingBottom) || 0,
           screenTop: firstContent?.getBoundingClientRect().top ?? screen?.getBoundingClientRect().top ?? 0,
         };
       });
       if (result.document > result.viewport + 1) failures.push("breakpoint-" + width + "/" + stage + ": horizontal overflow " + JSON.stringify(result));
-      if (result.navBottom > result.screenTop + 1) failures.push("breakpoint-" + width + "/" + stage + ": navigation overlaps content " + JSON.stringify(result));
+      if (result.navPosition !== "fixed" || Math.abs(result.navBottom - result.expectedNavBottom) > 2 || result.bodyPaddingBottom < result.navHeight + 12) failures.push("breakpoint-" + width + "/" + stage + ": navigation bottom anchoring or content clearance failed " + JSON.stringify(result));
       if (stage === "home") {
         const mascot = await breakpointPage.evaluate(() => {
           const card = document.querySelector(".dashboard-continue").getBoundingClientRect();
