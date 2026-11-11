@@ -1,10 +1,14 @@
 import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const root = resolve(process.argv[2] || process.cwd());
+const filePath = path => resolve(root, path);
 
 const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md"];
 const errors = [];
 
 for (const file of requiredFiles) {
-  if (!existsSync(file)) errors.push(`Missing required project document: ${file}`);
+  if (!existsSync(filePath(file))) errors.push(`Missing required project document: ${file}`);
 }
 if (errors.length) {
   console.error("Project documentation check failed:");
@@ -12,11 +16,11 @@ if (errors.length) {
   process.exit(1);
 }
 
-const roadmap = readFileSync(requiredFiles[0], "utf8");
-const state = readFileSync(requiredFiles[1], "utf8");
-const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
-const template = readFileSync("docs/WP_TEMPLATE.md", "utf8");
-const workflow = readFileSync(".github/workflows/visual-check.yml", "utf8");
+const roadmap = readFileSync(filePath(requiredFiles[0]), "utf8");
+const state = readFileSync(filePath(requiredFiles[1]), "utf8");
+const packageJson = JSON.parse(readFileSync(filePath("package.json"), "utf8"));
+const template = readFileSync(filePath("docs/WP_TEMPLATE.md"), "utf8");
+const workflow = readFileSync(filePath(".github/workflows/visual-check.yml"), "utf8");
 
 const requireText = (text, pattern, label) => {
   if (!pattern.test(text)) errors.push(label);
