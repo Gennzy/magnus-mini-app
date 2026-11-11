@@ -336,19 +336,26 @@ try {
     await breakpointPage.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
     const dimensions = await breakpointPage.evaluate(() => {
       const nav = document.querySelector(".bottom-nav").getBoundingClientRect();
-      const screen = document.querySelector("main.screen").getBoundingClientRect();
-      return { viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, navBottom: nav.bottom, screenTop: screen.top, navPosition: getComputedStyle(document.querySelector(".bottom-nav")).position };
+      const screen = document.querySelector("main.screen");
+      const firstContent = screen?.firstElementChild;
+      return { viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, navBottom: nav.bottom, screenTop: firstContent?.getBoundingClientRect().top ?? screen.getBoundingClientRect().top, navPosition: getComputedStyle(document.querySelector(".bottom-nav")).position };
     });
     if (dimensions.document > dimensions.viewport + 1) failures.push("breakpoint-" + width + "/home: horizontal overflow " + dimensions.document + "px at viewport " + dimensions.viewport + "px");
     if (dimensions.navPosition !== "sticky" || dimensions.navBottom > dimensions.screenTop + 1) failures.push("breakpoint-" + width + "/navigation: nav overlaps home content " + JSON.stringify(dimensions));
     const checkStage = async (stage) => {
-      const result = await breakpointPage.evaluate(() => ({
-        viewport: document.documentElement.clientWidth,
-        document: document.documentElement.scrollWidth,
-        screen: document.querySelector("main.screen")?.getBoundingClientRect().width ?? 0,
-        navBottom: document.querySelector(".bottom-nav")?.getBoundingClientRect().bottom ?? 0,
-        screenTop: document.querySelector("main.screen")?.getBoundingClientRect().top ?? 0,
-      }));
+      await breakpointPage.evaluate(() => window.scrollTo(0, 0));
+      await breakpointPage.waitForTimeout(150);
+      const result = await breakpointPage.evaluate(() => {
+        const screen = document.querySelector("main.screen");
+        const firstContent = screen?.firstElementChild;
+        return {
+          viewport: document.documentElement.clientWidth,
+          document: document.documentElement.scrollWidth,
+          screen: screen?.getBoundingClientRect().width ?? 0,
+          navBottom: document.querySelector(".bottom-nav")?.getBoundingClientRect().bottom ?? 0,
+          screenTop: firstContent?.getBoundingClientRect().top ?? screen?.getBoundingClientRect().top ?? 0,
+        };
+      });
       if (result.document > result.viewport + 1) failures.push("breakpoint-" + width + "/" + stage + ": horizontal overflow " + JSON.stringify(result));
       if (result.navBottom > result.screenTop + 1) failures.push("breakpoint-" + width + "/" + stage + ": navigation overlaps content " + JSON.stringify(result));
       if (width === 320) await breakpointPage.screenshot({ path: artifacts + "/breakpoint-320-" + stage + ".png", fullPage: true });
