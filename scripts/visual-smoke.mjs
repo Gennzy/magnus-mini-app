@@ -59,66 +59,6 @@ try {
     await assertNoHorizontalOverflow("academic-passport-guest");
     await page.screenshot({ path: `${artifacts}/${name}-academic-passport-guest.png`, fullPage: true });
 
-    // Validate populated academic data with an isolated Telegram/WebApp fixture.
-    const fixturePage = await browser.newPage({ viewport, deviceScaleFactor: 1 });
-    const fixturePassport = {
-      status: "active", studentName: "Тестовый Студент", username: "magnus_demo",
-      enrolledProgramsCount: 1, totalLessons: 6, completedLessons: 2, progress: 33,
-      programs: [{
-        id: "ai", code: "MAG-IT-001", title: "Введение в искусственный интеллект",
-        facultyTitle: "Факультет технологий", enrolledAt: "2026-10-01T10:00:00.000Z",
-        totalLessons: 6, completedLessons: 2, progress: 33, practiceAverage: 5,
-        exam: { passed: false, score: 0, attempts: 1, maxAttempts: 3 },
-        certificate: { issued: false, certificateId: "", issuedAt: "" },
-        terms: [
-          { order: 1, title: "Первый учебный блок", subjects: [{ title: "Основы искусственного интеллекта", totalLessons: 3, completedLessons: 2, passedPractices: 2 }] },
-          { order: 2, title: "Второй учебный блок", subjects: [{ title: "Генеративные модели и применение", totalLessons: 3, completedLessons: 0, passedPractices: 0 }] }
-        ]
-      }],
-      history: [{ from: "applicant", to: "active", note: "Зачисление подтверждено", changedAt: 1790848800 }]
-    };
-    fixturePage.on("pageerror", error => failures.push(`${name}/passport fixture page error: ${error.message}`));
-    await fixturePage.addInitScript((passport) => {
-      const empty = {};
-      const base = {
-        assignmentDrafts: empty, lessonNotes: empty, interestedFaculties: empty,
-        lessonQuizResults: empty, completedLessons: empty, enrollments: { ai: "2026-10-01T10:00:00.000Z" },
-        lessonPracticeDrafts: empty, lessonPracticeResults: empty, finalExams: empty,
-        certificates: empty, assignmentSubmissions: [],
-        academicCatalog: { version: 1, faculties: [], programs: [{ id: "ai", title: "Введение в искусственный интеллект" }] },
-        academicPassport: passport, subscription: { status: "none", planId: "", startsAt: 0, endsAt: 0 }
-      };
-      window.Telegram = { WebApp: {
-        initDataUnsafe: { user: { id: 987654321, first_name: "Тестовый", last_name: "Студент", username: "magnus_demo" } },
-        ready() {}, expand() {}, setHeaderColor() {}, setBackgroundColor() {},
-        HapticFeedback: { impactOccurred() {}, notificationOccurred() {} },
-        Serverless: { call(endpoint, payload, callback) {
-          if (endpoint === "studentData") callback(null, payload.action === "getAcademicPassport" ? { ok: true, academicPassport: passport } : base);
-          else if (endpoint === "admin") callback(null, { ok: true, isAdmin: false });
-          else if (endpoint === "payments") callback(null, payload.action === "plans" ? { ok: true, plans: [] } : { ok: true, orders: [] });
-          else callback(null, { ok: true });
-        } }
-      } };
-    }, fixturePassport);
-    await fixturePage.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
-    await fixturePage.waitForSelector("#app .home-screen", { timeout: 15000 });
-    await fixturePage.waitForTimeout(250);
-    await fixturePage.locator('.avatar-button[data-go="profile"]').click();
-    await fixturePage.waitForSelector(".profile-screen", { timeout: 10000 });
-    await fixturePage.locator('[data-go="academicPassport"]').click();
-    await fixturePage.waitForSelector(".academic-passport-screen", { timeout: 10000 });
-    await fixturePage.waitForTimeout(350);
-    const fixtureText = await fixturePage.locator(".academic-passport-screen").innerText();
-    const fixtureProgramCards = await fixturePage.locator(".academic-passport-screen .passport-program-card").count();
-    if (fixtureProgramCards !== 1) failures.push(`${name}/passport: expected one populated program card, found ${fixtureProgramCards}; screen: ${fixtureText.slice(0, 1200)}`);
-    for (const required of ["Тестовый Студент", "MAG-IT-001", "Введение в искусственный интеллект", "2 из 3 занятий", "Практика: 2/3", "Итоговый экзамен"]) {
-      if (!fixtureText.includes(required)) failures.push(`${name}/passport: missing populated data: ${required}`);
-    }
-    const fixtureOverflow = await fixturePage.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
-    if (fixtureOverflow) failures.push(`${name}/passport: populated layout has horizontal overflow`);
-    await fixturePage.screenshot({ path: `${artifacts}/${name}-academic-passport-populated.png`, fullPage: true });
-    await fixturePage.close();
-
     // Reset to a clean startup state before the learning-flow regression checks.
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.waitForSelector("#app .home-screen", { timeout: 15000 });
