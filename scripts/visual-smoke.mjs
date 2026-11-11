@@ -43,6 +43,16 @@ try {
     await page.locator(".startup-screen").evaluate(el => el.remove());
     await page.waitForTimeout(1900);
     await page.screenshot({ path: `${artifacts}/${name}-home.png`, fullPage: true });
+    await page.keyboard.press("Tab");
+    const keyboardFocus = await page.evaluate(() => { const style = getComputedStyle(document.activeElement); return { tag: document.activeElement.tagName, outlineStyle: style.outlineStyle, outlineWidth: style.outlineWidth }; });
+    if (keyboardFocus.outlineStyle === "none" || parseFloat(keyboardFocus.outlineWidth) < 2) failures.push(name + "/a11y: first keyboard focus target has no visible focus ring " + JSON.stringify(keyboardFocus));
+    const navTargets = await page.locator(".bottom-nav button").evaluateAll(nodes => nodes.map(node => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height })));
+    if (navTargets.some(target => target.height < 44 || target.width < 44)) failures.push(name + "/a11y: navigation touch target below 44px " + JSON.stringify(navTargets));
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const reducedMotion = await page.locator(".dashboard-owl").evaluate(node => getComputedStyle(node).animationName);
+    if (reducedMotion !== "none") failures.push(name + "/a11y: dashboard mascot still animates with reduced motion enabled");
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+
 
     async function assertNoHorizontalOverflow(stage) {
       const dimensions = await page.evaluate(() => ({
@@ -81,6 +91,8 @@ try {
     await page.locator("[data-assignment-open]").first().click();
     await page.waitForSelector(".assignment-detail-screen", { timeout: 10000 });
     await assertNoHorizontalOverflow("assignment-detail");
+    const answerFontSize = await page.locator(".assignment-answer textarea").evaluate(node => parseFloat(getComputedStyle(node).fontSize));
+    if (answerFontSize < 16) failures.push(name + "/assignment-detail: textarea font-size below 16px may trigger iOS auto-zoom (" + answerFontSize + "px)");
     const assignmentCopy = await page.locator(".assignment-detail-screen").innerText();
     if (/преподавател/i.test(assignmentCopy)) failures.push(name + "/assignment-detail: human teacher wording conflicts with the AI-led learning model");
     await page.screenshot({ path: artifacts + "/" + name + "-assignment-detail.png", fullPage: true });
