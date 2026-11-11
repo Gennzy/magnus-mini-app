@@ -70,13 +70,16 @@
 
 **Текущий WP: PROD-005 — определить активность и участие в самостоятельном обучении.**
 
-- **Статус:** [ ] Planned; не начат.
+- **Статус:** [~] In progress.
 - **Последняя завершённая задача:** PROD-004 — [x] DONE.
-- **Решение PROD-004:** `docs/ACADEMIC_STATUS_MODEL.md`.
-- **WP PROD-004:** `docs/work-packages/PROD-004.md`.
-- **Подтверждение PROD-004:** полный visual CI [run 43005437660](https://github.com/Gennzy/magnus-mini-app/actions/runs/43005437660), SHA `05eec45e2e0704b23116f02dc3b54c2f0703438c` — SUCCESS; документационная модель, checker и негативные тесты, tutor coverage, payment invariants, backend syntax, production build и desktop/mobile smoke прошли.
-- **Границы PROD-004:** менялись только документация и документационный checker/tests; UI, runtime, API, схема БД, student records и Telegram deploy не затрагивались.
-- **Следующая задача:** оформить PROD-005 по `docs/WP_TEMPLATE.md`, изучить существующие события учебной активности, определить, что переводит `enrolled` в `active`, не смешивая вход в приложение с фактическим участием. До закрытия PROD-005 не начинать PROD-006.
+- **Модель статусов:** `docs/ACADEMIC_STATUS_MODEL.md`.
+- **WP:** `docs/work-packages/PROD-005.md`.
+- **Исходный HEAD PROD-005:** `67575610008207fe665d2b73a77d81d8fb24c2cd`.
+- **Предыдущий полный CI:** [run 43005754173](https://github.com/Gennzy/magnus-mini-app/actions/runs/43005754173) — SUCCESS.
+- **Направление решения:** `enrolled → active` после первого серверно принятого содержательного действия по программе; активность и академический статус не смешиваются; входы, просмотры, черновики, AI-чат и платежи не считаются участием.
+- **Технические факты:** `student_data.updated_at` меняется при `load`, generic save и AI usage; журнала учебных событий нет. Для last academic activity необходим отдельный серверный источник.
+- **Границы:** документация и documentation CI/checker/tests; без runtime/API/БД и Telegram deploy.
+- **Следующая задача после закрытия:** PROD-006 — правила зачёта дисциплин и программы. До закрытия PROD-005 не начинать.
 
 ## 6. Как продолжать в новом чате
 

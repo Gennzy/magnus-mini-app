@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 const root = resolve(process.argv[2] || process.cwd());
 const filePath = path => resolve(root, path);
 
-const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md", "docs/KNOWN_ISSUES.md", "docs/ACADEMIC_STATUS_MODEL.md"];
+const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md", "docs/KNOWN_ISSUES.md", "docs/ACADEMIC_STATUS_MODEL.md", "docs/LEARNING_ACTIVITY_MODEL.md"];
 const errors = [];
 
 for (const file of requiredFiles) {
@@ -24,6 +24,7 @@ const workflow = readFileSync(filePath(".github/workflows/visual-check.yml"), "u
 const adrIndex = readFileSync(filePath("docs/adr/README.md"), "utf8");
 const knownIssues = readFileSync(filePath("docs/KNOWN_ISSUES.md"), "utf8");
 const academicStatusModel = readFileSync(filePath("docs/ACADEMIC_STATUS_MODEL.md"), "utf8");
+const learningActivityModel = readFileSync(filePath("docs/LEARNING_ACTIVITY_MODEL.md"), "utf8");
 const adrTemplate = readFileSync(filePath("docs/adr/ADR-TEMPLATE.md"), "utf8");
 
 const requireText = (text, pattern, label) => {
@@ -76,6 +77,14 @@ for (const field of ["Категория", "Приоритет / статус", 
 }
 if (!roadmap.includes("docs/KNOWN_ISSUES.md")) errors.push("MASTER_ROADMAP does not link to the known issues register");
 if (!roadmap.includes("docs/ACADEMIC_STATUS_MODEL.md")) errors.push("MASTER_ROADMAP does not link to the academic status model");
+if (!roadmap.includes("docs/LEARNING_ACTIVITY_MODEL.md")) errors.push("MASTER_ROADMAP does not link to the learning activity model");
+for (const section of ["## 1. Основное решение", "## 2. Что считается первым участием", "## 3. Что не считается учебной активностью", "## 5. Учебное событие и контракт журнала", "## 9. Негативные и пограничные правила"]) {
+  if (!learningActivityModel.includes(section)) errors.push(`LEARNING_ACTIVITY_MODEL is missing section: ${section}`);
+}
+for (const event of ["practice_submitted", "lesson_completed", "final_exam_submitted", "firstAcademicActivityAt", "lastAcademicActivityAt"]) {
+  if (!learningActivityModel.includes("`" + event + "`")) errors.push(`LEARNING_ACTIVITY_MODEL is missing event/field: ${event}`);
+}
+
 for (const section of ["## 1. Основное решение", "## 4. Статусы программы", "## 5. Матрица переходов", "## 10. Сопоставление с текущими данными"]) {
   if (!academicStatusModel.includes(section)) errors.push(`ACADEMIC_STATUS_MODEL is missing section: ${section}`);
 }
