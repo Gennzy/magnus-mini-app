@@ -8088,7 +8088,7 @@ textarea { line-height: 1.6; }
 .dashboard-continue .orange-button{min-height:44px;padding:0 18px;background:#bd8050;box-shadow:0 6px 16px rgba(0,0,0,.18);font-size:11px}
 .dashboard-owl-stage{right:2%;width:39%;height:270px}
 .dashboard-owl{
-  filter:sepia(.34) saturate(.72) hue-rotate(344deg) brightness(.96) contrast(1.04) drop-shadow(0 18px 24px rgba(0,0,0,.34));
+  filter:sepia(.78) saturate(.82) hue-rotate(350deg) brightness(.96) contrast(1.06) drop-shadow(0 18px 24px rgba(0,0,0,.34));
 }
 .dashboard-owl-orbit{border-color:rgba(216,171,132,.22)}
 .dashboard-owl-orbit-two{border-color:rgba(255,255,255,.1)}
