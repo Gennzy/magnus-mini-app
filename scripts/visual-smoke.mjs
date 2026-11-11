@@ -240,7 +240,7 @@ try {
   await examPage.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
   await examPage.locator('.bottom-nav [data-go="study"]').click();
   await examPage.waitForSelector(".study-screen", { timeout: 10000 });
-  await examPage.locator('.study-screen [data-course="ai"]').click();
+  await examPage.locator('.study-screen [data-course="ai"]').last().click();
   await examPage.waitForSelector(".learning-map-screen .learning-path", { timeout: 10000 });
   await examPage.locator('[data-exam-start="ai"]').click();
   await examPage.waitForSelector(".final-exam-screen", { timeout: 10000 });
