@@ -167,7 +167,9 @@ const icon = (name, cls="") => {
     chart:'<path d="M4 19V5M4 19h16M8 15v-4M13 15V7M18 15V4"/>',
     play:'<path d="m9 6 9 6-9 6V6Z"/>',
     back:'<path d="m15 18-6-6 6-6"/>',
-    refresh:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.7-2L20 12M4 12l2.7 5a7 7 0 0 0 11.7-2"/>'
+    refresh:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.7-2L20 12M4 12l2.7 5a7 7 0 0 0 11.7-2"/>',
+    settings:'<circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.2 1-1.4 2.4-1.5-.6a7.7 7.7 0 0 1-1.7 1l-.2 1.6h-2.8l-.2-1.6a7.7 7.7 0 0 1-1.7-1l-1.5.6-1.4-2.4 1.2-1a7.7 7.7 0 0 1 0-2l-1.2-1 1.4-2.4 1.5.6a7.7 7.7 0 0 1 1.7-1l.2-1.6h2.8l.2 1.6a7.7 7.7 0 0 1 1.7 1l1.5-.6 1.4 2.4-1.2 1a7.7 7.7 0 0 1 0 2Z"/>',
+    help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.3 1.7c-1 .9-1.9 1.3-1.9 2.8M12 17h.01'
   };
   return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.arrow}</svg>`;
 };
@@ -937,7 +939,7 @@ function documentsPage() {
   return `<main class="screen inner-screen documents-screen">
     ${heading("АКАДЕМИЧЕСКИЕ ДОКУМЕНТЫ","Твои результаты<br><em>и достижения.</em>","Сертификаты MAGNUS подтверждают завершение учебной программы и успешную итоговую аттестацию.")}
     ${verifyPanel}
-    ${cards?'<section class="issued-certificates-list">'+cards+'</section>':'<div class="documents-empty-state"><b>Пока нет выданных сертификатов</b><p>Документ появится после завершения всех занятий и успешной сдачи итогового экзамена.</p><button data-go="study">Перейти к обучению ${icon("arrow")}</button></div>'}
+    ${cards?'<section class="issued-certificates-list">'+cards+'</section>':`<div class="documents-empty-state"><b>Пока нет выданных сертификатов</b><p>Документ появится после завершения всех занятий и успешной сдачи итогового экзамена.</p><button data-go="study">Перейти к обучению ${icon("arrow")}</button></div>`}
     ${pending?'<section class="certificate-ready-list"><span class="subtle-label">ГОТОВО К ВЫДАЧЕ</span>'+pending+'</section>':''}
     <p class="legal-note">Сертификат подтверждает прохождение программы MAGNUS и результат внутренней аттестации. Он не является государственным дипломом, документом об аккредитации или квалификацией, признанной государством.</p>
   </main>`;
@@ -986,9 +988,9 @@ function profilePage() {
     </section>
     <section class="profile-menu">
       <button data-go="documents"><span class="menu-icon">${icon("docs")}</span><span><b>Сертификаты и документы</b><small>${Object.keys(certificates).length?Object.keys(certificates).length+" выдано":"Академические достижения"}</small></span>${icon("arrow")}</button>
-      <button data-action="settings"><span class="menu-icon">⚙</span><span><b>Настройки</b><small>Внешний вид и предпочтения</small></span>${icon("arrow")}</button>
-      <button data-action="notifications"><span class="menu-icon">♧</span><span><b>Уведомления</b><small>Важные события и напоминания</small></span>${icon("arrow")}</button>
-      <button data-action="support"><span class="menu-icon">?</span><span><b>Поддержка</b><small>Помощь и обратная связь</small></span>${icon("arrow")}</button>
+      <button data-action="settings"><span class="menu-icon">${icon("settings")}</span><span><b>Настройки</b><small>Внешний вид и предпочтения</small></span>${icon("arrow")}</button>
+      <button data-action="notifications"><span class="menu-icon">${icon("bell")}</span><span><b>Уведомления</b><small>Важные события и напоминания</small></span>${icon("arrow")}</button>
+      <button data-action="support"><span class="menu-icon">${icon("help")}</span><span><b>Поддержка</b><small>Помощь и обратная связь</small></span>${icon("arrow")}</button>
       <button data-action="about"><span class="menu-icon">${icon("faculty")}</span><span><b>О MAGNUS</b><small>Пространство для знаний и развития</small></span>${icon("arrow")}</button>
     </section>
   </main>`;
@@ -1715,7 +1717,7 @@ function showStartupScreen() {
       <div class="startup-inner">
         <div class="startup-orbit startup-orbit-one"></div><div class="startup-orbit startup-orbit-two"></div>
         <span class="startup-spark startup-spark-one">✦</span><span class="startup-spark startup-spark-two">✧</span>
-        <div class="startup-owl-wrap"><span class="startup-owl-halo"></span><img class="startup-owl" src="/mascot/magnus-owl.svg" alt="" /></div>
+        <div class="startup-owl-wrap"><span class="startup-owl-halo"></span><img class="startup-owl" src="${magnusOwl3d}" alt="" /></div>
         <div class="startup-wordmark">MAGNUS</div>
         <div class="startup-caption">UNIVERSITY <i></i> LEARN WITH PURPOSE</div>
         <div class="startup-loader" aria-hidden="true"><span></span></div>

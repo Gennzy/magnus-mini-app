@@ -766,7 +766,7 @@ body { color: #202426; }
   width: 148px;
   height: 148px;
   object-fit: contain;
-  filter: drop-shadow(0 10px 13px rgba(65,48,33,.10));
+  filter: grayscale(.72) sepia(.72) saturate(.82) hue-rotate(350deg) brightness(.96) contrast(1.06) drop-shadow(0 10px 13px rgba(65,48,33,.10));
   animation: startupOwlFloat 2.2s ease-in-out infinite;
 }
 .startup-wordmark {

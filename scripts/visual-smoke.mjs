@@ -35,6 +35,11 @@ try {
     });
     await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.waitForSelector("#app .home-screen", { timeout: 15000 });
+    await page.waitForSelector(".startup-screen .startup-owl", { timeout: 5000 });
+    await page.waitForFunction(() => { const img = document.querySelector(".startup-owl"); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 5000 });
+    const startupMascot = await page.evaluate(() => ({ sameAsset: document.querySelector(".startup-owl")?.getAttribute("src") === document.querySelector(".dashboard-owl")?.getAttribute("src"), filter: getComputedStyle(document.querySelector(".startup-owl")).filter }));
+    if (!startupMascot.sameAsset || !startupMascot.filter.includes("grayscale")) failures.push(`${name}/startup: splash mascot differs from the dashboard mascot or has no brand color treatment`);
+    await page.screenshot({ path: `${artifacts}/${name}-startup.png`, fullPage: true });
     await page.waitForTimeout(1900);
     await page.screenshot({ path: `${artifacts}/${name}-home.png`, fullPage: true });
 
@@ -71,9 +76,13 @@ try {
     await page.locator('.bottom-nav [data-go="profile"]').click();
     await page.waitForSelector(".profile-screen", { timeout: 10000 });
     await assertNoHorizontalOverflow("profile");
+    const profileMenuIcons = await page.locator(".profile-menu .menu-icon svg").count();
+    if (profileMenuIcons !== 5) failures.push(name + "/profile: expected 5 SVG menu icons, found " + profileMenuIcons);
     await page.locator('.profile-menu [data-go="documents"]').click();
     await page.waitForSelector(".documents-screen", { timeout: 10000 });
     await assertNoHorizontalOverflow("documents");
+    const documentsActionText = await page.locator(".documents-empty-state button").innerText();
+    if (documentsActionText.includes("${")) failures.push(name + "/documents: raw template expression is visible in the action label");
     await page.screenshot({ path: artifacts + "/" + name + "-documents.png", fullPage: true });
 
     const desktopNavCheck = await page.evaluate(() => {
