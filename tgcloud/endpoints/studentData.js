@@ -409,6 +409,7 @@ export default async function (input, ctx) {
       finalExams: payload.finalExams && typeof payload.finalExams === 'object' ? payload.finalExams : {},
       certificates: payload.certificates && typeof payload.certificates === 'object' ? payload.certificates : {},
       assignmentSubmissions: Array.isArray(payload.assignmentSubmissions) ? payload.assignmentSubmissions.slice(-50) : [],
+      academicCatalog: getPublicAcademicCatalog(),
       subscription: publicSubscription(subscriptionRow),
     };
   }
