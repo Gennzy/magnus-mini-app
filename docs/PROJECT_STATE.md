@@ -14,7 +14,7 @@
 
 ## 2. Текущий HEAD и публикация
 
-- PROD-002 прошла полный visual CI: [run 43000786477](https://github.com/Gennzy/magnus-mini-app/actions/runs/43000786477), SHA `1149b3af32371bd39b173f2b1c3bc0d36c0d07b2`. Все шаги завершились успешно: documentation checks, tutor coverage, payment invariants, backend syntax, production build, desktop/mobile smoke и screenshots.
+- PROD-002 закрыта финальным полным visual CI: [run 43001055233](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001055233), SHA `552ba7c4af2a7b64d2aab3ab6b0cf3bf6c87c3c3`. Все шаги завершились успешно: documentation checks, tutor coverage, payment invariants, backend syntax, production build, desktop/mobile smoke и screenshots.
 - Этот CI включал документационный checker и негативные тесты, tutor coverage, payment invariants, backend syntax, production build и desktop/mobile Playwright smoke.
 - **Последний ранее подтверждённый runtime commit:** `c23dfa43b81047b58ae1f2168881bb2eb93c5afa`; в нём административный gradebook переведён на единый `ACADEMIC_CATALOG`.
 - **Последний подтверждённый Telegram deploy:** [run 42970888891](https://github.com/Gennzy/magnus-mini-app/actions/runs/42970888891), app SHA `90798104fb29df89ff05d1064a26ef07e3977fa7`.
@@ -68,12 +68,15 @@
 
 **Текущий WP: PROD-003 — определить жизненный цикл абитуриента и студента.**
 
-- **Статус:** [ ] Planned; не начат.
-- **Последняя завершённая задача:** PROD-002 — [x] DONE. Утверждена самостоятельная асинхронная модель с индивидуальным темпом и академической структурой.
-- **Документ решения:** `docs/LEARNING_MODEL.md`.
-- **WP и критерии закрытия:** `docs/work-packages/PROD-002.md`.
-- **Проверка PROD-002:** полный CI run [43000786477](https://github.com/Gennzy/magnus-mini-app/actions/runs/43000786477), SHA `1149b3af32371bd39b173f2b1c3bc0d36c0d07b2` — SUCCESS.
-- **Следующая задача:** сначала оформить PROD-003 по `docs/WP_TEMPLATE.md`, затем работать только в его границах. До отдельного начала PROD-003 не менять его код и продуктовые правила.
+- **Статус:** [~] In progress.
+- **Последняя завершённая задача:** PROD-002 — [x] DONE. Самостоятельная асинхронная модель с индивидуальным темпом зафиксирована в `docs/LEARNING_MODEL.md`.
+- **Подтверждение PROD-002:** полный visual CI [run 43001055233](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001055233), SHA `552ba7c4af2a7b64d2aab3ab6b0cf3bf6c87c3c3` — SUCCESS.
+- **Модель PROD-003:** `docs/STUDENT_LIFECYCLE.md`.
+- **WP:** `docs/work-packages/PROD-003.md`.
+- **Рабочие границы:** документация, анализ текущих сценариев; без UI/runtime/API/БД и Telegram deploy.
+- **Выявлено для PROD-004:** синхронизация общего статуса при первом зачислении; общая область действия `academicStatus` при нескольких программах; неполная матрица административных переходов; отсутствие формальной заявки и student-facing workflow прекращения/восстановления. Это описано в STUDENT_LIFECYCLE.md; код не менялся.
+- **Проверки PROD-003:** документационный checker и полный visual CI должны пройти на итоговом SHA.
+- **Следующая задача после закрытия:** PROD-004 — определить академические статусы и допустимые переходы. До закрытия PROD-003 не начинать.
 
 ## 6. Как продолжать в новом чате
 
