@@ -14,13 +14,13 @@
 
 ## 2. Текущий HEAD и публикация
 
-- Рабочая ветка: `magnus-source-upload`. HEAD перед этим обновлением состояния: `8ec25bf11cf68c693f144d247737aa2b426fad27`.
-- Последний изменявший приложение commit: `90798104fb29df89ff05d1064a26ef07e3977fa7` — ограничение настроек тарифов владельцем и read-only интерфейс для остальных администраторов.
-- Telegram deploy для этого кода прошёл успешно: https://github.com/Gennzy/magnus-mini-app/actions/runs/42970888891. Workflow выполнил build, backend syntax, Telegram runtime compile, push и safe migration.
-- Последний visual CI прошёл успешно на SHA `7fceed5bb32404ac8e61593e5ff7711bbd1daed2`: https://github.com/Gennzy/magnus-mini-app/actions/runs/42971084063. Проверены tutor coverage, payment invariants, синтаксис backend-модулей, production build и desktop/mobile browser smoke.
-- Важное изменение релизного процесса: Telegram deploy workflow переведён на ручной запуск `workflow_dispatch` в commit `42271c32306e0833e7df0c14af88087f08a0edc8`. До этого изменения два push запустили автоматический deploy; оба завершились успешно. После перевода на ручной режим новые push сами по себе Telegram Cloud не публикуют.
-- Последующие изменения после app commit `90798104` затрагивали тесты, CI и документацию; код Mini App/backend не менялся.
-- Перед следующим изменением всегда заново сверять HEAD и Actions — эта запись может устареть.
+- Рабочая ветка: `magnus-source-upload`. HEAD, проверенный перед этой записью: `c23dfa43b81047b58ae1f2168881bb2eb93c5afa`.
+- Последний подтверждённый app commit: `c23dfa43b81047b58ae1f2168881bb2eb93c5afa` — административный gradebook переведён на единый `ACADEMIC_CATALOG`; commit прошёл visual CI.
+- Последний visual CI: успешно — https://github.com/Gennzy/magnus-mini-app/actions/runs/42971514060 (SHA `c23dfa43b81047b58ae1f2168881bb2eb93c5afa`). Проверки включают tutor coverage, payment invariants, backend JavaScript syntax, production build и desktop/mobile browser smoke.
+- Последний подтверждённый Telegram deploy: успешно — https://github.com/Gennzy/magnus-mini-app/actions/runs/42970888891 (app SHA `90798104fb29df89ff05d1064a26ef07e3977fa7`). Этот deploy включал build, backend syntax, Telegram runtime compile, push и safe migration.
+- Commit `c23dfa43` появился после последнего deploy и пока не опубликован в Telegram Cloud. Telegram deploy workflow теперь запускается только вручную через `workflow_dispatch`; GitHub Pages не используется.
+- До перевода workflow в ручной режим два push запустили автоматическую публикацию: commits `29a96cd335ea692c85bcb2cf6b9dcad3c11ff616` и `90798104fb29df89ff05d1064a26ef07e3977fa7`; оба deploy завершились успешно. После commit `42271c32306e0833e7df0c14af88087f08a0edc8` автоматических Telegram deploy на push больше нет.
+- Последующие проверки и изменения документировать по фактическому HEAD и Actions; эта запись обновляет состояние проекта, но сама может стать устаревшей.
 
 ## 3. Что уже реализовано
 
