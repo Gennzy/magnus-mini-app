@@ -73,7 +73,12 @@ const cases = [
     const path = join(dir, "docs/CERTIFICATE_POLICY.md");
     writeFileSync(path, readFileSync(path, "utf8").replace("не является государственным дипломом", "является государственным дипломом"));
   }, false],
-  ["missing active work package document fails", dir => rmSync(join(dir, "docs/work-packages/PROD-009.md")), false],
+  ["missing active work package document fails", dir => {
+    const state = readFileSync(join(dir, "docs/PROJECT_STATE.md"), "utf8");
+    const active = state.match(/^\*\*Текущий WP: ([A-Z]+-\d+) —/m);
+    assert.ok(active, "fixture must declare one active WP");
+    rmSync(join(dir, "docs/work-packages/" + active[1] + ".md"));
+  }, false],
   ["missing freeze policy concept fails", dir => {
     const path = join(dir, "docs/SUBSCRIPTION_AND_ACCESS_POLICY.md");
     writeFileSync(path, readFileSync(path, "utf8").replace("В текущем продукте пользовательской функции заморозки нет.", "Заморозка описана."));
