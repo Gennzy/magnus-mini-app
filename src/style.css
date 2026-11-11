@@ -8179,3 +8179,18 @@ html:not(.telegram-webapp) .home-avatar{display:none!important}
   white-space:normal;
   line-height:1.18;
 }
+
+
+/* UX-001 · Compact profile identity on narrow Telegram viewports */
+@media(max-width:380px){
+  .profile-screen .profile-card{
+    display:grid;
+    grid-template-columns:55px minmax(0,1fr);
+    align-items:start;
+    gap:10px 12px;
+  }
+  .profile-screen .profile-avatar{grid-column:1;grid-row:1}
+  .profile-screen .profile-info{grid-column:2;grid-row:1;min-width:0;width:auto}
+  .profile-screen .profile-info h2{font-size:18px;line-height:1.2;letter-spacing:-.25px}
+  .profile-screen .profile-connection{grid-column:2;grid-row:2;justify-self:start;align-self:start;margin:0;max-width:none}
+}

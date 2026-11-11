@@ -26,6 +26,11 @@ try {
   browser = await chromium.launch({ headless: true });
   const failures = [];
   const expectedStandaloneWarnings = [];
+  async function captureSettled(page, options) {
+    // The page transition lasts up to 340ms; capture only the stable, fully opaque screen.
+    await page.waitForTimeout(400);
+    await page.screenshot(options);
+  }
 
   async function testViewport(name, viewport) {
     const page = await browser.newPage({ viewport, deviceScaleFactor: 1 });
@@ -47,7 +52,7 @@ try {
     await page.screenshot({ path: artifacts + "/" + name + "-startup.png", fullPage: true });
     await page.locator(".startup-screen").evaluate(el => el.remove());
     await page.waitForTimeout(1900);
-    await page.screenshot({ path: `${artifacts}/${name}-home.png`, fullPage: true });
+    await captureSettled(page, { path: `${artifacts}/${name}-home.png`, fullPage: true });
     await page.keyboard.press("Tab");
     const keyboardFocus = await page.evaluate(() => { const style = getComputedStyle(document.activeElement); return { tag: document.activeElement.tagName, outlineStyle: style.outlineStyle, outlineWidth: style.outlineWidth }; });
     if (keyboardFocus.outlineStyle === "none" || parseFloat(keyboardFocus.outlineWidth) < 2) failures.push(name + "/a11y: first keyboard focus target has no visible focus ring " + JSON.stringify(keyboardFocus));
@@ -74,7 +79,7 @@ try {
         await page.locator('.bottom-nav [data-go="study"]').click();
     await page.waitForSelector(".study-screen", { timeout: 10000 });
     await assertNoHorizontalOverflow("study");
-    await page.screenshot({ path: artifacts + "/" + name + "-study.png", fullPage: true });
+    await captureSettled(page, { path: artifacts + "/" + name + "-study.png", fullPage: true });
 
     // Check every major student-facing screen instead of only the home and lesson flow.
     await page.locator('.bottom-nav [data-go="faculties"]').click();
@@ -86,7 +91,7 @@ try {
     if (viewport.width <= 650 && filterTargets.some(target => target.width < 44 || target.height < 44)) failures.push(name + "/catalog: filter touch target below 44px " + JSON.stringify(filterTargets));
     const catalogKeyHint = await page.locator(".search-box span").count();
     if (catalogKeyHint !== 0) failures.push(name + "/catalog: a keyboard shortcut hint is shown without a matching shortcut");
-    await page.screenshot({ path: artifacts + "/" + name + "-catalog.png", fullPage: true });
+    await captureSettled(page, { path: artifacts + "/" + name + "-catalog.png", fullPage: true });
 
     await page.locator('.faculty-card[data-faculty="it"]').click();
     await page.waitForSelector(".detail-screen", { timeout: 10000 });
@@ -106,7 +111,7 @@ try {
     if (answerFontSize < 16) failures.push(name + "/assignment-detail: textarea font-size below 16px may trigger iOS auto-zoom (" + answerFontSize + "px)");
     const assignmentCopy = await page.locator(".assignment-detail-screen").innerText();
     if (/преподавател/i.test(assignmentCopy)) failures.push(name + "/assignment-detail: human teacher wording conflicts with the AI-led learning model");
-    await page.screenshot({ path: artifacts + "/" + name + "-assignment-detail.png", fullPage: true });
+    await captureSettled(page, { path: artifacts + "/" + name + "-assignment-detail.png", fullPage: true });
 
     await page.locator('.bottom-nav [data-go="profile"]').click();
     await page.waitForSelector(".profile-screen", { timeout: 10000 });
@@ -134,7 +139,7 @@ try {
     await assertNoHorizontalOverflow("documents");
     const documentsActionText = await page.locator(".documents-empty-state button").innerText();
     if (documentsActionText.includes("${")) failures.push(name + "/documents: raw template expression is visible in the action label");
-    await page.screenshot({ path: artifacts + "/" + name + "-documents.png", fullPage: true });
+    await captureSettled(page, { path: artifacts + "/" + name + "-documents.png", fullPage: true });
 
     const desktopNavCheck = await page.evaluate(() => {
       const nav = document.querySelector(".bottom-nav");
@@ -154,7 +159,7 @@ try {
     const passportGuestText = await page.locator(".academic-passport-screen").innerText();
     if (!passportGuestText.includes("Нужен вход через Telegram")) failures.push(`${name}/passport: guest state is missing`);
     await assertNoHorizontalOverflow("academic-passport-guest");
-    await page.screenshot({ path: `${artifacts}/${name}-academic-passport-guest.png`, fullPage: true });
+    await captureSettled(page, { path: `${artifacts}/${name}-academic-passport-guest.png`, fullPage: true });
 
     // Reset to a clean startup state before the learning-flow regression checks.
     await page.reload({ waitUntil: "domcontentloaded" });
@@ -190,7 +195,7 @@ try {
     if (mapCheck.currentNodeCount !== 1) failures.push(`${name}/map: текущий этап выделен некорректно`);
     if (mapCheck.mapLeft < -1 || mapCheck.mapRight > mapCheck.viewport + 1) failures.push(`${name}/map: карта выходит за пределы экрана`);
     await assertNoHorizontalOverflow("map");
-    await page.screenshot({ path: `${artifacts}/${name}-course-map.png`, fullPage: true });
+    await captureSettled(page, { path: `${artifacts}/${name}-course-map.png`, fullPage: true });
 
     await page.locator(".learning-node[data-lesson-open]").first().click();
     await page.waitForSelector(".lesson-screen .lesson-tutor", { timeout: 10000 });
@@ -235,7 +240,7 @@ try {
 
     await page.locator('[data-lesson-tab="lesson"]').click();
     await assertNoHorizontalOverflow("lesson");
-    await page.screenshot({ path: `${artifacts}/${name}-lesson.png`, fullPage: true });
+    await captureSettled(page, { path: `${artifacts}/${name}-lesson.png`, fullPage: true });
 
     const lessonText = await page.locator(".lesson-reading").innerText();
     if (!lessonText.trim()) failures.push(`${name}/lesson: пустой учебный материал`);
@@ -297,8 +302,8 @@ try {
     return { position: getComputedStyle(nav).position, navBottom: navRect.bottom, screenTop: screenRect.top };
   });
   if (examNav.position !== "sticky" || examNav.navBottom > examNav.screenTop + 1) failures.push("telegram-exam: navigation overlaps the exam content " + JSON.stringify(examNav));
-  await examPage.screenshot({ path: artifacts + "/telegram-final-exam.png", fullPage: true });
-  await examPage.screenshot({ path: artifacts + "/telegram-final-exam-result.png", fullPage: true });
+  await captureSettled(examPage, { path: artifacts + "/telegram-final-exam.png", fullPage: true });
+  await captureSettled(examPage, { path: artifacts + "/telegram-final-exam-result.png", fullPage: true });
   await examPage.close();
   // Audit the administrative interface in an isolated Telegram owner session.
   const adminPage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
@@ -343,7 +348,7 @@ try {
     if (tab === "bot" && await adminPage.locator(".admin-bot-icon svg").count() !== 1) failures.push("admin-bot: expected the shared owl brand mark instead of a text monogram");
     if (adminDimensions.document > adminDimensions.viewport + 1) failures.push("admin-" + tab + ": horizontal overflow " + JSON.stringify(adminDimensions));
     if (adminDimensions.navBottom > adminDimensions.screenTop + 1) failures.push("admin-" + tab + ": primary navigation overlaps admin content " + JSON.stringify(adminDimensions));
-    await adminPage.screenshot({ path: artifacts + "/admin-mobile-" + tab + ".png", fullPage: true });
+    await captureSettled(adminPage, { path: artifacts + "/admin-mobile-" + tab + ".png", fullPage: true });
   }
   await adminPage.setViewportSize({ width: 1440, height: 1000 });
   await adminPage.goto(baseUrl + "?admin=1", { waitUntil: "domcontentloaded", timeout: 30000 });
@@ -352,7 +357,7 @@ try {
   await adminPage.waitForSelector(".admin-stat-grid", { timeout: 10000 });
   const adminDesktop = await adminPage.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, navBottom: document.querySelector(".bottom-nav").getBoundingClientRect().bottom, screenTop: document.querySelector("main.screen").getBoundingClientRect().top }));
   if (adminDesktop.document > adminDesktop.viewport + 1 || adminDesktop.navBottom > adminDesktop.screenTop + 1) failures.push("admin-desktop: layout overflow or navigation overlap " + JSON.stringify(adminDesktop));
-  await adminPage.screenshot({ path: artifacts + "/admin-desktop-overview.png", fullPage: true });
+  await captureSettled(adminPage, { path: artifacts + "/admin-desktop-overview.png", fullPage: true });
   await adminPage.close();
   const breakpointPage = await browser.newPage({ viewport: { width: 320, height: 844 }, deviceScaleFactor: 1 });
   const breakpointResults = [];
@@ -385,7 +390,7 @@ try {
       });
       if (result.document > result.viewport + 1) failures.push("breakpoint-" + width + "/" + stage + ": horizontal overflow " + JSON.stringify(result));
       if (result.navBottom > result.screenTop + 1) failures.push("breakpoint-" + width + "/" + stage + ": navigation overlaps content " + JSON.stringify(result));
-      if (width === 320) await breakpointPage.screenshot({ path: artifacts + "/breakpoint-320-" + stage + ".png", fullPage: true });
+      if (width === 320) await captureSettled(breakpointPage, { path: artifacts + "/breakpoint-320-" + stage + ".png", fullPage: true });
       return result;
     };
     await checkStage("home");
@@ -473,17 +478,17 @@ try {
   if (telegramHomeLayout.document > telegramHomeLayout.viewport + 1) failures.push("telegram-home: long Telegram first name causes horizontal overflow " + JSON.stringify(telegramHomeLayout));
   if (!telegramHomeLayout.avatarLoaded) failures.push("telegram-home: Telegram profile photo did not load in the home greeting");
   if (telegramHomeLayout.nameScrollWidth > telegramHomeLayout.nameWidth + 1) failures.push("telegram-home: long first name overflows its heading " + JSON.stringify(telegramHomeLayout));
-  if (telegramHomeLayout.nameWhiteSpace === "nowrap" || telegramHomeLayout.nameScrollHeight > telegramHomeLayout.nameHeight + 1) failures.push("telegram-home: long first name is clipped instead of wrapping " + JSON.stringify(telegramHomeLayout));
-  await telegramHomePage.screenshot({ path: artifacts + "/telegram-home-long-name.png", fullPage: true });
+  if (telegramHomeLayout.nameWhiteSpace === "nowrap" || telegramHomeLayout.nameScrollHeight > telegramHomeLayout.nameHeight + 4) failures.push("telegram-home: long first name is clipped instead of wrapping " + JSON.stringify(telegramHomeLayout));
+  await captureSettled(telegramHomePage, { path: artifacts + "/telegram-home-long-name.png", fullPage: true });
   await telegramHomePage.locator('.bottom-nav [data-go="profile"]').click();
   await telegramHomePage.waitForSelector(".profile-screen", { timeout: 10000 });
   const profileTelegramPhoto = await telegramHomePage.locator(".profile-avatar .telegram-avatar-image").evaluate(node => node.complete && node.naturalWidth > 0).catch(() => false);
   const profileLongName = await telegramHomePage.locator(".profile-info h2").innerText();
   if (!profileTelegramPhoto) failures.push("telegram-profile: Telegram avatar is not reused in the profile card");
   if (!profileLongName.includes("СверхдлинноеИмя")) failures.push("telegram-profile: Telegram first name is not displayed in the profile");
-  const profileNameLayout = await telegramHomePage.locator(".profile-info h2").evaluate(node => ({height:node.clientHeight,scrollHeight:node.scrollHeight,whiteSpace:getComputedStyle(node).whiteSpace,textOverflow:getComputedStyle(node).textOverflow}));
-  if (profileNameLayout.whiteSpace === "nowrap" || profileNameLayout.scrollHeight > profileNameLayout.height + 1 || profileNameLayout.textOverflow === "ellipsis") failures.push("telegram-profile: long Telegram name is visually truncated " + JSON.stringify(profileNameLayout));
-  await telegramHomePage.screenshot({ path: artifacts + "/telegram-profile-long-name.png", fullPage: true });
+  const profileNameLayout = await telegramHomePage.locator(".profile-info h2").evaluate(node => ({height:node.clientHeight,scrollHeight:node.scrollHeight,width:node.clientWidth,scrollWidth:node.scrollWidth,whiteSpace:getComputedStyle(node).whiteSpace,textOverflow:getComputedStyle(node).textOverflow}));
+  if (profileNameLayout.whiteSpace === "nowrap" || profileNameLayout.scrollHeight > profileNameLayout.height + 4 || profileNameLayout.scrollWidth > profileNameLayout.width + 1 || profileNameLayout.textOverflow === "ellipsis") failures.push("telegram-profile: long Telegram name is visually truncated " + JSON.stringify(profileNameLayout));
+  await captureSettled(telegramHomePage, { path: artifacts + "/telegram-profile-long-name.png", fullPage: true });
   await telegramHomePage.close();
 
   console.log("VISUAL_SMOKE_RESULTS", JSON.stringify({ desktop, mobile, breakpointResults, expectedStandaloneWarnings, failures }, null, 2));

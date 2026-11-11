@@ -707,3 +707,5 @@ Visual QA SHA и статус:
 
 - **UX-001 / CI #229:** visual CI SUCCESS с Telegram WebApp mock и mobile inputs/hit targets. Screenshot Telegram был закрыт startup overlay; тест теперь ждёт его detach, чтобы оценивать реальную композицию.
 - **UX-001 / следующий этап:** устранить повтор аватара в standalone mode, убрать повтор счётчика drafts в двух блоках главной, показывать количество зачисленных программ; длинное имя в профиле должно переноситься без ellipsis. Playwright проверяет Telegram и standalone варианты.
+
+- UX-001 / CI #230: выявлены два тестовых/визуальных нюанса: 3px line-box rounding in long greeting and narrow profile info column on 320px. Grid reflow for profile identity applied; screenshot capture waits 400ms for CSS screen transition; repeat CI required.
