@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 
-const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md"];
+const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md"];
 const errors = [];
 
 for (const file of requiredFiles) {
@@ -15,6 +15,7 @@ if (errors.length) {
 const roadmap = readFileSync(requiredFiles[0], "utf8");
 const state = readFileSync(requiredFiles[1], "utf8");
 const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
+const template = readFileSync("docs/WP_TEMPLATE.md", "utf8");
 const workflow = readFileSync(".github/workflows/visual-check.yml", "utf8");
 
 const requireText = (text, pattern, label) => {
