@@ -50,7 +50,7 @@ try {
     const startupMascot = await page.evaluate(() => {
       const startupFilter = getComputedStyle(document.querySelector(".startup-owl")).filter;
       const dashboardFilter = getComputedStyle(document.querySelector(".dashboard-owl")).filter;
-      const colorFilter = value => value.replace(/\\s+drop-shadow\\(.*\\)$/, "");
+      const colorFilter = value => value.split(" drop-shadow(")[0];
       return {
         sameAsset: document.querySelector(".startup-owl")?.getAttribute("src") === document.querySelector(".dashboard-owl")?.getAttribute("src"),
         startupColorFilter: colorFilter(startupFilter),
@@ -499,6 +499,77 @@ try {
   if (profileNameLayout.whiteSpace === "nowrap" || profileNameLayout.scrollHeight > profileNameLayout.height + 4 || profileNameLayout.scrollWidth > profileNameLayout.width + 1 || profileNameLayout.textOverflow === "ellipsis") failures.push("telegram-profile: long Telegram name is visually truncated " + JSON.stringify(profileNameLayout));
   await captureSettled(telegramHomePage, { path: artifacts + "/telegram-profile-long-name.png", fullPage: true });
   await telegramHomePage.close();
+
+  // Verify both public certificate result states and the transient loading state using isolated data.
+  const certificateScenarios = [
+    {
+      name: "valid",
+      id: "MAG-2026-TEST-VALID",
+      delay: 350,
+      valid: true,
+      certificate: {
+        studentName: "Анастасия Проверка",
+        programTitle: "Основы искусственного интеллекта",
+        issuedAt: "2026-11-11T12:00:00.000Z",
+        finalScore: 92,
+        certificateId: "MAG-2026-TEST-VALID"
+      }
+    },
+    {
+      name: "invalid",
+      id: "MAG-2026-TEST-MISSING",
+      delay: 350,
+      valid: false,
+      certificate: null
+    }
+  ];
+  for (const scenario of certificateScenarios) {
+    const certificatePage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+    await certificatePage.route("https://telegram.org/js/telegram-web-app.js", route => route.fulfill({ status: 200, contentType: "application/javascript", body: "" }));
+    await certificatePage.addInitScript(({delay,valid,certificate}) => {
+      window.Telegram = { WebApp: {
+        initData: "certificate-verify-smoke",
+        initDataUnsafe: { user: { id: 770004, first_name: "Certificate", username: "certificate_smoke" } },
+        ready() {}, expand() {}, setHeaderColor() {}, setBackgroundColor() {},
+        HapticFeedback: { impactOccurred() {} },
+        Serverless: { call(service, payload, callback) {
+          if (service === "admin") { callback(null, { isAdmin: false }); return; }
+          if (service === "payments") { callback(null, { ok: true, plans: [] }); return; }
+          if (service === "studentData" && payload.action === "load") { callback(null, { completedLessons: {}, enrollments: {}, certificates: {} }); return; }
+          if (service === "studentData" && payload.action === "verifyCertificate") {
+            window.setTimeout(() => callback(null, { valid, certificate }), delay);
+            return;
+          }
+          callback(null, { ok: false, message: "Unsupported certificate smoke action" });
+        } }
+      } };
+    }, {delay:scenario.delay,valid:scenario.valid,certificate:scenario.certificate});
+    await certificatePage.goto(baseUrl + "?certificate=" + encodeURIComponent(scenario.id), { waitUntil: "domcontentloaded", timeout: 30000 });
+    await certificatePage.waitForSelector(".certificate-verify-panel h2", { timeout: 15000 });
+    const loadingLabel = await certificatePage.locator(".certificate-verify-panel h2").innerText();
+    if (!loadingLabel.includes("Проверяем сертификат")) failures.push("certificate-" + scenario.name + ": loading state is not displayed while verification is pending");
+    const expectedTitle = scenario.valid ? "Сертификат подлинный" : "Сертификат не найден";
+    await certificatePage.waitForFunction(expected => document.querySelector(".certificate-verify-panel h2")?.textContent?.includes(expected), expectedTitle, { timeout: 5000 });
+    if (scenario.valid) {
+      const verifiedCopy = await certificatePage.locator(".certificate-verify-panel").innerText();
+      for (const expected of ["Анастасия Проверка","Основы искусственного интеллекта","92%","MAG-2026-TEST-VALID"]) {
+        if (!verifiedCopy.includes(expected)) failures.push("certificate-valid: missing verified field " + expected);
+      }
+      if (await certificatePage.locator(".certificate-verify-status.valid").count() !== 1) failures.push("certificate-valid: valid status badge is missing");
+    } else {
+      if (await certificatePage.locator(".certificate-verify-status.valid").count() !== 0) failures.push("certificate-invalid: invalid certificate is marked valid");
+      const invalidCopy = await certificatePage.locator(".certificate-verify-panel").innerText();
+      if (!invalidCopy.includes("Не удалось подтвердить документ")) failures.push("certificate-invalid: explanation is missing");
+    }
+    const certificateOverflow = await certificatePage.evaluate(() => ({viewport:document.documentElement.clientWidth,document:document.documentElement.scrollWidth}));
+    if (certificateOverflow.document > certificateOverflow.viewport + 1) failures.push("certificate-" + scenario.name + ": horizontal overflow " + JSON.stringify(certificateOverflow));
+    await captureSettled(certificatePage, { path: artifacts + "/telegram-certificate-" + scenario.name + ".png", fullPage: true });
+    await certificatePage.locator("[data-cert-clear]").click();
+    await certificatePage.waitForSelector(".certificate-verify-panel", { state: "detached", timeout: 5000 });
+    const cleanedUrl = await certificatePage.evaluate(() => new URL(window.location.href).searchParams.has("certificate"));
+    if (cleanedUrl) failures.push("certificate-" + scenario.name + ": close action did not clear verification query");
+    await certificatePage.close();
+  }
 
   console.log("VISUAL_SMOKE_RESULTS", JSON.stringify({ desktop, mobile, breakpointResults, expectedStandaloneWarnings, failures }, null, 2));
   if (failures.length) throw new Error(failures.join("\\n"));

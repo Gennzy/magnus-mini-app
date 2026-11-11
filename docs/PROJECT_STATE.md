@@ -152,3 +152,5 @@
 - **CI #231:** `8e20ca4cdcd837d82d0593041bb63b483e39c7af` — SUCCESS. Mobile Telegram profile grid, длинное имя, анимационно-стабильные screenshot captures и full browser smoke прошли.
 - **UX-001 / визуальный контроль #231:** проверены Telegram home/profile, mobile lesson/catalog и 320px guest profile; переполнение и обрезание длинного имени устранены.
 - **UX-001 / маскот:** splash и dashboard ранее имели разную насыщенность/сепию. В текущем коммите обе используют единый CSS token --magnus-owl-color-filter; Playwright контролирует идентичность общей цветовой обработки.
+
+- **UX-001 / расширение certificate smoke:** добавлены изолированные Playwright-сценарии loading/valid/invalid public verification; проверяются вывод имени/программы/даты/score/serial, отсутствие ложного valid badge, очистка query при закрытии и отсутствие горизонтального переполнения. Данные синтетические.

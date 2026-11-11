@@ -711,3 +711,5 @@ Visual QA SHA и статус:
 - UX-001 / CI #230: выявлены два тестовых/визуальных нюанса: 3px line-box rounding in long greeting and narrow profile info column on 320px. Grid reflow for profile identity applied; screenshot capture waits 400ms for CSS screen transition; repeat CI required.
 
 - **UX-001 / CI #231:** narrow Telegram profile, long-name wrapping and stable screenshot capture PASS. Новый этап унифицирует цветовой фильтр 3D owl между splash и dashboard; проверяется единый image asset и одинаковая цветовая часть filter.
+
+- **UX-001 / следующий этап:** расширено покрытие публичной страницы проверки сертификата: pending/loading, valid, invalid, полный набор полей, очистка query string по кнопке закрытия, responsive overflow. Сценарии используют тестовые данные.
