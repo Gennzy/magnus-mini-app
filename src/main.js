@@ -132,6 +132,9 @@ let lessonQuizResults = loadLessonQuizResults();
 let completedLessons = loadCompletedLessons();
 let enrollments = readStudentStorage("enrollments");
 let finalExams = {};
+let certificates = {};
+let certificateVerification = null;
+let certificateIssuePending = false;
 let activeExam = null;
 let examPending = false;
 let studentSubscription = { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
@@ -486,6 +489,7 @@ function initializeCloudStudentData() {
     lessonPracticeResults = { ...(result.lessonPracticeResults || {}), ...lessonPracticeResults };
     enrollments = { ...(result.enrollments || {}), ...enrollments };
     finalExams = result.finalExams && typeof result.finalExams === "object" ? result.finalExams : {};
+    certificates = result.certificates && typeof result.certificates === "object" ? result.certificates : {};
     writeStudentStorage("enrollments", enrollments);
     studentSubscription = result.subscription || { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
     storeAssignmentDrafts();
@@ -872,21 +876,18 @@ function assignmentDetailPage() {
 }
 
 function documentsPage() {
+  const verifyId = new URLSearchParams(window.location.search).get("certificate");
+  const available = courses.filter(course => finalExams[course.id]?.passed && !certificates[course.id]);
+  const issued = Object.entries(certificates);
+  const verifyPanel = verifyId ? `<section class="certificate-verify-panel"><span class="subtle-label">ПРОВЕРКА ДОКУМЕНТА</span><h2>${certificateVerification?.loading?"Проверяем сертификат…":certificateVerification?.valid?"Сертификат подлинный":"Сертификат не найден"}</h2>${certificateVerification?.valid?`<div class="certificate-verify-status valid">Действующий документ MAGNUS</div><dl><div><dt>Выпускник</dt><dd>${esc(certificateVerification.certificate.studentName)}</dd></div><div><dt>Программа</dt><dd>${esc(certificateVerification.certificate.programTitle)}</dd></div><div><dt>Дата выдачи</dt><dd>${new Date(certificateVerification.certificate.issuedAt).toLocaleDateString("ru-RU")}</dd></div><div><dt>Итоговый результат</dt><dd>${Number(certificateVerification.certificate.finalScore)}%</dd></div><div><dt>Номер</dt><dd>${esc(certificateVerification.certificate.certificateId)}</dd></div></dl>`:`<p>${certificateVerification?.loading?"Пожалуйста, подожди.":"Не удалось подтвердить документ по указанному номеру."}</p>`}<button class="text-button" data-cert-clear>Закрыть проверку</button></section>`:"";
+  const cards = issued.map(([courseId,cert])=>`<article class="issued-certificate-card"><div class="issued-certificate-top"><b>MAGNUS</b><span>СЕРТИФИКАТ ВЫДАН</span></div><span class="subtle-label">ПОДТВЕРЖДЕНИЕ ОБУЧЕНИЯ</span><h2>${esc(cert.programTitle)}</h2><p>Выдан: ${new Date(cert.issuedAt).toLocaleDateString("ru-RU")}</p><div class="issued-certificate-meta"><span>Выпускник</span><b>${esc(cert.studentName)}</b><span>Итоговый экзамен</span><b>${Number(cert.finalScore)}%</b><span>Регистрационный номер</span><b>${esc(cert.certificateId)}</b></div><button class="orange-button" data-cert-verify="${esc(cert.certificateId)}">Проверить подлинность ${icon("arrow")}</button></article>`).join("");
+  const pending = available.map(course=>`<article class="certificate-ready-card"><div><span class="subtle-label">ПРОГРАММА ЗАВЕРШЕНА</span><b>${esc(course.title)}</b><small>Экзамен сдан · сертификат готов к оформлению</small></div><button data-cert-issue="${esc(course.id)}" ${certificateIssuePending?"disabled":""}>Выдать сертификат</button></article>`).join("");
   return `<main class="screen inner-screen documents-screen">
-    ${heading("СЕРТИФИКАТЫ", "Документы об<br><em>обучении.</em>", "В этом разделе будут храниться сертификаты по завершённым программам MAGNUS.")}
-    <section class="certificate-specimen" aria-label="Образец оформления будущего сертификата">
-      <div class="certificate-specimen-inner">
-        <div class="certificate-specimen-top"><b>MAGNUS</b><span>ОБРАЗЕЦ · НЕ ВЫДАН</span></div>
-        <div class="certificate-specimen-rule"></div>
-        <span class="certificate-specimen-eyebrow">ПОДТВЕРЖДЕНИЕ ОБУЧЕНИЯ</span>
-        <h2>Сертификат</h2>
-        <p>о прохождении образовательной программы</p>
-        <div class="certificate-specimen-name"><i></i><span>ИМЯ СТУДЕНТА</span></div>
-        <div class="certificate-specimen-footer"><span>ОБРАЗОВАТЕЛЬНАЯ ПРОГРАММА</span><span>ДАТА ВЫДАЧИ</span></div>
-      </div>
-    </section>
-    <div class="documents-empty-state"><b>Пока нет выданных сертификатов</b><p>Образец выше показывает оформление. Настоящий документ появится здесь после завершения программы и выполнения условий его выдачи.</p><button data-go="study">Перейти к обучению ${icon("arrow")}</button></div>
-    <p class="legal-note">Образец не является выданным документом. Сертификаты MAGNUS подтверждают прохождение соответствующих образовательных программ и не являются государственными дипломами о высшем образовании.</p>
+    ${heading("АКАДЕМИЧЕСКИЕ ДОКУМЕНТЫ","Твои результаты<br><em>и достижения.</em>","Сертификаты MAGNUS подтверждают завершение учебной программы и успешную итоговую аттестацию.")}
+    ${verifyPanel}
+    ${cards?'<section class="issued-certificates-list">'+cards+'</section>':'<div class="documents-empty-state"><b>Пока нет выданных сертификатов</b><p>Документ появится после завершения всех занятий и успешной сдачи итогового экзамена.</p><button data-go="study">Перейти к обучению ${icon("arrow")}</button></div>'}
+    ${pending?'<section class="certificate-ready-list"><span class="subtle-label">ГОТОВО К ВЫДАЧЕ</span>'+pending+'</section>':''}
+    <p class="legal-note">Сертификат подтверждает прохождение программы MAGNUS и результат внутренней аттестации. Он не является государственным дипломом, документом об аккредитации или квалификацией, признанной государством.</p>
   </main>`;
 }
 
@@ -1087,6 +1088,30 @@ function toast(message) {
 }
 
 function bindEvents() {
+  document.querySelectorAll("[data-cert-issue]").forEach(button=>button.addEventListener("click",()=>{
+    if(certificateIssuePending)return;
+    const courseId=button.dataset.certIssue;
+    certificateIssuePending=true;render();
+    callCloudStudentData("issueCertificate",{courseId},(error,result)=>{
+      certificateIssuePending=false;
+      if(error||!result?.ok){toast(error?.message||result?.message||"Не удалось оформить сертификат.");render();return;}
+      certificates={...certificates,[courseId]:result.certificate};render();toast("Сертификат MAGNUS выдан.");
+    });
+  }));
+  document.querySelectorAll("[data-cert-verify]").forEach(button=>button.addEventListener("click",()=>{
+    const certificateId=button.dataset.certVerify;
+    certificateVerification={loading:true};const url=new URL(window.location.href);url.searchParams.set("certificate",certificateId);history.replaceState({}, "", url);
+    render();
+    const serverless=tg?.Serverless;
+    if(typeof serverless?.call!=="function"){certificateVerification={loading:false,valid:false};render();return;}
+    serverless.call("studentData",{action:"verifyCertificate",certificateId},(error,result)=>{
+      certificateVerification={loading:false,valid:!error&&Boolean(result?.valid),certificate:result?.certificate||null};render();
+    });
+  }));
+  document.querySelector("[data-cert-clear]")?.addEventListener("click",()=>{
+    const url=new URL(window.location.href);url.searchParams.delete("certificate");history.replaceState({}, "", url);certificateVerification=null;render();
+  });
+
   document.querySelectorAll("[data-exam-start]").forEach(button=>button.addEventListener("click",()=>{
     const courseId=button.dataset.examStart;
     if(!telegramUser?.id){toast("Экзамен доступен при открытии MAGNUS через Telegram.");return;}
