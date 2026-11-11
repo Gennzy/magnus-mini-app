@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 const root = resolve(process.argv[2] || process.cwd());
 const filePath = path => resolve(root, path);
 
-const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md", "docs/KNOWN_ISSUES.md", "docs/ACADEMIC_STATUS_MODEL.md", "docs/LEARNING_ACTIVITY_MODEL.md"];
+const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md", "docs/KNOWN_ISSUES.md", "docs/ACADEMIC_STATUS_MODEL.md", "docs/LEARNING_ACTIVITY_MODEL.md", "docs/ASSESSMENT_AND_COMPLETION_POLICY.md"];
 const errors = [];
 
 for (const file of requiredFiles) {
@@ -25,6 +25,7 @@ const adrIndex = readFileSync(filePath("docs/adr/README.md"), "utf8");
 const knownIssues = readFileSync(filePath("docs/KNOWN_ISSUES.md"), "utf8");
 const academicStatusModel = readFileSync(filePath("docs/ACADEMIC_STATUS_MODEL.md"), "utf8");
 const learningActivityModel = readFileSync(filePath("docs/LEARNING_ACTIVITY_MODEL.md"), "utf8");
+const assessmentPolicy = readFileSync(filePath("docs/ASSESSMENT_AND_COMPLETION_POLICY.md"), "utf8");
 const adrTemplate = readFileSync(filePath("docs/adr/ADR-TEMPLATE.md"), "utf8");
 
 const requireText = (text, pattern, label) => {
@@ -78,6 +79,13 @@ for (const field of ["Категория", "Приоритет / статус", 
 if (!roadmap.includes("docs/KNOWN_ISSUES.md")) errors.push("MASTER_ROADMAP does not link to the known issues register");
 if (!roadmap.includes("docs/ACADEMIC_STATUS_MODEL.md")) errors.push("MASTER_ROADMAP does not link to the academic status model");
 if (!roadmap.includes("docs/LEARNING_ACTIVITY_MODEL.md")) errors.push("MASTER_ROADMAP does not link to the learning activity model");
+if (!roadmap.includes("docs/ASSESSMENT_AND_COMPLETION_POLICY.md")) errors.push("MASTER_ROADMAP does not link to the assessment and completion policy");
+for (const section of ["## 1. Основное решение", "## 2. Термины и уровни", "### 2.3. Зачёт дисциплины", "### 2.4. Завершение учебного блока", "### 2.5. Завершение образовательной программы", "## 4. Повторные попытки и сохранение результата", "## 6. Версия программы и исторические результаты", "## 10. Подтверждённые расхождения текущей реализации"]) {
+  if (!assessmentPolicy.includes(section)) errors.push(`ASSESSMENT_AND_COMPLETION_POLICY is missing section: ${section}`);
+}
+for (const concept of ["Завершённое занятие", "Зачёт дисциплины", "Завершение учебного блока", "Завершение образовательной программы", "required: false", "PROD-007", "ACADEMIC_CATALOG_VERSION", "не аннулирует уже достигнутый зачёт"]) {
+  if (!assessmentPolicy.includes(concept)) errors.push(`ASSESSMENT_AND_COMPLETION_POLICY is missing rule/concept: ${concept}`);
+}
 for (const section of ["## 1. Основное решение", "## 2. Что считается первым участием", "## 3. Что не считается учебной активностью", "## 5. Учебное событие и контракт журнала", "## 9. Негативные и пограничные правила"]) {
   if (!learningActivityModel.includes(section)) errors.push(`LEARNING_ACTIVITY_MODEL is missing section: ${section}`);
 }
