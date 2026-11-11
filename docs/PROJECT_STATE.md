@@ -14,7 +14,7 @@
 
 ## 2. Текущий HEAD и публикация
 
-- Рабочая ветка: `magnus-source-upload`. Последний подтверждённый visual CI: run [42981164276](https://github.com/Gennzy/magnus-mini-app/actions/runs/42981164276), SHA `05031879c78085377542836000a844da8554b391`. GOV-007 изменения в работе; актуальный HEAD сверять по GitHub.
+- Рабочая ветка: `magnus-source-upload`. Последний полный visual CI: run [42981589693](https://github.com/Gennzy/magnus-mini-app/actions/runs/42981589693), SHA `b58d09edfdc0ca6f488364664c0eb413f2528dab`. После фиксации этого состояния дождаться нового CI на итоговом commit.
 - Последний подтверждённый app commit: `c23dfa43b81047b58ae1f2168881bb2eb93c5afa` — административный gradebook переведён на единый `ACADEMIC_CATALOG`; commit прошёл visual CI.
 - Последний visual CI: успешно — https://github.com/Gennzy/magnus-mini-app/actions/runs/42971514060 (SHA `c23dfa43b81047b58ae1f2168881bb2eb93c5afa`). Проверки включают tutor coverage, payment invariants, backend JavaScript syntax, production build и desktop/mobile browser smoke.
 - Последний подтверждённый Telegram deploy: успешно — https://github.com/Gennzy/magnus-mini-app/actions/runs/42970888891 (app SHA `90798104fb29df89ff05d1064a26ef07e3977fa7`). Этот deploy включал build, backend syntax, Telegram runtime compile, push и safe migration.
@@ -114,7 +114,19 @@
 
 **GOV-006 — журнал архитектурных решений (ADR): DONE.**
 
-**Текущий WP: GOV-007 — реестр известных дефектов и технического долга.**
+**GOV-007 — реестр известных дефектов и технического долга: DONE.**
+
+**Текущий WP: PROD-001 — позиционирование MAGNUS и целевые аудитории.**
+
+GOV-007 закрыта после успешного полного visual CI run [42981589693](https://github.com/Gennzy/magnus-mini-app/actions/runs/42981589693), SHA `b58d09edfdc0ca6f488364664c0eb413f2528dab`.
+
+Создан `docs/KNOWN_ISSUES.md` с девятью карточками BL-001…BL-009. Для каждой указаны категория, приоритет, статус, влияние, подтверждение, следующий шаг и условие закрытия. BL-008 и BL-009 обозначены критическими блокерами реальных продаж. `MASTER_ROADMAP.md` теперь ссылается на реестр; `scripts/check-project-docs.mjs` проверяет его наличие, обязательные BL-ID и поля; `scripts/test-project-docs.mjs` проверяет негативные сценарии отсутствующего реестра и записи.
+
+Полный CI: документация, позитивные/негативные docs-тесты, tutor coverage, payment invariants, backend syntax, production build, Playwright desktop/mobile smoke и загрузка скриншотов — успешно. Runtime не менялся, Telegram deploy не требуется.
+
+**WP-007 / границы:** IN — реестр, синхронизация roadmap/state, CI-проверки. OUT — исправление продуктовых дефектов, runtime/API/БД и Telegram deploy. Все критерии приёмки выполнены.
+
+**Следующая задача:** PROD-001 — описать позиционирование MAGNUS и целевые аудитории. Её реализацию не начинать до успешного CI на этом обновлении состояния.
 
 **Статус:** `[~] In progress`.
 
@@ -150,8 +162,8 @@ GOV-006 закрыта. Созданы `docs/adr/README.md`, `docs/adr/ADR-TEMPL
 
 ## 6. Следующая задача
 
-GOV-006 завершена и отмечена DONE после успешного run 42979146746. GOV-007 начата после успешного полного visual CI run [42981164276](https://github.com/Gennzy/magnus-mini-app/actions/runs/42981164276), SHA `05031879c78085377542836000a844da8554b391`.
+GOV-006 завершена и отмечена DONE после успешного run 42979146746. GOV-007 завершена после полного visual CI run [42981589693](https://github.com/Gennzy/magnus-mini-app/actions/runs/42981589693), SHA `b58d09edfdc0ca6f488364664c0eb413f2528dab`.
 
 ## 7. Как продолжать в новом чате
 
-Сначала сверить этот файл с MASTER_ROADMAP и GitHub HEAD/Actions. Не задавать пользователю повторно вопросы, на которые ответ уже содержится в коде или документации. Не перескакивать с STU-003 на новую идею. Текущий WP: GOV-007. Вести единый реестр известных дефектов и технического долга; не начинать следующий WP до его закрытия.
+Сначала сверить этот файл с MASTER_ROADMAP и GitHub HEAD/Actions. Не задавать пользователю повторно вопросы, на которые ответ уже содержится в коде или документации. Не перескакивать с STU-003 на новую идею. Текущий WP: PROD-001. До реализации сначала сверить актуальный HEAD и успешный CI; затем оформить WP по шаблону и только после этого начинать работу.
