@@ -297,26 +297,50 @@ export default async function (input, ctx) {
   }
 
   if (input?.action === 'savePaymentPlans') {
-    if (!Array.isArray(input.plans) || input.plans.length !== DEFAULT_SUBSCRIPTION_PLANS.length) {
-      return { ok: false, code: 'INVALID_PLANS', message: 'Не удалось распознать список тарифов.' };
+    if (admin.role !== 'owner') {
+      return { ok: false, code: 'FORBIDDEN', message: 'Настраивать цены и доступность тарифов может только владелец проекта.' };
     }
-    const now = Math.floor(Date.now() / 1000);
+    if (!Array.isArray(input.plans) || input.plans.length !== DEFAULT_SUBSCRIPTION_PLANS.length) {
+      return { ok: false, code: 'INVALID_PLANS', message: 'Нужно передать каждый тариф ровно один раз.' };
+    }
+
+    // Сначала полностью проверяем payload. Некорректная последняя запись
+    // не должна оставлять первые тарифы уже изменёнными.
     const allowed = new Map(DEFAULT_SUBSCRIPTION_PLANS.map(plan => [plan.planId, plan]));
-    const saved = [];
+    const incoming = new Map();
     for (const item of input.plans) {
-      const fallback = allowed.get(String(item?.planId || ''));
+      const planId = String(item?.planId || '');
+      const fallback = allowed.get(planId);
       const starsPrice = Number(item?.starsPrice);
-      if (!fallback || !Number.isInteger(starsPrice) || starsPrice < 0 || starsPrice > 100000) {
+      if (!fallback || incoming.has(planId)) {
+        return { ok: false, code: 'INVALID_PLANS', message: 'Список тарифов содержит неизвестный или повторяющийся тариф.' };
+      }
+      if (!Number.isInteger(starsPrice) || starsPrice < 0 || starsPrice > 100000) {
         return { ok: false, code: 'INVALID_PRICE', message: 'Цена должна быть целым числом от 0 до 100 000 Stars.' };
       }
-      const enabled = Boolean(item.enabled) && starsPrice > 0 ? 1 : 0;
-      const record = {
+      incoming.set(planId, { starsPrice, enabled: item.enabled === true || item.enabled === 1 });
+    }
+    if (incoming.size !== allowed.size || [...allowed.keys()].some(planId => !incoming.has(planId))) {
+      return { ok: false, code: 'INVALID_PLANS', message: 'В списке отсутствует один из тарифов MAGNUS.' };
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const records = DEFAULT_SUBSCRIPTION_PLANS.map(fallback => {
+      const item = incoming.get(fallback.planId);
+      const enabled = item.enabled && item.starsPrice > 0 ? 1 : 0;
+      return {
         planId: fallback.planId, title: fallback.title, description: fallback.description,
-        days: fallback.days, starsPrice, enabled, updatedAt: now, updatedBy: tgId,
+        days: fallback.days, starsPrice: item.starsPrice, enabled, updatedAt: now, updatedBy: tgId,
       };
+    });
+    const saved = [];
+    for (const record of records) {
       await db.insert(subscriptionPlans).values(record).onConflictDoUpdate({
         target: subscriptionPlans.planId,
-        set: { title: record.title, description: record.description, days: record.days, starsPrice, enabled, updatedAt: now, updatedBy: tgId },
+        set: {
+          title: record.title, description: record.description, days: record.days,
+          starsPrice: record.starsPrice, enabled: record.enabled, updatedAt: now, updatedBy: tgId,
+        },
       }).run();
       saved.push(normalizePlan(record));
     }
