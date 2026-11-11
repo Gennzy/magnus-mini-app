@@ -35,6 +35,11 @@ try {
     });
     await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.waitForSelector("#app .home-screen", { timeout: 15000 });
+    const standaloneGreetingAvatar = await page.locator(".home-avatar").evaluate(node => getComputedStyle(node).display !== "none");
+    if (standaloneGreetingAvatar) failures.push(name + "/home: greeting avatar duplicates the avatar in the standalone topbar");
+    const progressLabels = await page.locator(".dashboard-progress-strip article span").allTextContents();
+    if (progressLabels.some(label => /черновик/i.test(label))) failures.push(name + "/home: draft count is duplicated between overview and task statistics");
+    if (progressLabels[1]?.trim() !== "Программ") failures.push(name + "/home: second overview metric must show enrolled programs, not duplicated drafts");
     await page.waitForSelector(".startup-screen .startup-owl", { timeout: 5000 });
     await page.waitForFunction(() => { const img = document.querySelector(".startup-owl"); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 5000 });
     const startupMascot = await page.evaluate(() => ({ sameAsset: document.querySelector(".startup-owl")?.getAttribute("src") === document.querySelector(".dashboard-owl")?.getAttribute("src"), filter: getComputedStyle(document.querySelector(".startup-owl")).filter }));
@@ -442,6 +447,9 @@ try {
     const image = document.querySelector(".home-avatar img");
     return image && image.complete && image.naturalWidth > 0;
   }, null, { timeout: 10000 });
+  await telegramHomePage.waitForSelector(".startup-screen", { state: "detached", timeout: 5000 });
+  const telegramGreetingAvatarVisible = await telegramHomePage.locator(".home-avatar").evaluate(node => getComputedStyle(node).display !== "none");
+  if (!telegramGreetingAvatarVisible) failures.push("telegram-home: greeting avatar must remain visible when the internal Telegram topbar is hidden");
   const telegramHomeLayout = await telegramHomePage.evaluate(() => {
     const greeting = document.querySelector(".greeting-row");
     const name = greeting?.querySelector("h1");
@@ -454,6 +462,9 @@ try {
       name: name?.textContent || "",
       nameWidth: name?.clientWidth || 0,
       nameScrollWidth: name?.scrollWidth || 0,
+      nameHeight: name?.clientHeight || 0,
+      nameScrollHeight: name?.scrollHeight || 0,
+      nameWhiteSpace: name ? getComputedStyle(name).whiteSpace : "",
       avatarLoaded: Boolean(avatar?.querySelector("img")?.naturalWidth)
     };
   });
@@ -462,6 +473,7 @@ try {
   if (telegramHomeLayout.document > telegramHomeLayout.viewport + 1) failures.push("telegram-home: long Telegram first name causes horizontal overflow " + JSON.stringify(telegramHomeLayout));
   if (!telegramHomeLayout.avatarLoaded) failures.push("telegram-home: Telegram profile photo did not load in the home greeting");
   if (telegramHomeLayout.nameScrollWidth > telegramHomeLayout.nameWidth + 1) failures.push("telegram-home: long first name overflows its heading " + JSON.stringify(telegramHomeLayout));
+  if (telegramHomeLayout.nameWhiteSpace === "nowrap" || telegramHomeLayout.nameScrollHeight > telegramHomeLayout.nameHeight + 1) failures.push("telegram-home: long first name is clipped instead of wrapping " + JSON.stringify(telegramHomeLayout));
   await telegramHomePage.screenshot({ path: artifacts + "/telegram-home-long-name.png", fullPage: true });
   await telegramHomePage.locator('.bottom-nav [data-go="profile"]').click();
   await telegramHomePage.waitForSelector(".profile-screen", { timeout: 10000 });
@@ -469,6 +481,8 @@ try {
   const profileLongName = await telegramHomePage.locator(".profile-info h2").innerText();
   if (!profileTelegramPhoto) failures.push("telegram-profile: Telegram avatar is not reused in the profile card");
   if (!profileLongName.includes("СверхдлинноеИмя")) failures.push("telegram-profile: Telegram first name is not displayed in the profile");
+  const profileNameLayout = await telegramHomePage.locator(".profile-info h2").evaluate(node => ({height:node.clientHeight,scrollHeight:node.scrollHeight,whiteSpace:getComputedStyle(node).whiteSpace,textOverflow:getComputedStyle(node).textOverflow}));
+  if (profileNameLayout.whiteSpace === "nowrap" || profileNameLayout.scrollHeight > profileNameLayout.height + 1 || profileNameLayout.textOverflow === "ellipsis") failures.push("telegram-profile: long Telegram name is visually truncated " + JSON.stringify(profileNameLayout));
   await telegramHomePage.screenshot({ path: artifacts + "/telegram-profile-long-name.png", fullPage: true });
   await telegramHomePage.close();
 

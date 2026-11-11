@@ -8165,3 +8165,17 @@ body{padding-bottom:max(24px,env(safe-area-inset-bottom))}
   .back-button{min-height:44px;padding:8px 0 12px;font-size:12px}
 }
 .dashboard-owl{filter:grayscale(.48) sepia(.84) saturate(.96) hue-rotate(350deg) brightness(.98) contrast(1.04) drop-shadow(0 18px 24px rgba(0,0,0,.34))}
+
+
+/* UX-001 · Remove duplicate guest avatar; keep Telegram identity in its greeting. */
+html:not(.telegram-webapp) .home-avatar{display:none!important}
+
+/* UX-001 · Profile names must remain readable instead of truncating Telegram names. */
+.profile-screen .profile-info h2{
+  overflow:visible;
+  overflow-wrap:anywhere;
+  word-break:normal;
+  text-overflow:clip;
+  white-space:normal;
+  line-height:1.18;
+}

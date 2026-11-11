@@ -704,3 +704,6 @@ Visual QA SHA и статус:
 
 - UX-001 / CI #228: accessibility smoke SUCCESS: keyboard focus, nav target size, reduced-motion and assignment textarea iOS zoom checks.
 - UX-001 / CI #229: mobile search/practice/notes inputs are checked against the iOS 16px threshold; filter and back controls against 44px touch target; isolated Telegram WebApp home/profile test covers long first_name, Telegram photo_url and hidden internal topbar. Warm bronze tuning applied to the existing 3D mascot; awaiting CI.
+
+- **UX-001 / CI #229:** visual CI SUCCESS с Telegram WebApp mock и mobile inputs/hit targets. Screenshot Telegram был закрыт startup overlay; тест теперь ждёт его detach, чтобы оценивать реальную композицию.
+- **UX-001 / следующий этап:** устранить повтор аватара в standalone mode, убрать повтор счётчика drafts в двух блоках главной, показывать количество зачисленных программ; длинное имя в профиле должно переноситься без ellipsis. Playwright проверяет Telegram и standalone варианты.

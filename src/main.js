@@ -610,13 +610,13 @@ function dashboardTasksPreview() {
 function homePage() {
   const completedTotal = Object.keys(completedLessons).filter(id => completedLessons[id]).length;
   const notesTotal = Object.values(lessonNotes).filter(value => String(value || "").trim()).length;
-  const draftsTotal = Object.keys(assignmentDrafts).filter(id => hasAssignmentDraft(id) && !hasAssignmentSubmission(id)).length;
+  const activeProgramsTotal = Object.keys(enrollments).filter(id => Boolean(enrollments[id])).length;
   return `<main class="screen home-screen">
     <section class="greeting-row"><div><div class="subtle-label">ТВОЁ ПРОСТРАНСТВО ДЛЯ РОСТА</div><h1>Привет, ${esc(firstName)}!</h1><p>Продолжим с того места, где остановились?</p></div><div class="home-avatar">${telegramPhotoUrl ? `<img src="${esc(telegramPhotoUrl)}" alt="">` : icon("profile")}</div></section>
     ${dashboardContinueLearning()}
     <section class="dashboard-progress-strip">
       <article><b>${completedTotal}</b><span>Занятий пройдено</span></article>
-      <article><b>${draftsTotal}</b><span>Черновика</span></article>
+      <article><b>${activeProgramsTotal}</b><span>Программ</span></article>
       <article><b>${notesTotal}</b><span>Заметок</span></article>
     </section>
     ${dashboardTasksPreview()}
