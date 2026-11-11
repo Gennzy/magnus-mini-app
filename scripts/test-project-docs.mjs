@@ -67,7 +67,7 @@ const cases = [
   }, false],
   ["current planned WP cannot be marked done", dir => {
     const path = join(dir, "docs/work-packages/PROD-009.md");
-    writeFileSync(path, readFileSync(path, "utf8").replace("[ ] Planned", "[x] Done"));
+    writeFileSync(path, readFileSync(path, "utf8").replace("- **Статус:** [~] In progress", "- **Статус:** [x] Done").replace("- **Статус:** [ ] Planned", "- **Статус:** [x] Done"));
   }, false],
   ["missing known issue record fails", dir => {
     const path = join(dir, "docs/KNOWN_ISSUES.md");
