@@ -169,7 +169,8 @@ const icon = (name, cls="") => {
     back:'<path d="m15 18-6-6 6-6"/>',
     refresh:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.7-2L20 12M4 12l2.7 5a7 7 0 0 0 11.7-2"/>',
     settings:'<circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.2 1-1.4 2.4-1.5-.6a7.7 7.7 0 0 1-1.7 1l-.2 1.6h-2.8l-.2-1.6a7.7 7.7 0 0 1-1.7-1l-1.5.6-1.4-2.4 1.2-1a7.7 7.7 0 0 1 0-2l-1.2-1 1.4-2.4 1.5.6a7.7 7.7 0 0 1 1.7-1l.2-1.6h2.8l.2 1.6a7.7 7.7 0 0 1 1.7 1l1.5-.6 1.4 2.4-1.2 1a7.7 7.7 0 0 1 0 2Z"/>',
-    help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.3 1.7c-1 .9-1.9 1.3-1.9 2.8M12 17h.01'
+    help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.3 1.7c-1 .9-1.9 1.3-1.9 2.8M12 17h.01',
+    close:'<path d="m18 6-12 12M6 6l12 12"/>'
   };
   return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.arrow}</svg>`;
 };
@@ -630,7 +631,7 @@ function facultiesPage() {
     return matchesQuery && (activeFilter === "Все" || group === activeFilter);
   });
   return `<main class="screen inner-screen">${heading("MAGNUS · АКАДЕМИЧЕСКАЯ СРЕДА","Выбери свой<br><em>факультет.</em>","Краткое описание факультетов и тем, которые входят в каждое направление.")}
-    <label class="search-box">${icon("search")}<input id="faculty-search" value="${esc(searchValue)}" placeholder="Поиск факультета" autocomplete="off"><span>⌘ K</span></label>
+    <label class="search-box">${icon("search")}<input id="faculty-search" value="${esc(searchValue)}" placeholder="Поиск факультета" autocomplete="off"></label>
     <div class="filter-row">${filters.map(f=>`<button class="filter-chip ${activeFilter===f?"selected":""}" data-filter="${f}" aria-pressed="${activeFilter===f}">${f}</button>`).join("")}</div>
     <div class="faculty-grid">${filtered.map(f=>`<button class="faculty-card" data-faculty="${f.id}">${facultyArt(f)}<span class="faculty-card-copy"><small>${f.en}</small><b>${f.name}</b><span>${f.desc}</span><i>Подробнее ${icon("arrow")}</i></span></button>`).join("")}</div>
     ${filtered.length?"":`<div class="empty-message">Ничего не найдено. Попробуй изменить запрос.</div>`}
@@ -1657,7 +1658,15 @@ document.querySelectorAll("[data-admin-payment-refresh]").forEach(el=>el.addEven
       }
       return;
     }
-    const actions = {notifications:"Система уведомлений пока не подключена.",course:"Раздел курсов пока демонстрационный.", "course-start":"Видеоурок пока недоступен.",settings:"Настройки появятся в следующем обновлении.",support:"Раздел поддержки скоро будет доступен.",about:"MAGNUS — пространство для знаний, открытий и развития."};
+    const infoActions = {
+      notifications: ["Уведомления", "Здесь будут появляться новые задания, результаты и важные обновления. Пока уведомлений нет."],
+      settings: ["Настройки", "Настройки внешнего вида и предпочтений пока не подключены. Основные учебные данные сохраняются в профиле."],
+      support: ["Поддержка", "Канал поддержки MAGNUS пока не подключён. Не отправляй сюда пароли, платёжные данные или другую конфиденциальную информацию."],
+      about: ["О MAGNUS", "MAGNUS — цифровая учебная среда. Знания открывают возможности. Сертификаты подтверждают прохождение внутренних программ, а не государственную квалификацию."]
+    };
+    const infoAction = infoActions[el.dataset.action];
+    if (infoAction) { openInfoModal(infoAction[0], infoAction[1]); return; }
+    const actions = {course:"Раздел курсов пока демонстрационный.", "course-start":"Видеоурок пока недоступен."};
     toast(actions[el.dataset.action] || "Это действие пока недоступно.");
   }));
   const noteField = document.querySelector("#lesson-note");
@@ -1688,6 +1697,35 @@ document.querySelectorAll("[data-admin-payment-refresh]").forEach(el=>el.addEven
   });
   const input = document.querySelector("#faculty-search");
   input?.addEventListener("input", e => { const pos=e.target.selectionStart; searchValue=e.target.value; const y=window.scrollY; render(); const next=document.querySelector("#faculty-search"); next?.focus(); next?.setSelectionRange(pos,pos); window.scrollTo(0,y); });
+}
+
+function closeInfoModal() {
+  document.querySelector(".info-modal-backdrop")?.remove();
+  document.removeEventListener("keydown", handleInfoModalKeydown);
+}
+
+function handleInfoModalKeydown(event) {
+  if (event.key === "Escape") closeInfoModal();
+}
+
+function openInfoModal(title, message) {
+  closeInfoModal();
+  document.body.insertAdjacentHTML("beforeend", `
+    <div class="info-modal-backdrop" role="presentation">
+      <section class="info-modal-panel" role="dialog" aria-modal="true" aria-labelledby="info-modal-title">
+        <button class="info-modal-close" type="button" data-modal-close aria-label="Закрыть">${icon("close")}</button>
+        <span class="subtle-label">MAGNUS · ИНФОРМАЦИЯ</span>
+        <h2 id="info-modal-title">${esc(title)}</h2>
+        <p>${esc(message)}</p>
+        <button class="info-modal-confirm" type="button" data-modal-close>Понятно</button>
+      </section>
+    </div>
+  `);
+  const overlay = document.querySelector(".info-modal-backdrop");
+  overlay?.addEventListener("click", event => { if (event.target === overlay) closeInfoModal(); });
+  overlay?.querySelectorAll("[data-modal-close]").forEach(button => button.addEventListener("click", closeInfoModal));
+  document.addEventListener("keydown", handleInfoModalKeydown);
+  overlay?.querySelector(".info-modal-close")?.focus();
 }
 
 function triggerStartupHaptic() {

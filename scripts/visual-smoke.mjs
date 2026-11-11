@@ -60,6 +60,8 @@ try {
     await page.locator('.bottom-nav [data-go="faculties"]').click();
     await page.waitForSelector(".faculty-grid", { timeout: 10000 });
     await assertNoHorizontalOverflow("catalog");
+    const catalogKeyHint = await page.locator(".search-box span").count();
+    if (catalogKeyHint !== 0) failures.push(name + "/catalog: a keyboard shortcut hint is shown without a matching shortcut");
     await page.screenshot({ path: artifacts + "/" + name + "-catalog.png", fullPage: true });
 
     await page.locator('.faculty-card[data-faculty="it"]').click();
@@ -79,6 +81,14 @@ try {
     await assertNoHorizontalOverflow("profile");
     const profileMenuIcons = await page.locator(".profile-menu .menu-icon svg").count();
     if (profileMenuIcons !== 5) failures.push(name + "/profile: expected 5 SVG menu icons, found " + profileMenuIcons);
+    for (const actionName of ["settings", "notifications", "support", "about"]) {
+      await page.locator('.profile-menu [data-action="' + actionName + '"]').click();
+      await page.waitForSelector(".info-modal-panel", { timeout: 5000 });
+      const dialogTitle = await page.locator(".info-modal-panel h2").innerText();
+      if (!dialogTitle.trim()) failures.push(name + "/profile: " + actionName + " dialog has no title");
+      await page.locator(".info-modal-panel [data-modal-close]").last().click();
+      await page.waitForSelector(".info-modal-backdrop", { state: "detached", timeout: 5000 });
+    }
     await page.locator('.profile-menu [data-go="documents"]').click();
     await page.waitForSelector(".documents-screen", { timeout: 10000 });
     await assertNoHorizontalOverflow("documents");
