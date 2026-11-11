@@ -14,7 +14,7 @@
 
 ## 2. Текущий HEAD и публикация
 
-- Рабочая ветка: `magnus-source-upload`. Последний подтверждённый commit: `05031879c78085377542836000a844da8554b391` (исправление регрессионного теста активного WP).
+- Рабочая ветка: `magnus-source-upload`. Последний подтверждённый visual CI: run [42981164276](https://github.com/Gennzy/magnus-mini-app/actions/runs/42981164276), SHA `05031879c78085377542836000a844da8554b391`. GOV-007 изменения в работе; актуальный HEAD сверять по GitHub.
 - Последний подтверждённый app commit: `c23dfa43b81047b58ae1f2168881bb2eb93c5afa` — административный gradebook переведён на единый `ACADEMIC_CATALOG`; commit прошёл visual CI.
 - Последний visual CI: успешно — https://github.com/Gennzy/magnus-mini-app/actions/runs/42971514060 (SHA `c23dfa43b81047b58ae1f2168881bb2eb93c5afa`). Проверки включают tutor coverage, payment invariants, backend JavaScript syntax, production build и desktop/mobile browser smoke.
 - Последний подтверждённый Telegram deploy: успешно — https://github.com/Gennzy/magnus-mini-app/actions/runs/42970888891 (app SHA `90798104fb29df89ff05d1064a26ef07e3977fa7`). Этот deploy включал build, backend syntax, Telegram runtime compile, push и safe migration.
@@ -131,6 +131,8 @@
 **Тестирование:** `npm run check:docs`, `npm run test:docs`, полный visual CI (tutor coverage, payment invariants, backend syntax, build, desktop/mobile smoke). Telegram deploy не требуется, поскольку меняются только документация и проверки.
 
 **Риски:** не выдавать непроверенное за воспроизводимый баг; не помечать BL как исправленные без отдельной проверки; не терять блокирующие условия BL-008/009 для включения продаж.
+
+**Выполнено в GOV-007:** создан `docs/KNOWN_ISSUES.md` с карточками BL-001…BL-009; CI checker расширен проверкой реестра, всех девяти ID и обязательных полей; добавлены негативные тесты на отсутствие реестра и записи. `MASTER_ROADMAP.md` приведён к актуальному GOV-007 и ссылается на реестр. Осталось проверить финальную согласованность, устранить устаревшие формулировки, прогнать полный CI и зафиксировать итоговый SHA.
 
 STU-003 закрыта: пользователь открыл «Профиль → Паспорт студента» внутри Telegram и прислал скриншот. Реальный Telegram-аватар, имя, username и статус «Абитуриент» отображаются корректно. Пользователь подтвердил, что ни на одну программу ещё не записывался; 0 программ, 0/0 занятий и 0% прогресса — ожидаемое пустое состояние. Экран визуально отрисован без ошибки. Guest-state desktop/mobile smoke прошёл. Серверная авторизация использует Telegram ID из проверенного initData, а не произвольный ID от клиента. Полноценный сценарий зачисленного студента останется отдельным тестом после появления тестового зачисления.
 
