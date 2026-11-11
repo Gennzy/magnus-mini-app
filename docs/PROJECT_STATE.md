@@ -157,3 +157,5 @@
 
 - **CI #233:** `d1a163ebc8f03134ce005b05382da106c2e14591` — SUCCESS. Shared owl color filter и полная проверка certificate loading/valid/invalid/close query flow прошли.
 - **UX-001 / desktop mascot correction:** screenshot #233 показал, что 3D owl stage занимал около 39% карточки и 270px высоты; нижняя часть персонажа обрезалась, подпись пересекала изображение. Desktop/tablet stage уменьшен до min(34%,300px) × 224px, text column ограничена 54%, декоративная подпись скрыта; мобильная сцена остаётся прежней. Playwright теперь контролирует stage/image/card/copy geometry на desktop и пяти responsive widths.
+
+- **UX-001 / primary navigation regression (2026-11-11):** confirmed root cause was a late CSS override that pinned `.bottom-nav` to the top of its document-flow position (`sticky; top:70px`, Telegram overrides to 8px/0px). Corrected to a bottom-fixed navigation with safe-area padding and document clearance; Playwright assertions now check bottom anchoring rather than the obsolete sticky-before-content layout. Awaiting full CI and Telegram deploy confirmation.
