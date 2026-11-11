@@ -20,6 +20,7 @@ const sourceFiles = [
   "docs/KNOWN_ISSUES.md",
   "docs/ACADEMIC_STATUS_MODEL.md",
   "docs/LEARNING_ACTIVITY_MODEL.md",
+  "docs/ASSESSMENT_AND_COMPLETION_POLICY.md",
   "package.json",
   ".github/workflows/visual-check.yml",
 ];
@@ -46,6 +47,7 @@ const cases = [
   ["missing known issues register fails", dir => rmSync(join(dir, "docs/KNOWN_ISSUES.md")), false],
   ["missing academic status model fails", dir => rmSync(join(dir, "docs/ACADEMIC_STATUS_MODEL.md")), false],
   ["missing learning activity model fails", dir => rmSync(join(dir, "docs/LEARNING_ACTIVITY_MODEL.md")), false],
+  ["missing assessment and completion policy fails", dir => rmSync(join(dir, "docs/ASSESSMENT_AND_COMPLETION_POLICY.md")), false],
   ["missing known issue record fails", dir => {
     const path = join(dir, "docs/KNOWN_ISSUES.md");
     writeFileSync(path, readFileSync(path, "utf8").replace("### BL-006 —", "### BL-XXX —"));
