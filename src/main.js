@@ -992,11 +992,11 @@ function profilePage() {
       <span class="profile-sync-state ${cloudSyncReady?"active":""}">${cloudSyncReady?"ОНЛАЙН":"ЛОКАЛЬНО"}</span>
     </section>
     <section class="profile-menu">
-      <button data-go="documents"><span class="menu-icon">${icon("docs")}</span><span><b>Сертификаты и документы</b><small>${Object.keys(certificates).length?Object.keys(certificates).length+" выдано":"Академические достижения"}</small></span>${icon("arrow")}</button>
-      <button data-action="settings"><span class="menu-icon">${icon("settings")}</span><span><b>Настройки</b><small>Внешний вид и предпочтения</small></span>${icon("arrow")}</button>
-      <button data-action="notifications"><span class="menu-icon">${icon("bell")}</span><span><b>Уведомления</b><small>Важные события и напоминания</small></span>${icon("arrow")}</button>
-      <button data-action="support"><span class="menu-icon">${icon("help")}</span><span><b>Поддержка</b><small>Помощь и обратная связь</small></span>${icon("arrow")}</button>
-      <button data-action="about"><span class="menu-icon">${icon("faculty")}</span><span><b>О MAGNUS</b><small>Пространство для знаний и развития</small></span>${icon("arrow")}</button>
+      <button data-go="documents"><span class="menu-icon">${icon("docs")}</span><span class="menu-copy"><b>Сертификаты и документы</b><small>${Object.keys(certificates).length?Object.keys(certificates).length+" выдано":"Академические достижения"}</small></span>${icon("arrow")}</button>
+      <button data-action="settings"><span class="menu-icon">${icon("settings")}</span><span class="menu-copy"><b>Настройки</b><small>Внешний вид и предпочтения</small></span>${icon("arrow")}</button>
+      <button data-action="notifications"><span class="menu-icon">${icon("bell")}</span><span class="menu-copy"><b>Уведомления</b><small>Важные события и напоминания</small></span>${icon("arrow")}</button>
+      <button data-action="support"><span class="menu-icon">${icon("help")}</span><span class="menu-copy"><b>Поддержка</b><small>Помощь и обратная связь</small></span>${icon("arrow")}</button>
+      <button data-action="about"><span class="menu-icon">${icon("faculty")}</span><span class="menu-copy"><b>О MAGNUS</b><small>Пространство для знаний и развития</small></span>${icon("arrow")}</button>
     </section>
   </main>`;
 }
