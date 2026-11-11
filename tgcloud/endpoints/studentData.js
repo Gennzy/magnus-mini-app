@@ -26,6 +26,14 @@ function cleanMap(value) {
   return result;
 }
 
+
+function academicAccessError(payload) {
+  const status = String(payload?.academicStatus || '');
+  if (status === 'academic_leave') return { ok: false, code: 'ACADEMIC_LEAVE', message: 'Обучение приостановлено на время академического отпуска. Обратись в учебную поддержку.' };
+  if (status === 'expelled') return { ok: false, code: 'ACADEMIC_EXPELLED', message: 'Доступ к учебному процессу приостановлен. Обратись в учебную поддержку.' };
+  return null;
+}
+
 export default async function (input, ctx) {
   if (input?.action === 'verifyCertificate') {
     const certificateId = String(input.certificateId || '').trim().toUpperCase();
@@ -108,6 +116,8 @@ export default async function (input, ctx) {
     }
     const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
     const payload = existing?.payload || {};
+    const academicError = academicAccessError(payload);
+    if (academicError) return academicError;
     const enrollments = cleanMap(payload.enrollments);
     if (!enrollments[courseId]) return { ok: false, code: 'NOT_ENROLLED', message: 'Сначала оформи зачисление на эту программу.' };
     const completed = cleanMap(payload.completedLessons);
@@ -270,6 +280,8 @@ export default async function (input, ctx) {
     if (!bank) return { ok:false, code:'INVALID_PROGRAM', message:'Итоговый экзамен для этой программы недоступен.' };
     const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
     const payload = existing?.payload || {};
+    const academicError = academicAccessError(payload);
+    if (academicError) return academicError;
     const enrollments = cleanMap(payload.enrollments);
     if (!enrollments[courseId]) return { ok:false, code:'NOT_ENROLLED', message:'Сначала оформи зачисление на программу.' };
     const lessonIds = Array.from({length:6},(_,i)=>courseId+'-0'+(i+1));
@@ -328,6 +340,8 @@ export default async function (input, ctx) {
 
     const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
     const previousPayload = existing?.payload || {};
+    const academicError = academicAccessError(previousPayload);
+    if (academicError) return academicError;
     const completedLessons = cleanMap(previousPayload.completedLessons);
     const enrollments = cleanMap(previousPayload.enrollments);
     if (!enrollments[courseId]) return { ok: false, code: 'NOT_ENROLLED', message: 'Сначала оформи зачисление на эту программу.' };
