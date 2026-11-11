@@ -18,6 +18,7 @@
 - The server validates the complete set of known plans, rejects duplicate or missing plan IDs, and validates every price before writing any plan. A zero price always forces the tariff off.
 - Default plan prices remain `0` and disabled. No tariff was enabled and no sale was activated by the current implementation work. Demonstration lessons are not gated by subscription status.
 - Refund handling is intentionally not implemented. Do not refund an individual Stars order until paid periods can be tracked and remaining access recalculated without revoking unrelated periods.
+- The GitHub Telegram deployment workflow is manual-only (`workflow_dispatch`). Pushing source commits does not publish automatically; the project owner runs the local Telegram Cloud CLI release sequence.
 - The bot section reports webhook state and lets the owner edit the `/start` greeting, bot descriptions and Mini App menu-button text. Settings are stored in `bot_settings` and applied to Telegram.
 
 ## Connect the first owner
