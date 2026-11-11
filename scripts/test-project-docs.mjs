@@ -66,7 +66,7 @@ const cases = [
   }, false],
   ["certificate policy records public verifier status behavior", dir => {
     const path = join(dir, "docs/CERTIFICATE_POLICY.md");
-    writeFileSync(path, readFileSync(path, "utf8").replace("статус `valid` возвращается жёстко", "статус определяется записью"));
+    writeFileSync(path, readFileSync(path, "utf8").replace("Статус `valid` возвращается жёстко", "Статус определяется записью"));
   }, false],
   ["certificate policy cannot claim state diploma", dir => {
     const path = join(dir, "docs/CERTIFICATE_POLICY.md");
