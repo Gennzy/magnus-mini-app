@@ -534,6 +534,43 @@ try {
   }
   await breakpointPage.close();
 
+  // Course-map finish copy must match the actual saved lesson completion count.
+  const progressScenarios = [
+    { name: "empty", completed: {}, expected: "Впереди 6 занятий. Начни с первого шага.", percentage: "0%" },
+    { name: "partial", completed: { "ai-01": true, "ai-02": true }, expected: "2 из 6 занятий пройдены. Осталось 4.", percentage: "33%" },
+    { name: "complete", completed: { "ai-01": true, "ai-02": true, "ai-03": true, "ai-04": true, "ai-05": true, "ai-06": true }, expected: "Все 6 занятий программы завершены.", percentage: "100%" }
+  ];
+  for (const scenario of progressScenarios) {
+    const progressPage = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+    await progressPage.addInitScript(completed => {
+      localStorage.setItem("magnus.guest.completedLessons", JSON.stringify(completed));
+    }, scenario.completed);
+    await progressPage.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await progressPage.waitForSelector("#app .home-screen", { timeout: 15000 });
+    await progressPage.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
+    await progressPage.locator('.bottom-nav [data-go="study"]').click();
+    await progressPage.waitForSelector(".study-screen", { timeout: 10000 });
+    await progressPage.locator('.study-screen [data-course="ai"]').last().click();
+    await progressPage.waitForSelector(".learning-map-screen .learning-path-finish", { timeout: 10000 });
+    const finish = await progressPage.locator(".learning-path-finish").evaluate(node => ({
+      caption: node.querySelector("small")?.textContent?.trim() || "",
+      state: node.dataset.courseProgressState || "",
+      completeClass: node.classList.contains("is-complete"),
+      pendingClass: node.classList.contains("is-pending")
+    }));
+    const actualPercentage = await progressPage.locator(".learning-progress-card>div>strong").innerText();
+    const expectedState = scenario.name === "complete" ? "6/6" : scenario.name === "partial" ? "2/6" : "0/6";
+    if (finish.caption !== scenario.expected || finish.state !== expectedState || actualPercentage !== scenario.percentage) {
+      failures.push("course-map/" + scenario.name + ": finish copy disagrees with progress " + JSON.stringify({finish,actualPercentage,expected:scenario.expected,expectedPercentage:scenario.percentage}));
+    }
+    if (scenario.name === "complete" && (!finish.completeClass || finish.pendingClass)) failures.push("course-map/complete: finish marker does not use completed styling");
+    if (scenario.name !== "complete" && (!finish.pendingClass || finish.completeClass)) failures.push("course-map/" + scenario.name + ": unfinished marker is styled as completed");
+    if (scenario.name === "empty" && await progressPage.locator(".learning-continue-button").count() !== 1) failures.push("course-map/empty: first lesson continue action is missing");
+    if (scenario.name === "complete" && await progressPage.locator(".learning-complete-note").count() !== 1) failures.push("course-map/complete: completion state panel is missing");
+    await captureSettled(progressPage, { path: artifacts + "/course-map-progress-" + scenario.name + ".png", fullPage: true });
+    await progressPage.close();
+  }
+
   // Exercise the Telegram WebApp layout with a long first name and a loaded Telegram avatar.
   const telegramHomePage = await browser.newPage({ viewport: { width: 320, height: 844 }, deviceScaleFactor: 1 });
   await telegramHomePage.route("https://telegram.org/js/telegram-web-app.js", route => route.fulfill({ status: 200, contentType: "application/javascript", body: "" }));
