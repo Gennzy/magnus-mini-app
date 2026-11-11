@@ -8303,3 +8303,22 @@ body{
 .profile-screen .profile-menu .menu-copy small{display:block;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .profile-screen .profile-menu .menu-copy b{color:#394144;font-size:11px;line-height:1.25}
 .profile-screen .profile-menu .menu-copy small{color:#7a8385;font-size:9px;line-height:1.35}
+
+
+/* UX-001 · The course-map finish marker reflects actual lesson completion. */
+.learning-path-finish.is-pending>span{
+  border-color:#e2ddd3;
+  background:linear-gradient(145deg,#fff,#f0eee8);
+  color:#a59a86;
+  box-shadow:0 4px 12px rgba(48,43,33,.06);
+}
+.learning-path-finish.is-pending>b{color:#68716f}
+.learning-path-finish.is-pending>small{color:#7b8581}
+.learning-path-finish.is-complete>span{
+  border-color:#dfc7a9;
+  background:linear-gradient(145deg,#fff9ed,#f2e4cf);
+  color:#b47b43;
+  box-shadow:0 7px 16px rgba(145,102,57,.14);
+}
+.learning-path-finish.is-complete>b{color:#495d53}
+.learning-path-finish.is-complete>small{color:#65756c}
