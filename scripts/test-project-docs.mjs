@@ -26,6 +26,7 @@ const sourceFiles = [
   "docs/CERTIFICATE_POLICY.md",
   "docs/work-packages/PROD-008.md",
   "docs/work-packages/PROD-009.md",
+  "docs/work-packages/PROD-010.md",
   "package.json",
   ".github/workflows/visual-check.yml",
 ];
@@ -78,8 +79,12 @@ const cases = [
     writeFileSync(path, readFileSync(path, "utf8").replace("В текущем продукте пользовательской функции заморозки нет.", "Заморозка описана."));
   }, false],
   ["current planned WP cannot be marked done", dir => {
-    const path = join(dir, "docs/work-packages/PROD-009.md");
-    writeFileSync(path, readFileSync(path, "utf8").replace("- **Статус:** [~] In progress", "- **Статус:** [x] Done").replace("- **Статус:** [ ] Planned", "- **Статус:** [x] Done"));
+    const state = readFileSync(join(dir, "docs/PROJECT_STATE.md"), "utf8");
+    const active = state.match(/^\*\*Текущий WP: ([A-Z]+-\d+) —/m);
+    assert.ok(active, "fixture must declare one active WP");
+    const path = join(dir, "docs/work-packages/" + active[1] + ".md");
+    const wp = readFileSync(path, "utf8");
+    writeFileSync(path, wp.replace("- **Статус:** [~] In progress", "- **Статус:** [x] Done").replace("- **Статус:** [ ] Planned", "- **Статус:** [x] Done"));
   }, false],
   ["missing known issue record fails", dir => {
     const path = join(dir, "docs/KNOWN_ISSUES.md");
