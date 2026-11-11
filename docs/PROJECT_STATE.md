@@ -14,9 +14,9 @@
 
 ## 2. Текущий HEAD и публикация
 
-- Последний подтверждённый **кодовый** SHA приложения с академическим паспортом: `c63e09200c865f24bbbe47341dfc49d3941e2dbc`. Последующие коммиты меняли только сценарии visual smoke и проектную документацию; frontend/backend-код паспорта не менялся.
+- Последний подтверждённый **кодовый** SHA приложения с академическим паспортом: `228cc502fa02c645b9f3021428bdf1967e95f39a`. Последующие коммиты меняли только сценарии visual smoke и проектную документацию; frontend/backend-код паспорта не менялся.
 - Deploy workflow для кода академического паспорта: успешен — https://github.com/Gennzy/magnus-mini-app/actions/runs/42960657787 (SHA `c63e09200c865f24bbbe47341dfc49d3941e2dbc`).
-- Последний visual smoke workflow: успешен — https://github.com/Gennzy/magnus-mini-app/actions/runs/42961183929 (SHA `5abf9e207c7f557fccd222a5115f6244ebe9d0f3`; этот коммит менял только тестовый сценарий, frontend/backend те же, что были опубликованы).
+- Последний visual smoke workflow: успешен — https://github.com/Gennzy/magnus-mini-app/actions/runs/42961379722 (тот же SHA `228cc502fa02c645b9f3021428bdf1967e95f39a`, что и Deploy).
 - Smoke workflow проверяет tutor coverage, production build, браузерные desktop/mobile сценарии и сохраняет скриншоты как artifact.
 - Deploy workflow собирает frontend, проверяет backend JS, компилирует модули в Telegram runtime, публикует tgcloud/dist и применяет безопасные миграции.
 - Примечание: перед следующим изменением всегда перепроверять HEAD и Actions — эта запись может устареть.
