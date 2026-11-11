@@ -102,4 +102,4 @@
 - [x] Telegram deploy не требуется: изменения документационные.
 - [x] Политика, checker, тесты, roadmap и state синхронизированы; следующий WP PROD-010 подготовлен как Planned и не начат.
 - [x] Полный visual CI для политики и документационных тестов: [run 43052237468](https://github.com/Gennzy/magnus-mini-app/actions/runs/43052237468), SHA `48c3b098a800906701e193541baed9c6c7d2c435` — SUCCESS.
-- [ ] Финальный CI закрывающего SHA — будет зафиксирован после завершения текущего Workflow.
+- [x] Финальный closeout CI: [run 43052954058](https://github.com/Gennzy/magnus-mini-app/actions/runs/43052954058), SHA `96252feda564d2ff8fbccc6d30aa9e31a4698fcd` — SUCCESS; все 13 шагов, включая desktop/mobile browser checks.
