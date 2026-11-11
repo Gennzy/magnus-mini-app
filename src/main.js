@@ -1730,13 +1730,13 @@ function showStartupScreen() {
     if (!splash) return;
     splash.classList.add("is-hidden");
     window.setTimeout(() => splash.remove(), 420);
-  }, 1650);
+  }, 2100);
 }
 
+showStartupScreen();
 render();
 if(currentPage==="admin")loadAdminAccess(true);else loadAdminAccess(false);
 loadPaymentPlans();
-showStartupScreen();
 triggerStartupHaptic();
 initializeCloudStudentData();
 const sharedCertificateId = new URLSearchParams(window.location.search).get("certificate");
