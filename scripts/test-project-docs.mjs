@@ -27,6 +27,7 @@ const sourceFiles = [
   "docs/work-packages/PROD-008.md",
   "docs/work-packages/PROD-009.md",
   "docs/work-packages/PROD-010.md",
+  "docs/work-packages/UX-001.md",
   "package.json",
   ".github/workflows/visual-check.yml",
 ];
