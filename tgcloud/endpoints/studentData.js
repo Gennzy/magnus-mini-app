@@ -405,6 +405,7 @@ export default async function (input, ctx) {
       lessonPracticeDrafts: cleanMap(input.lessonPracticeDrafts),
       lessonPracticeResults: cleanMap(existing?.payload?.lessonPracticeResults),
       finalExams: existing?.payload?.finalExams && typeof existing.payload.finalExams === 'object' ? existing.payload.finalExams : {},
+      certificates: existing?.payload?.certificates && typeof existing.payload.certificates === 'object' ? existing.payload.certificates : {},
       assignmentSubmissions: Array.isArray(existing?.payload?.assignmentSubmissions) ? existing.payload.assignmentSubmissions.slice(-50) : [],
       studentProfile: {
         firstName: telegramProfile.firstName || existing?.payload?.studentProfile?.firstName || '',
