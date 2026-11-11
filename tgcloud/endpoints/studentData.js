@@ -72,6 +72,8 @@ export default async function (input, ctx) {
     if (!allowedAssignments.includes(assignmentId)) return { ok: false, code: 'INVALID_ASSIGNMENT', message: 'Задание не найдено.' };
     if (answer.length < 30 || answer.length > 12000) return { ok: false, code: 'INVALID_ANSWER', message: 'Ответ должен содержать от 30 до 12 000 символов.' };
     const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
+    const academicError = academicAccessError(existing?.payload || {});
+    if (academicError) return academicError;
     const previous = Array.isArray(existing?.payload?.assignmentSubmissions) ? existing.payload.assignmentSubmissions : [];
     const submission = { id: 'sub-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8), assignmentId, answer, submittedAt: new Date().toISOString(), status: 'received' };
     const payload = { ...(existing?.payload || {}), studentProfile: telegramProfile, assignmentSubmissions: [...previous, submission].slice(-50) };
