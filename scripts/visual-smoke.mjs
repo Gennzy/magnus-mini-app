@@ -33,13 +33,13 @@ try {
       if (error.message.includes("WebAppServerlessInitDataUnavailable")) expectedStandaloneWarnings.push(`${name}: Telegram initData is unavailable outside Telegram`);
       else failures.push(`${name}: ${error.message}`);
     });
-    await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
-    await page.waitForSelector("#app .home-screen", { timeout: 15000 });
-    await page.waitForSelector(".startup-screen .startup-owl", { timeout: 5000 });
-    await page.waitForFunction(() => { const img = document.querySelector(".startup-owl"); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 5000 });
+    await page.goto(baseUrl, { waitUntil: "commit", timeout: 30000 });
+    await page.waitForSelector(".startup-screen .startup-owl", { timeout: 10000 });
+    await page.waitForFunction(() => { const img = document.querySelector(".startup-owl"); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 10000 });
     const startupMascot = await page.evaluate(() => ({ sameAsset: document.querySelector(".startup-owl")?.getAttribute("src") === document.querySelector(".dashboard-owl")?.getAttribute("src"), filter: getComputedStyle(document.querySelector(".startup-owl")).filter }));
-    if (!startupMascot.sameAsset || !startupMascot.filter.includes("grayscale")) failures.push(`${name}/startup: splash mascot differs from the dashboard mascot or has no brand color treatment`);
-    await page.screenshot({ path: `${artifacts}/${name}-startup.png`, fullPage: true });
+    if (!startupMascot.sameAsset || !startupMascot.filter.includes("grayscale")) failures.push(name + "/startup: splash mascot differs from the dashboard mascot or has no brand color treatment");
+    await page.screenshot({ path: artifacts + "/" + name + "-startup.png", fullPage: true });
+    await page.waitForSelector("#app .home-screen", { timeout: 15000 });
     await page.waitForTimeout(1900);
     await page.screenshot({ path: `${artifacts}/${name}-home.png`, fullPage: true });
 
