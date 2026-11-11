@@ -83,6 +83,36 @@ try {
       }
     }
     await assertNoHorizontalOverflow("home");
+    const homeMascotGeometry = await page.evaluate(() => {
+      const card = document.querySelector(".dashboard-continue").getBoundingClientRect();
+      const copy = document.querySelector(".dashboard-continue-copy").getBoundingClientRect();
+      const stage = document.querySelector(".dashboard-owl-stage").getBoundingClientRect();
+      const image = document.querySelector(".dashboard-owl").getBoundingClientRect();
+      return {
+        viewport: document.documentElement.clientWidth,
+        card: {top:card.top,bottom:card.bottom,left:card.left,right:card.right,width:card.width},
+        copy: {left:copy.left,right:copy.right},
+        stage: {top:stage.top,bottom:stage.bottom,left:stage.left,right:stage.right,width:stage.width},
+        image: {top:image.top,bottom:image.bottom,left:image.left,right:image.right,width:image.width,height:image.height}
+      };
+    });
+    const isMobileMascot = viewport.width <= 759;
+    const allowedStageRatio = isMobileMascot ? .50 : .36;
+    const stageTopInset = isMobileMascot ? 0 : 10;
+    const stageBottomInset = isMobileMascot ? 2 : 10;
+    if (homeMascotGeometry.stage.top < homeMascotGeometry.card.top + stageTopInset ||
+        homeMascotGeometry.stage.bottom > homeMascotGeometry.card.bottom - stageBottomInset) {
+      failures.push(name + "/home: mascot stage is clipped by the learning card " + JSON.stringify(homeMascotGeometry));
+    }
+    if (homeMascotGeometry.stage.width / homeMascotGeometry.card.width > allowedStageRatio) {
+      failures.push(name + "/home: mascot occupies too much of the learning card " + JSON.stringify(homeMascotGeometry));
+    }
+    if (!isMobileMascot && homeMascotGeometry.copy.right + 18 > homeMascotGeometry.stage.left) {
+      failures.push(name + "/home: mascot stage crowds the learning text " + JSON.stringify(homeMascotGeometry));
+    }
+    if (homeMascotGeometry.image.bottom > homeMascotGeometry.card.bottom - stageBottomInset + 2) {
+      failures.push(name + "/home: the owl image itself is cropped at the card edge " + JSON.stringify(homeMascotGeometry));
+    }
 
     // The passport must degrade cleanly outside Telegram without inventing student records.
         await page.locator('.bottom-nav [data-go="study"]').click();
@@ -399,6 +429,20 @@ try {
       });
       if (result.document > result.viewport + 1) failures.push("breakpoint-" + width + "/" + stage + ": horizontal overflow " + JSON.stringify(result));
       if (result.navBottom > result.screenTop + 1) failures.push("breakpoint-" + width + "/" + stage + ": navigation overlaps content " + JSON.stringify(result));
+      if (stage === "home") {
+        const mascot = await breakpointPage.evaluate(() => {
+          const card = document.querySelector(".dashboard-continue").getBoundingClientRect();
+          const stage = document.querySelector(".dashboard-owl-stage").getBoundingClientRect();
+          const image = document.querySelector(".dashboard-owl").getBoundingClientRect();
+          const copy = document.querySelector(".dashboard-continue-copy").getBoundingClientRect();
+          return {cardTop:card.top,cardBottom:card.bottom,cardWidth:card.width,stageTop:stage.top,stageBottom:stage.bottom,stageWidth:stage.width,imageBottom:image.bottom,copyRight:copy.right,stageLeft:stage.left};
+        });
+        const mobileStage = width <= 759;
+        const maxRatio = mobileStage ? .50 : .36;
+        if (mascot.stageTop < mascot.cardTop + (mobileStage ? 0 : 10) || mascot.stageBottom > mascot.cardBottom - (mobileStage ? 2 : 10) || mascot.imageBottom > mascot.cardBottom - (mobileStage ? 0 : 8)) failures.push("breakpoint-" + width + "/home: mascot is cropped by its card " + JSON.stringify(mascot));
+        if (mascot.stageWidth / mascot.cardWidth > maxRatio) failures.push("breakpoint-" + width + "/home: mascot scale is too large " + JSON.stringify(mascot));
+        if (!mobileStage && mascot.copyRight + 18 > mascot.stageLeft) failures.push("breakpoint-" + width + "/home: mascot crowds the text column " + JSON.stringify(mascot));
+      }
       if (width === 320) await captureSettled(breakpointPage, { path: artifacts + "/breakpoint-320-" + stage + ".png", fullPage: true });
       return result;
     };

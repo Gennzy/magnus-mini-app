@@ -713,3 +713,6 @@ Visual QA SHA и статус:
 - **UX-001 / CI #231:** narrow Telegram profile, long-name wrapping and stable screenshot capture PASS. Новый этап унифицирует цветовой фильтр 3D owl между splash и dashboard; проверяется единый image asset и одинаковая цветовая часть filter.
 
 - **UX-001 / следующий этап:** расширено покрытие публичной страницы проверки сертификата: pending/loading, valid, invalid, полный набор полей, очистка query string по кнопке закрытия, responsive overflow. Сценарии используют тестовые данные.
+
+- **UX-001 / CI #233:** certificate verification states (loading/valid/invalid) and shared owl color-filter checks SUCCESS.
+- **UX-001 / CI #234:** корректировка масштаба 3D-сцены совы в desktop/tablet карточке обучения; добавлены геометрические assertions против clipping, переполнения и столкновения с текстом. Mobile layout сохраняется.

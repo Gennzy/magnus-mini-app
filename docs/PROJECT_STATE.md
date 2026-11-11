@@ -154,3 +154,6 @@
 - **UX-001 / маскот:** splash и dashboard ранее имели разную насыщенность/сепию. В текущем коммите обе используют единый CSS token --magnus-owl-color-filter; Playwright контролирует идентичность общей цветовой обработки.
 
 - **UX-001 / расширение certificate smoke:** добавлены изолированные Playwright-сценарии loading/valid/invalid public verification; проверяются вывод имени/программы/даты/score/serial, отсутствие ложного valid badge, очистка query при закрытии и отсутствие горизонтального переполнения. Данные синтетические.
+
+- **CI #233:** `d1a163ebc8f03134ce005b05382da106c2e14591` — SUCCESS. Shared owl color filter и полная проверка certificate loading/valid/invalid/close query flow прошли.
+- **UX-001 / desktop mascot correction:** screenshot #233 показал, что 3D owl stage занимал около 39% карточки и 270px высоты; нижняя часть персонажа обрезалась, подпись пересекала изображение. Desktop/tablet stage уменьшен до min(34%,300px) × 224px, text column ограничена 54%, декоративная подпись скрыта; мобильная сцена остаётся прежней. Playwright теперь контролирует stage/image/card/copy geometry на desktop и пяти responsive widths.

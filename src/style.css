@@ -8202,3 +8202,11 @@ html:not(.telegram-webapp) .home-avatar{display:none!important}
 }
 .startup-owl{filter:var(--magnus-owl-color-filter) drop-shadow(0 10px 13px rgba(65,48,33,.14))}
 .dashboard-owl{filter:var(--magnus-owl-color-filter) drop-shadow(0 18px 24px rgba(0,0,0,.34))}
+
+
+/* UX-001 · Desktop mascot sizing: keep the full owl inside the learning card */
+@media(min-width:760px){
+  .dashboard-continue-copy{width:54%;max-width:520px}
+  .dashboard-owl-stage{right:3%;top:48%;width:min(34%,300px);height:224px}
+  .dashboard-owl-caption{display:none}
+}
