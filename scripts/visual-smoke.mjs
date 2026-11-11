@@ -301,6 +301,8 @@ try {
   await adminPage.waitForSelector(".admin-screen .admin-header", { timeout: 15000 });
   await adminPage.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
   await adminPage.waitForSelector(".admin-stat-grid", { timeout: 10000 });
+  const mobileAdminTabs = await adminPage.locator(".admin-tabs").evaluate(el => ({ overflowX: getComputedStyle(el).overflowX, scrollWidth: el.scrollWidth, clientWidth: el.clientWidth, flexWrap: getComputedStyle(el).flexWrap }));
+  if (mobileAdminTabs.overflowX !== "auto" || mobileAdminTabs.flexWrap !== "nowrap" || mobileAdminTabs.scrollWidth <= mobileAdminTabs.clientWidth) failures.push("admin-mobile: tabs are not a compact horizontal scroll row " + JSON.stringify(mobileAdminTabs));
   for (const [tab, selector] of [["overview", ".admin-stat-grid"], ["reviews", ".admin-screen section"], ["students", ".admin-students-section"], ["support", ".admin-support-section"], ["payments", ".admin-payment-plans"], ["ai", ".admin-ai-settings"], ["bot", ".admin-bot-settings"], ["audit", ".admin-audit-section"]]) {
     await adminPage.locator('.admin-tabs [data-admin-tab="' + tab + '"]').click();
     await adminPage.waitForSelector(selector, { timeout: 10000 });
