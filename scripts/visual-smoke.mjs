@@ -83,7 +83,7 @@ try {
       const screenRect = screen.getBoundingClientRect();
       return { navBottom: navRect.bottom, screenTop: screenRect.top, position: getComputedStyle(nav).position };
     });
-    if (viewport.width >= 760 && (desktopNavCheck.position !== "sticky" || desktopNavCheck.navBottom > desktopNavCheck.screenTop + 1)) {
+    if (desktopNavCheck.position !== "sticky" || desktopNavCheck.navBottom > desktopNavCheck.screenTop + 1) {
       failures.push(name + "/navigation: desktop nav overlaps page content " + JSON.stringify(desktopNavCheck));
     }
 
@@ -186,8 +186,13 @@ try {
     await breakpointPage.setViewportSize({ width, height: 844 });
     await breakpointPage.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await breakpointPage.waitForSelector("#app .home-screen", { timeout: 15000 });
-    const dimensions = await breakpointPage.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth }));
+    const dimensions = await breakpointPage.evaluate(() => {
+      const nav = document.querySelector(".bottom-nav").getBoundingClientRect();
+      const screen = document.querySelector("main.screen").getBoundingClientRect();
+      return { viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, navBottom: nav.bottom, screenTop: screen.top, navPosition: getComputedStyle(document.querySelector(".bottom-nav")).position };
+    });
     if (dimensions.document > dimensions.viewport + 1) failures.push("breakpoint-" + width + "/home: horizontal overflow " + dimensions.document + "px at viewport " + dimensions.viewport + "px");
+    if (dimensions.navPosition !== "sticky" || dimensions.navBottom > dimensions.screenTop + 1) failures.push("breakpoint-" + width + "/navigation: nav overlaps home content " + JSON.stringify(dimensions));
     breakpointResults.push({ width, ...dimensions });
     if (width === 320) await breakpointPage.screenshot({ path: artifacts + "/breakpoint-320-home.png", fullPage: true });
   }

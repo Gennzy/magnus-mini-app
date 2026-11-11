@@ -8125,8 +8125,11 @@ textarea { line-height: 1.6; }
 }
 
 
-/* UX-001 · Desktop navigation stays in document flow */
-@media(min-width:760px){
-  .bottom-nav{position:sticky;top:70px;bottom:auto;left:auto;right:auto;width:min(820px,calc(100% - 48px));max-width:820px;margin:12px auto 24px;transform:none;z-index:18}
-  .telegram-webapp .bottom-nav{top:8px}
+/* UX-001 · Primary navigation stays in document flow on every viewport */
+.bottom-nav{position:sticky;top:70px;bottom:auto;left:auto;right:auto;width:min(820px,calc(100% - 48px));max-width:820px;min-height:60px;margin:10px auto 18px;padding:6px 7px;transform:none;z-index:18}
+.telegram-webapp .bottom-nav{top:8px}
+body{padding-bottom:max(24px,env(safe-area-inset-bottom))}
+@media(max-width:759px){
+  .bottom-nav{top:70px;width:calc(100% - 20px);min-height:58px;margin:8px auto 14px;padding:6px}
+  .telegram-webapp .bottom-nav{top:0}
 }
