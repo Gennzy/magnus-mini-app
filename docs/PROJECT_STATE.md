@@ -148,3 +148,7 @@
 
 - CI #230: 92cff245a0e629e4aad03fcd99f00be09e7becd0 — FAILURE только на assertion приветствия: вертикальная метрика scrollHeight превышала clientHeight на 3 px при корректном word wrap; screenshot показывает полное имя, без горизонтального overflow. Остальные проверки прошли.
 - UX-001 / корректировка после #230: mobile Telegram profile card перестраивается в grid (avatar слева, имя справа, Telegram badge ниже), чтобы длинное имя не сжималось до 5–6 символов в строке. Проверка сохраняет критерии отсутствия ellipsis/горизонтального обрезания, с tolerance 4px для line-box округления. В Playwright screenshot capture введена пауза 400ms после навигации/вкладок, соответствующая max 340ms CSS screen transition.
+
+- **CI #231:** `8e20ca4cdcd837d82d0593041bb63b483e39c7af` — SUCCESS. Mobile Telegram profile grid, длинное имя, анимационно-стабильные screenshot captures и full browser smoke прошли.
+- **UX-001 / визуальный контроль #231:** проверены Telegram home/profile, mobile lesson/catalog и 320px guest profile; переполнение и обрезание длинного имени устранены.
+- **UX-001 / маскот:** splash и dashboard ранее имели разную насыщенность/сепию. В текущем коммите обе используют единый CSS token --magnus-owl-color-filter; Playwright контролирует идентичность общей цветовой обработки.

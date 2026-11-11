@@ -47,8 +47,17 @@ try {
     if (progressLabels[1]?.trim() !== "Программ") failures.push(name + "/home: second overview metric must show enrolled programs, not duplicated drafts");
     await page.waitForSelector(".startup-screen .startup-owl", { timeout: 5000 });
     await page.waitForFunction(() => { const img = document.querySelector(".startup-owl"); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 5000 });
-    const startupMascot = await page.evaluate(() => ({ sameAsset: document.querySelector(".startup-owl")?.getAttribute("src") === document.querySelector(".dashboard-owl")?.getAttribute("src"), filter: getComputedStyle(document.querySelector(".startup-owl")).filter }));
-    if (!startupMascot.sameAsset || !startupMascot.filter.includes("grayscale")) failures.push(name + "/startup: splash mascot differs from the dashboard mascot or has no brand color treatment");
+    const startupMascot = await page.evaluate(() => {
+      const startupFilter = getComputedStyle(document.querySelector(".startup-owl")).filter;
+      const dashboardFilter = getComputedStyle(document.querySelector(".dashboard-owl")).filter;
+      const colorFilter = value => value.replace(/\\s+drop-shadow\\(.*\\)$/, "");
+      return {
+        sameAsset: document.querySelector(".startup-owl")?.getAttribute("src") === document.querySelector(".dashboard-owl")?.getAttribute("src"),
+        startupColorFilter: colorFilter(startupFilter),
+        dashboardColorFilter: colorFilter(dashboardFilter)
+      };
+    });
+    if (!startupMascot.sameAsset || !startupMascot.startupColorFilter.includes("grayscale") || startupMascot.startupColorFilter !== startupMascot.dashboardColorFilter) failures.push(name + "/startup: splash and dashboard mascot must use the same source image and shared brand color filter " + JSON.stringify(startupMascot));
     await page.screenshot({ path: artifacts + "/" + name + "-startup.png", fullPage: true });
     await page.locator(".startup-screen").evaluate(el => el.remove());
     await page.waitForTimeout(1900);
