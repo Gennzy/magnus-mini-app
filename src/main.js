@@ -752,6 +752,13 @@ function lessonIsUnlocked(lessons,index) {
 function courseDetailPage() {
  const c=selectedCourse,lessons=courseLessons(c.id),completed=courseCompletionCount(c.id),chapterList=courseChapters[c.id]||[];
  const progress=lessons.length?Math.round(completed/lessons.length*100):0;
+ const remaining=Math.max(0,lessons.length-completed);
+ const finishCaption=completed===lessons.length
+  ? `Все ${lessons.length} занятий программы завершены.`
+  : completed>0
+   ? `${completed} из ${lessons.length} занятий пройдены. Осталось ${remaining}.`
+   : `Впереди ${lessons.length} занятий. Начни с первого шага.`;
+ const finishState=completed===lessons.length?"is-complete":"is-pending";
  const nextIndex=lessons.findIndex((lesson,index)=>!completedLessons[lesson[0]]&&lessonIsUnlocked(lessons,index));
  const nextLesson=lessons[nextIndex>=0?nextIndex:Math.max(0,lessons.length-1)];
  const mapItems=[];
@@ -815,7 +822,7 @@ function courseDetailPage() {
    <path d="M58 120C220 135 405 225 542 270S220 465 58 520 405 615 542 670 220 865 58 920 405 1015 542 1070C470 1160 380 1220 300 1290" fill="none" stroke="url(#map-route-gradient)" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 11"/>
    <g fill="#fff" stroke="#c8a78d" stroke-width="2"><circle cx="58" cy="120" r="7"/><circle cx="542" cy="270" r="7"/><circle cx="58" cy="520" r="7"/><circle cx="542" cy="670" r="7"/><circle cx="58" cy="920" r="7"/><circle cx="542" cy="1070" r="7"/></g>
   </svg>
-  ${nodes}<div class="learning-path-finish"><span>✦</span><b>Финиш маршрута</b><small>Все ${lessons.length} занятий программы завершены.</small></div>
+  ${nodes}<div class="learning-path-finish ${finishState}" data-course-progress-state="${completed}/${lessons.length}"><span>${completed===lessons.length?"✓":"✦"}</span><b>Финиш маршрута</b><small>${esc(finishCaption)}</small></div>
  </div></section>
  ${completed===lessons.length?`<div class="learning-complete-note">Все доступные этапы пройдены. Новые материалы появятся в программе после публикации.</div>`:`<button class="learning-continue-button" data-lesson-open="${esc(nextLesson[0])}"><span><small>СЛЕДУЮЩИЙ ШАГ</small><b>${esc(nextLesson[1])}</b></span><strong>Продолжить ${icon("arrow")}</strong></button>`}
  ${completed===lessons.length?(()=>{const state=finalExams[c.id]||{},attempts=Array.isArray(state.attempts)?state.attempts:[],last=attempts[attempts.length-1];return `<section class="final-exam-card"><span class="subtle-label">ИТОГОВАЯ АТТЕСТАЦИЯ</span><h2>${state.passed?"Программа завершена":"Финальный экзамен"}</h2><p>${state.passed?"Итоговая проверка успешно пройдена. Результат сохранён в твоём учебном профиле.":"Шесть вопросов по материалам программы. Для зачёта нужно набрать не менее 70%."}</p>${last?`<div class="final-exam-result ${last.passed?"passed":"failed"}"><b>${last.score}%</b><span>${last.passed?"Экзамен сдан":"Экзамен не сдан"} · ${last.correct} из ${last.total}</span></div>`:""}<div class="final-exam-actions"><small>Использовано попыток: ${attempts.length} из 3</small><button class="orange-button" data-exam-start="${c.id}" ${state.passed||attempts.length>=3?"disabled":""}>${state.passed?"Экзамен сдан":attempts.length?"Пересдать экзамен":"Начать экзамен"} ${icon("arrow")}</button></div></section>`;})():""}
