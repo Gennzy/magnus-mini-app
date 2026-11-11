@@ -10,7 +10,8 @@
     "check:tutor": "node scripts/check-tutor-curriculum.mjs",
     "check:payments": "node scripts/check-payment-invariants.mjs",
     "check:docs": "node scripts/check-project-docs.mjs",
-    "test:docs": "node scripts/test-project-docs.mjs"
+    "test:docs": "node scripts/test-project-docs.mjs",
+    "deploy": "npm run build && tgcloud fetch && tgcloud push tgcloud/ dist/ && tgcloud migrate --safe"
   },
   "devDependencies": {
     "@tgcloud/cli": "^0.2.0",
