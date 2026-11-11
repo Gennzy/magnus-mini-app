@@ -1710,7 +1710,7 @@ function triggerStartupHaptic() {
 }
 
 function showStartupScreen() {
-  const root = document.querySelector("#app");
+  const root = document.body;
   if (!root) return;
   root.insertAdjacentHTML("afterbegin", `
     <div class="startup-screen" role="status" aria-label="Загрузка MAGNUS">

@@ -29,12 +29,6 @@ try {
 
   async function testViewport(name, viewport) {
     const page = await browser.newPage({ viewport, deviceScaleFactor: 1 });
-    await page.addInitScript(() => {
-      if (sessionStorage.getItem("__magnusSplashCaptured")) return;
-      sessionStorage.setItem("__magnusSplashCaptured", "1");
-      const nativeSetTimeout = window.setTimeout.bind(window);
-      window.setTimeout = (handler, delay, ...args) => nativeSetTimeout(handler, delay === 1650 ? 10000 : delay, ...args);
-    });
     page.on("pageerror", error => {
       if (error.message.includes("WebAppServerlessInitDataUnavailable")) expectedStandaloneWarnings.push(`${name}: Telegram initData is unavailable outside Telegram`);
       else failures.push(`${name}: ${error.message}`);
@@ -115,6 +109,7 @@ try {
     // Reset to a clean startup state before the learning-flow regression checks.
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.waitForSelector("#app .home-screen", { timeout: 15000 });
+    await page.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
     await page.waitForTimeout(1900);
 
     await page.locator('[data-course="ai"]').click();
@@ -173,6 +168,7 @@ try {
     // Проверяем, что черновик читается из localStorage после полной перезагрузки Mini App.
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.waitForSelector("#app .home-screen", { timeout: 15000 });
+    await page.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
     await page.waitForTimeout(1900);
     await page.locator('[data-course="ai"]').click();
     await page.waitForSelector(".learning-map-screen .learning-path", { timeout: 10000 });
@@ -202,6 +198,7 @@ try {
     await breakpointPage.setViewportSize({ width, height: 844 });
     await breakpointPage.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await breakpointPage.waitForSelector("#app .home-screen", { timeout: 15000 });
+    await breakpointPage.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
     const dimensions = await breakpointPage.evaluate(() => {
       const nav = document.querySelector(".bottom-nav").getBoundingClientRect();
       const screen = document.querySelector("main.screen").getBoundingClientRect();
