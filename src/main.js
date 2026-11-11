@@ -108,7 +108,7 @@ let adminPaymentOrderSummary = { paidOrders: 0, paidStars: 0, pendingOrders: 0 }
 let studentPaymentHistory = [], studentPaymentHistoryLoading = false, studentPaymentHistoryError = "";
 let adminPaymentPlans = [], adminPaymentPlansLoading = false, adminPaymentPlansError = "";
 let adminStudentSelected = "", adminStudentDetail = null, adminStudentDetailLoading = false, adminStudentDetailError = "";
-let currentPage = new URLSearchParams(window.location.search).get("admin") === "1" ? "admin" : "home";
+let currentPage = new URLSearchParams(window.location.search).has("certificate") ? "documents" : new URLSearchParams(window.location.search).get("admin") === "1" ? "admin" : "home";
 let selectedFaculty = faculties[0];
 let selectedCourse = courses[0];
 let selectedLessonId = "ai-01";
@@ -1549,3 +1549,17 @@ loadPaymentPlans();
 showStartupScreen();
 triggerStartupHaptic();
 initializeCloudStudentData();
+const sharedCertificateId = new URLSearchParams(window.location.search).get("certificate");
+if (sharedCertificateId) {
+  certificateVerification = { loading: true };
+  const serverless = tg?.Serverless;
+  if (typeof serverless?.call === "function") {
+    serverless.call("studentData", { action: "verifyCertificate", certificateId: sharedCertificateId }, (error, result) => {
+      certificateVerification = { loading: false, valid: !error && Boolean(result?.valid), certificate: result?.certificate || null };
+      render();
+    });
+  } else {
+    certificateVerification = { loading: false, valid: false };
+  }
+  render();
+}
