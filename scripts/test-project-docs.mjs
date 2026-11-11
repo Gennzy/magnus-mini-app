@@ -24,6 +24,7 @@ const sourceFiles = [
   "docs/ASSESSMENT_POLICY.md",
   "docs/SUBSCRIPTION_AND_ACCESS_POLICY.md",
   "docs/work-packages/PROD-008.md",
+  "docs/work-packages/PROD-009.md",
   "package.json",
   ".github/workflows/visual-check.yml",
 ];
@@ -53,14 +54,14 @@ const cases = [
   ["missing assessment and completion policy fails", dir => rmSync(join(dir, "docs/ASSESSMENT_AND_COMPLETION_POLICY.md")), false],
   ["missing grading and appeals policy fails", dir => rmSync(join(dir, "docs/ASSESSMENT_POLICY.md")), false],
   ["missing subscription and access policy fails", dir => rmSync(join(dir, "docs/SUBSCRIPTION_AND_ACCESS_POLICY.md")), false],
-  ["missing PROD-008 work package fails", dir => rmSync(join(dir, "docs/work-packages/PROD-008.md")), false],
+  ["missing active work package document fails", dir => rmSync(join(dir, "docs/work-packages/PROD-009.md")), false],
   ["missing freeze policy concept fails", dir => {
     const path = join(dir, "docs/SUBSCRIPTION_AND_ACCESS_POLICY.md");
     writeFileSync(path, readFileSync(path, "utf8").replace("В текущем продукте пользовательской функции заморозки нет.", "Заморозка описана."));
   }, false],
-  ["PROD-008 cannot be marked done before closure", dir => {
-    const path = join(dir, "docs/work-packages/PROD-008.md");
-    writeFileSync(path, readFileSync(path, "utf8").replace("[~] In progress", "[x] Done"));
+  ["current planned WP cannot be marked done", dir => {
+    const path = join(dir, "docs/work-packages/PROD-009.md");
+    writeFileSync(path, readFileSync(path, "utf8").replace("[ ] Planned", "[x] Done"));
   }, false],
   ["missing known issue record fails", dir => {
     const path = join(dir, "docs/KNOWN_ISSUES.md");

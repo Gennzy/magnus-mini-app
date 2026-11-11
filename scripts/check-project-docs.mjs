@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 const root = resolve(process.argv[2] || process.cwd());
 const filePath = path => resolve(root, path);
 
-const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md", "docs/KNOWN_ISSUES.md", "docs/ACADEMIC_STATUS_MODEL.md", "docs/LEARNING_ACTIVITY_MODEL.md", "docs/ASSESSMENT_AND_COMPLETION_POLICY.md", "docs/ASSESSMENT_POLICY.md", "docs/SUBSCRIPTION_AND_ACCESS_POLICY.md", "docs/work-packages/PROD-008.md"];
+const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md", "docs/KNOWN_ISSUES.md", "docs/ACADEMIC_STATUS_MODEL.md", "docs/LEARNING_ACTIVITY_MODEL.md", "docs/ASSESSMENT_AND_COMPLETION_POLICY.md", "docs/ASSESSMENT_POLICY.md", "docs/SUBSCRIPTION_AND_ACCESS_POLICY.md"];
 const errors = [];
 
 for (const file of requiredFiles) {
@@ -28,7 +28,6 @@ const learningActivityModel = readFileSync(filePath("docs/LEARNING_ACTIVITY_MODE
 const assessmentPolicy = readFileSync(filePath("docs/ASSESSMENT_AND_COMPLETION_POLICY.md"), "utf8");
 const gradingPolicy = readFileSync(filePath("docs/ASSESSMENT_POLICY.md"), "utf8");
 const subscriptionPolicy = readFileSync(filePath("docs/SUBSCRIPTION_AND_ACCESS_POLICY.md"), "utf8");
-const activeWorkPackage = readFileSync(filePath("docs/work-packages/PROD-008.md"), "utf8");
 const adrTemplate = readFileSync(filePath("docs/adr/ADR-TEMPLATE.md"), "utf8");
 
 const requireText = (text, pattern, label) => {
@@ -118,17 +117,24 @@ for (const section of ["## 1. Основное решение", "## 2. Срок 
 for (const concept of ["entitlement", "автоматического продления", "заморозки нет", "не удалять", "Возврат Stars не реализован", "BL-008", "BL-009", "академический статус"]) {
   if (!subscriptionPolicy.toLowerCase().includes(concept.toLowerCase())) errors.push("SUBSCRIPTION_AND_ACCESS_POLICY is missing rule/concept: " + concept);
 }
-for (const section of ["## 1. Цель и ожидаемый результат", "## 3. Границы", "## 5. Затрагиваемые файлы и области", "## 6. Критерии приёмки", "## 7. План тестирования", "## 10. Закрытие WP"]) {
-  if (!activeWorkPackage.includes(section)) errors.push("PROD-008 WP is missing section: " + section);
-}
-if (!activeWorkPackage.includes("[~] In progress")) errors.push("PROD-008 WP must remain in progress until full CI closure");
-
-const activeMatch = state.match(/^\*\*Текущий WP: ([A-Z]+-\d+) —/m);
+const activeMatch = state.match(/^\\*\\*Текущий WP: ([A-Z]+-\\d+) —/m);
 if (!activeMatch) {
   errors.push("PROJECT_STATE must declare exactly one active WP using '**Текущий WP: ID — ...**'");
 } else {
   const activeId = activeMatch[1];
-  const roadmapLine = roadmap.split("\n").find(line => line.match(/^- \[[ x~!]\]\s+([A-Z]+-\d+)(?=\s|—)/)?.[1] === activeId);
+  const activeWorkPackagePath = `docs/work-packages/${activeId}.md`;
+  if (!existsSync(filePath(activeWorkPackagePath))) {
+    errors.push(`Active WP document is missing: ${activeWorkPackagePath}`);
+  } else {
+    const activeWorkPackage = readFileSync(filePath(activeWorkPackagePath), "utf8");
+    for (const section of ["## 1. Цель и ожидаемый результат", "## 3. Границы", "## 5. Затрагиваемые файлы и области", "## 6. Критерии приёмки", "## 7. План тестирования", "## 10. Закрытие WP"]) {
+      if (!activeWorkPackage.includes(section)) errors.push(`${activeId} WP is missing section: ${section}`);
+    }
+    if (!/^\\*\\*Статус:\\*\\* (?:\\[~\\] In progress|\\[ \\] Planned)/m.test(activeWorkPackage)) {
+      errors.push(`Current WP ${activeId} must be Planned or In progress, not complete/blocked`);
+    }
+  }
+  const roadmapLine = roadmap.split("\\n").find(line => line.match(/^- \\[[ x~!]\\]\\s+([A-Z]+-\\d+)(?=\\s|—)/)?.[1] === activeId);
   if (!roadmapLine) errors.push(`Active WP ${activeId} is missing from MASTER_ROADMAP`);
   else if (!roadmapLine.startsWith("- [ ]") && !roadmapLine.startsWith("- [~]")) {
     errors.push(`Active WP ${activeId} is marked complete/blocked in MASTER_ROADMAP: ${roadmapLine}`);
