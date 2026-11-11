@@ -2,6 +2,7 @@ import { db, api } from 'sdk';
 import { eq, desc } from 'sdk/db';
 import { adminUsers, studentData, botSettings, adminAuditLog, adminMessages, studentSubscriptions, subscriptionPlans, paymentOrders, supportRequests, aiSettings } from '../schema.js';
 import { DEFAULT_SUBSCRIPTION_PLANS, normalizePlan } from '../lib/subscriptionPlans.js';
+import { ACADEMIC_CATALOG, getProgramLessonIds } from '../lib/academicCatalog.js';
 
 const APP_URL = 'https://app9020486965.tgcloud.ai/';
 const BOT_COMMANDS = [
@@ -96,29 +97,64 @@ function buildAcademicRecord(payload) {
   const completed = plainMap(payload.completedLessons);
   const practices = plainMap(payload.lessonPracticeResults);
   const exams = plainMap(payload.finalExams);
-  const programs = {
-    ai: { title: 'Искусственный интеллект', faculty: 'Факультет технологий' },
-    mind: { title: 'Психология и мышление', faculty: 'Факультет психологии' },
-    brand: { title: 'Бренд и маркетинг', faculty: 'Факультет маркетинга' },
-  };
-  const courses = Object.keys(enrollments).filter(id => programs[id]).map(courseId => {
-    const lessonIds = ['01','02','03','04','05','06'].map(n => courseId + '-' + n);
-    const scores = lessonIds.map(id => parseRecord(practices[id])).filter(item => Number.isFinite(Number(item.totalScore)) && item.verdict === 'pass').map(item => Number(item.totalScore));
+  const courses = Object.keys(enrollments).map(courseId => {
+    const program = ACADEMIC_CATALOG.programs[courseId];
+    if (!program) return null;
+    const faculty = ACADEMIC_CATALOG.faculties.find(item => item.id === program.facultyId);
+    const terms = program.terms.map(term => ({
+      id: term.id,
+      title: term.title,
+      subjects: term.subjects.map(subject => {
+        const lessonIds = Array.isArray(subject.lessonIds) ? subject.lessonIds : [];
+        const scores = lessonIds.map(id => parseRecord(practices[id]))
+          .filter(item => item.verdict === 'pass' && Number.isFinite(Number(item.totalScore)))
+          .map(item => Number(item.totalScore));
+        return {
+          id: subject.id,
+          title: subject.title,
+          required: subject.required !== false,
+          completedLessons: lessonIds.filter(id => Boolean(completed[id])).length,
+          totalLessons: lessonIds.length,
+          practicePassed: scores.length,
+          practiceAverage: scores.length
+            ? Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length * 10) / 10
+            : null,
+        };
+      }),
+    }));
+    const lessonIds = getProgramLessonIds(courseId);
+    const scores = lessonIds.map(id => parseRecord(practices[id]))
+      .filter(item => item.verdict === 'pass' && Number.isFinite(Number(item.totalScore)))
+      .map(item => Number(item.totalScore));
     const exam = parseRecord(exams[courseId]);
     const attempts = Array.isArray(exam.attempts) ? exam.attempts : [];
     const lastAttempt = attempts[attempts.length - 1] || {};
+    const requiredLessonIds = program.terms.flatMap(term =>
+      term.subjects.filter(subject => subject.required !== false)
+        .flatMap(subject => Array.isArray(subject.lessonIds) ? subject.lessonIds : [])
+    );
+    const completion = requiredLessonIds.length > 0
+      && requiredLessonIds.every(id => Boolean(completed[id]))
+      && Boolean(exam.passed);
     return {
-      courseId, ...programs[courseId], enrolledAt: enrollments[courseId],
+      courseId,
+      code: program.code,
+      title: program.title,
+      faculty: faculty?.title || 'Факультет MAGNUS',
+      enrolledAt: enrollments[courseId],
       completedLessons: lessonIds.filter(id => Boolean(completed[id])).length,
-      totalLessons: 6,
-      practiceAverage: scores.length ? Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length * 10) / 10 : null,
+      totalLessons: lessonIds.length,
+      practiceAverage: scores.length
+        ? Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length * 10) / 10
+        : null,
       practicePassed: scores.length,
       examPassed: Boolean(exam.passed),
       examScore: Number(lastAttempt.score ?? exam.score) || 0,
       examAttempts: attempts.length,
-      completion: lessonIds.every(id => Boolean(completed[id])) && Boolean(exam.passed),
+      completion,
+      terms,
     };
-  });
+  }).filter(Boolean);
   const storedStatus = cleanText(payload.academicStatus, 24);
   const status = ['applicant','active','academic_leave','expelled','graduated'].includes(storedStatus)
     ? storedStatus : (courses.length ? 'active' : 'applicant');
