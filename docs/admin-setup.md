@@ -14,6 +14,10 @@
 - Student profiles also include manual access management: grant or extend access for 7, 30, 90 or 365 days, or revoke the current access. Each change is stored in `student_subscriptions` and added to the administrator audit log. A still-active grant is extended from its existing end date rather than shortened.
 - The student profile shows a read-only history of the latest 30 payment orders belonging to the authenticated Telegram account. It includes plan, amount, date and payment state; it never accepts a Telegram ID from the client as the account selector.
 - The **Оплаты** tab combines tariff configuration with an administrator-only ledger of up to 200 latest orders. It shows paid-order count, confirmed Stars total, pending orders, Telegram ID, order reference and available charge-reference suffix.
+- Only an account with the `owner` role can change Stars prices or enable a tariff. Other active administrators can inspect the plans and payment ledger in read-only mode.
+- The server validates the complete set of known plans, rejects duplicate or missing plan IDs, and validates every price before writing any plan. A zero price always forces the tariff off.
+- Default plan prices remain `0` and disabled. No tariff was enabled and no sale was activated by the current implementation work. Demonstration lessons are not gated by subscription status.
+- Refund handling is intentionally not implemented. Do not refund an individual Stars order until paid periods can be tracked and remaining access recalculated without revoking unrelated periods.
 - The bot section reports webhook state and lets the owner edit the `/start` greeting, bot descriptions and Mini App menu-button text. Settings are stored in `bot_settings` and applied to Telegram.
 
 ## Connect the first owner
