@@ -8156,3 +8156,12 @@ body{padding-bottom:max(24px,env(safe-area-inset-bottom))}
   .admin-tabs::-webkit-scrollbar{height:3px}
   .admin-tabs::-webkit-scrollbar-thumb{background:#c8c0b5;border-radius:3px}
 }
+
+
+/* UX-001 · Mobile input scale and tactile controls */
+@media(max-width:759px){
+  .search-box input{font-size:16px!important}
+  .filter-row .filter-chip{min-height:44px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center}
+  .back-button{min-height:44px;padding:8px 0 12px;font-size:12px}
+}
+.dashboard-owl{filter:grayscale(.48) sepia(.84) saturate(.96) hue-rotate(350deg) brightness(.98) contrast(1.04) drop-shadow(0 18px 24px rgba(0,0,0,.34))}

@@ -75,6 +75,10 @@ try {
     await page.locator('.bottom-nav [data-go="faculties"]').click();
     await page.waitForSelector(".faculty-grid", { timeout: 10000 });
     await assertNoHorizontalOverflow("catalog");
+    const searchFontSize = await page.locator(".search-box input").evaluate(node => parseFloat(getComputedStyle(node).fontSize));
+    if (viewport.width <= 650 && searchFontSize < 16) failures.push(name + "/catalog: search input below 16px may trigger iOS auto-zoom (" + searchFontSize + "px)");
+    const filterTargets = await page.locator(".filter-row .filter-chip").evaluateAll(nodes => nodes.map(node => ({width:node.getBoundingClientRect().width,height:node.getBoundingClientRect().height})));
+    if (viewport.width <= 650 && filterTargets.some(target => target.width < 44 || target.height < 44)) failures.push(name + "/catalog: filter touch target below 44px " + JSON.stringify(filterTargets));
     const catalogKeyHint = await page.locator(".search-box span").count();
     if (catalogKeyHint !== 0) failures.push(name + "/catalog: a keyboard shortcut hint is shown without a matching shortcut");
     await page.screenshot({ path: artifacts + "/" + name + "-catalog.png", fullPage: true });
@@ -82,6 +86,8 @@ try {
     await page.locator('.faculty-card[data-faculty="it"]').click();
     await page.waitForSelector(".detail-screen", { timeout: 10000 });
     await assertNoHorizontalOverflow("faculty-detail");
+    const facultyBackTarget = await page.locator(".detail-screen .back-button").first().evaluate(node => ({width:node.getBoundingClientRect().width,height:node.getBoundingClientRect().height}));
+    if (viewport.width <= 650 && (facultyBackTarget.width < 44 || facultyBackTarget.height < 44)) failures.push(name + "/faculty-detail: back control below 44px " + JSON.stringify(facultyBackTarget));
     const facultyCopy = await page.locator(".detail-screen").innerText();
     if (/преподавател/i.test(facultyCopy)) failures.push(name + "/faculty-detail: human teacher wording conflicts with the AI-led learning model");
 
@@ -193,12 +199,16 @@ try {
     await page.locator('[data-lesson-tab="practice"]').click();
     const practiceVisible = await page.locator(".lesson-practice").count();
     if (practiceVisible !== 1) failures.push(`${name}/practice: не появилась практическая карточка`);
+    const practiceInputFont = await page.locator("[data-practice-answer]").evaluate(node => parseFloat(getComputedStyle(node).fontSize));
+    if (viewport.width <= 650 && practiceInputFont < 16) failures.push(name + "/practice: answer field below 16px may trigger iOS auto-zoom (" + practiceInputFont + "px)");
     await page.locator("[data-practice-hint]").click();
     const hintVisible = await page.locator(".lesson-practice-hint p").count();
     if (hintVisible !== 1) failures.push(`${name}/practice: не открылась подсказка`);
     const practiceDraft = "Модель анализирует примеры и использует найденные закономерности для нового письма.";
     await page.locator("[data-practice-answer]").fill(practiceDraft);
     await page.locator('[data-lesson-tab="notes"]').click();
+    const notesInputFont = await page.locator("#lesson-note").evaluate(node => parseFloat(getComputedStyle(node).fontSize));
+    if (viewport.width <= 650 && notesInputFont < 16) failures.push(name + "/notes: note field below 16px may trigger iOS auto-zoom (" + notesInputFont + "px)");
     await page.locator('[data-lesson-tab="practice"]').click();
     const restoredDraft = await page.locator("[data-practice-answer]").inputValue();
     const practiceDraftPersistence = restoredDraft === practiceDraft;
@@ -406,6 +416,61 @@ try {
     breakpointResults.push({ width, ...dimensions, screens: ["home","study","catalog","faculty-detail","assignments","assignment-detail","profile","documents","course-map","lesson"] });
   }
   await breakpointPage.close();
+
+  // Exercise the Telegram WebApp layout with a long first name and a loaded Telegram avatar.
+  const telegramHomePage = await browser.newPage({ viewport: { width: 320, height: 844 }, deviceScaleFactor: 1 });
+  await telegramHomePage.route("https://telegram.org/js/telegram-web-app.js", route => route.fulfill({ status: 200, contentType: "application/javascript", body: "" }));
+  await telegramHomePage.addInitScript(() => {
+    const avatarSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" rx="32" fill="#b9855a"/><circle cx="32" cy="25" r="12" fill="#f4dfc6"/><path d="M10 64c2-17 12-25 22-25s20 8 22 25" fill="#f4dfc6"/></svg>';
+    const photo = "data:image/svg+xml;base64," + btoa(avatarSvg);
+    window.Telegram = { WebApp: {
+      initData: "telegram-home-smoke-init-data",
+      initDataUnsafe: { user: { id: 770003, first_name: "Александр-СверхдлинноеИмяДляПроверкиПереноса", username: "long_name_student", photo_url: photo } },
+      ready() {}, expand() {}, setHeaderColor() {}, setBackgroundColor() {},
+      HapticFeedback: { impactOccurred() {} },
+      Serverless: { call(service, payload, callback) {
+        if (service === "admin") { callback(null, { isAdmin: false }); return; }
+        if (service === "payments") { callback(null, { ok: true, plans: [] }); return; }
+        if (service === "studentData" && payload.action === "load") { callback(null, { completedLessons: {}, enrollments: {} }); return; }
+        callback(null, { ok: true });
+      } }
+    } };
+  });
+  await telegramHomePage.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await telegramHomePage.waitForSelector("#app .home-screen", { timeout: 15000 });
+  await telegramHomePage.waitForFunction(() => {
+    const image = document.querySelector(".home-avatar img");
+    return image && image.complete && image.naturalWidth > 0;
+  }, null, { timeout: 10000 });
+  const telegramHomeLayout = await telegramHomePage.evaluate(() => {
+    const greeting = document.querySelector(".greeting-row");
+    const name = greeting?.querySelector("h1");
+    const avatar = document.querySelector(".home-avatar");
+    return {
+      telegramMode: document.documentElement.classList.contains("telegram-webapp"),
+      internalTopbar: getComputedStyle(document.querySelector(".topbar")).display !== "none",
+      viewport: document.documentElement.clientWidth,
+      document: document.documentElement.scrollWidth,
+      name: name?.textContent || "",
+      nameWidth: name?.clientWidth || 0,
+      nameScrollWidth: name?.scrollWidth || 0,
+      avatarLoaded: Boolean(avatar?.querySelector("img")?.naturalWidth)
+    };
+  });
+  if (!telegramHomeLayout.telegramMode) failures.push("telegram-home: Telegram WebApp class was not enabled");
+  if (telegramHomeLayout.internalTopbar) failures.push("telegram-home: duplicated internal topbar is visible inside Telegram");
+  if (telegramHomeLayout.document > telegramHomeLayout.viewport + 1) failures.push("telegram-home: long Telegram first name causes horizontal overflow " + JSON.stringify(telegramHomeLayout));
+  if (!telegramHomeLayout.avatarLoaded) failures.push("telegram-home: Telegram profile photo did not load in the home greeting");
+  if (telegramHomeLayout.nameScrollWidth > telegramHomeLayout.nameWidth + 1) failures.push("telegram-home: long first name overflows its heading " + JSON.stringify(telegramHomeLayout));
+  await telegramHomePage.screenshot({ path: artifacts + "/telegram-home-long-name.png", fullPage: true });
+  await telegramHomePage.locator('.bottom-nav [data-go="profile"]').click();
+  await telegramHomePage.waitForSelector(".profile-screen", { timeout: 10000 });
+  const profileTelegramPhoto = await telegramHomePage.locator(".profile-avatar .telegram-avatar-image").evaluate(node => node.complete && node.naturalWidth > 0).catch(() => false);
+  const profileLongName = await telegramHomePage.locator(".profile-info h2").innerText();
+  if (!profileTelegramPhoto) failures.push("telegram-profile: Telegram avatar is not reused in the profile card");
+  if (!profileLongName.includes("СверхдлинноеИмя")) failures.push("telegram-profile: Telegram first name is not displayed in the profile");
+  await telegramHomePage.screenshot({ path: artifacts + "/telegram-profile-long-name.png", fullPage: true });
+  await telegramHomePage.close();
 
   console.log("VISUAL_SMOKE_RESULTS", JSON.stringify({ desktop, mobile, breakpointResults, expectedStandaloneWarnings, failures }, null, 2));
   if (failures.length) throw new Error(failures.join("\\n"));
