@@ -12,7 +12,7 @@
 - **Стек:** Vite, vanilla JS/CSS, Telegram WebApp, Telegram Serverless endpoints/DB.
 - **Дата обновления:** 11 ноября 2026 года.
 
-## 2. HEAD, CI и публикация
+## 2. Текущий HEAD и публикация
 
 - Перед началом PROD-002 проверены branch HEAD `82f8373065f83c0af7eac2f491efbafc14f6166b` и успешный полный visual CI run [42984319752](https://github.com/Gennzy/magnus-mini-app/actions/runs/42984319752) на том же SHA.
 - Этот CI включал документационный checker и негативные тесты, tutor coverage, payment invariants, backend syntax, production build и desktop/mobile Playwright smoke.
@@ -64,7 +64,7 @@
 
 Подробная последовательность и оставшиеся задачи — в `docs/MASTER_ROADMAP.md`.
 
-## 5. Текущий активный WP
+## 5. Текущая активная задача
 
 **Текущий WP: PROD-002 — определить основную модель обучения MAGNUS.**
 
