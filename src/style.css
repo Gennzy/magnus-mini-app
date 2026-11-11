@@ -8276,3 +8276,8 @@ body{
   }
 }
 
+/* UX-001 · Telegram's older top offset must not override bottom anchoring on desktop. */
+.telegram-webapp .bottom-nav{top:auto;bottom:16px}
+@media(max-width:759px){
+  .telegram-webapp .bottom-nav{top:auto;bottom:0}
+}
