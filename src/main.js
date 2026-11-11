@@ -547,7 +547,14 @@ function dashboardContinueLearning() {
       <div class="dashboard-continue-progress"><span><i style="width:${active.progress}%"></i></span><small>${active.completed} из ${active.lessons.length} занятий · ${active.progress}%</small></div>
       <button class="orange-button" data-course="${esc(active.course.id)}">${isStarted ? "Продолжить занятие" : "Начать программу"} ${icon("arrow")}</button>
     </div>
-    <div class="dashboard-continue-mark"><span>${String(active.completed + 1).padStart(2,"0")}</span><small>СЛЕДУЮЩИЙ<br>ШАГ</small></div>
+    <div class="dashboard-owl-stage" aria-hidden="true">
+      <span class="dashboard-owl-orbit dashboard-owl-orbit-one"></span>
+      <span class="dashboard-owl-orbit dashboard-owl-orbit-two"></span>
+      <span class="dashboard-owl-star dashboard-owl-star-one">✦</span>
+      <span class="dashboard-owl-star dashboard-owl-star-two">✧</span>
+      <img class="dashboard-owl" src="${magnusOwl3d}" alt="" />
+      <span class="dashboard-owl-caption">ТВОЙ ПУТЬ · ТВОЙ ТЕМП</span>
+    </div>
   </section>`;
 }
 function dashboardTasksPreview() {
