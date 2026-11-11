@@ -1,6 +1,7 @@
 import { db } from 'sdk';
 import { eq } from 'sdk/db';
 import { studentData, studentSubscriptions } from '../schema.js';
+import { ACADEMIC_CATALOG, getProgramLessonIds, getPublicAcademicCatalog } from '../lib/academicCatalog.js';
 
 function publicSubscription(row, now = Math.floor(Date.now() / 1000)) {
   if (!row) return { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
@@ -60,6 +61,7 @@ export default async function (input, ctx) {
   }
 
   const tgId = String(telegramId);
+  if (input?.action === 'getAcademicCatalog') return { ok: true, catalog: getPublicAcademicCatalog() };
   const telegramProfile = {
     firstName: String(ctx.initData.user.first_name || '').slice(0, 80),
     lastName: String(ctx.initData.user.last_name || '').slice(0, 80),
@@ -333,11 +335,9 @@ export default async function (input, ctx) {
   if (input?.action === 'completeLesson') {
     const lessonId = String(input.lessonId || '');
     const answerIndex = Number(input.answerIndex);
-    const courseLessons = {
-      ai: ['ai-01','ai-02','ai-03','ai-04','ai-05','ai-06'],
-      mind: ['mind-01','mind-02','mind-03','mind-04','mind-05','mind-06'],
-      brand: ['brand-01','brand-02','brand-03','brand-04','brand-05','brand-06'],
-    };
+    const courseLessons = Object.fromEntries(
+      Object.keys(ACADEMIC_CATALOG.programs).map(id => [id, getProgramLessonIds(id)])
+    );
     const courseId = lessonId.split('-')[0];
     const sequence = courseLessons[courseId];
     const lessonIndex = sequence?.indexOf(lessonId) ?? -1;
