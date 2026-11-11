@@ -341,8 +341,50 @@ try {
     });
     if (dimensions.document > dimensions.viewport + 1) failures.push("breakpoint-" + width + "/home: horizontal overflow " + dimensions.document + "px at viewport " + dimensions.viewport + "px");
     if (dimensions.navPosition !== "sticky" || dimensions.navBottom > dimensions.screenTop + 1) failures.push("breakpoint-" + width + "/navigation: nav overlaps home content " + JSON.stringify(dimensions));
-    breakpointResults.push({ width, ...dimensions });
-    if (width === 320) await breakpointPage.screenshot({ path: artifacts + "/breakpoint-320-home.png", fullPage: true });
+    const checkStage = async (stage) => {
+      const result = await breakpointPage.evaluate(() => ({
+        viewport: document.documentElement.clientWidth,
+        document: document.documentElement.scrollWidth,
+        screen: document.querySelector("main.screen")?.getBoundingClientRect().width ?? 0,
+        navBottom: document.querySelector(".bottom-nav")?.getBoundingClientRect().bottom ?? 0,
+        screenTop: document.querySelector("main.screen")?.getBoundingClientRect().top ?? 0,
+      }));
+      if (result.document > result.viewport + 1) failures.push("breakpoint-" + width + "/" + stage + ": horizontal overflow " + JSON.stringify(result));
+      if (result.navBottom > result.screenTop + 1) failures.push("breakpoint-" + width + "/" + stage + ": navigation overlaps content " + JSON.stringify(result));
+      if (width === 320) await breakpointPage.screenshot({ path: artifacts + "/breakpoint-320-" + stage + ".png", fullPage: true });
+      return result;
+    };
+    await checkStage("home");
+    await breakpointPage.locator('.bottom-nav [data-go="study"]').click();
+    await breakpointPage.waitForSelector(".study-screen", { timeout: 10000 });
+    await checkStage("study");
+    await breakpointPage.locator('.bottom-nav [data-go="faculties"]').click();
+    await breakpointPage.waitForSelector(".faculty-grid", { timeout: 10000 });
+    await checkStage("catalog");
+    await breakpointPage.locator('.faculty-card[data-faculty="it"]').click();
+    await breakpointPage.waitForSelector(".detail-screen", { timeout: 10000 });
+    await checkStage("faculty-detail");
+    await breakpointPage.locator('.bottom-nav [data-go="assignments"]').click();
+    await breakpointPage.waitForSelector(".assignments-screen", { timeout: 10000 });
+    await checkStage("assignments");
+    await breakpointPage.locator("[data-assignment-open]").first().click();
+    await breakpointPage.waitForSelector(".assignment-detail-screen", { timeout: 10000 });
+    await checkStage("assignment-detail");
+    await breakpointPage.locator('.bottom-nav [data-go="profile"]').click();
+    await breakpointPage.waitForSelector(".profile-screen", { timeout: 10000 });
+    await checkStage("profile");
+    await breakpointPage.locator('.profile-menu [data-go="documents"]').click();
+    await breakpointPage.waitForSelector(".documents-screen", { timeout: 10000 });
+    await checkStage("documents");
+    await breakpointPage.locator('.bottom-nav [data-go="study"]').click();
+    await breakpointPage.waitForSelector(".study-screen", { timeout: 10000 });
+    await breakpointPage.locator('.study-screen [data-course="ai"]').last().click();
+    await breakpointPage.waitForSelector(".learning-map-screen .learning-path", { timeout: 10000 });
+    await checkStage("course-map");
+    await breakpointPage.locator(".learning-node[data-lesson-open]").first().click();
+    await breakpointPage.waitForSelector(".lesson-screen .lesson-tutor", { timeout: 10000 });
+    await checkStage("lesson");
+    breakpointResults.push({ width, ...dimensions, screens: ["home","study","catalog","faculty-detail","assignments","assignment-detail","profile","documents","course-map","lesson"] });
   }
   await breakpointPage.close();
 
