@@ -56,7 +56,12 @@ try {
     await assertNoHorizontalOverflow("home");
 
     // The passport must degrade cleanly outside Telegram without inventing student records.
-        // Check every major student-facing screen instead of only the home and lesson flow.
+        await page.locator('.bottom-nav [data-go="study"]').click();
+    await page.waitForSelector(".study-screen", { timeout: 10000 });
+    await assertNoHorizontalOverflow("study");
+    await page.screenshot({ path: artifacts + "/" + name + "-study.png", fullPage: true });
+
+    // Check every major student-facing screen instead of only the home and lesson flow.
     await page.locator('.bottom-nav [data-go="faculties"]').click();
     await page.waitForSelector(".faculty-grid", { timeout: 10000 });
     await assertNoHorizontalOverflow("catalog");
@@ -86,7 +91,15 @@ try {
       await page.waitForSelector(".info-modal-panel", { timeout: 5000 });
       const dialogTitle = await page.locator(".info-modal-panel h2").innerText();
       if (!dialogTitle.trim()) failures.push(name + "/profile: " + actionName + " dialog has no title");
-      await page.locator(".info-modal-panel [data-modal-close]").last().click();
+      if (actionName === "settings") {
+        await page.keyboard.press("Escape");
+      } else if (actionName === "notifications") {
+        await page.locator(".info-modal-backdrop").click({ position: { x: 5, y: 5 } });
+      } else if (actionName === "about") {
+        await page.locator(".info-modal-close").click();
+      } else {
+        await page.locator(".info-modal-confirm").click();
+      }
       await page.waitForSelector(".info-modal-backdrop", { state: "detached", timeout: 5000 });
     }
     await page.locator('.profile-menu [data-go="documents"]').click();
