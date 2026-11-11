@@ -56,6 +56,18 @@ const cases = [
   ["missing grading and appeals policy fails", dir => rmSync(join(dir, "docs/ASSESSMENT_POLICY.md")), false],
   ["missing subscription and access policy fails", dir => rmSync(join(dir, "docs/SUBSCRIPTION_AND_ACCESS_POLICY.md")), false],
   ["missing certificate policy fails", dir => rmSync(join(dir, "docs/CERTIFICATE_POLICY.md")), false],
+  ["certificate policy records actual catalog version gap", dir => {
+    const path = join(dir, "docs/CERTIFICATE_POLICY.md");
+    writeFileSync(path, readFileSync(path, "utf8").replace("ACADEMIC_CATALOG_VERSION = 1", "catalog version unavailable"));
+  }, false],
+  ["certificate policy records active exam bank size", dir => {
+    const path = join(dir, "docs/CERTIFICATE_POLICY.md");
+    writeFileSync(path, readFileSync(path, "utf8").replace("пять вопросов", "вопросы"));
+  }, false],
+  ["certificate policy records public verifier status behavior", dir => {
+    const path = join(dir, "docs/CERTIFICATE_POLICY.md");
+    writeFileSync(path, readFileSync(path, "utf8").replace("статус `valid` возвращается жёстко", "статус определяется записью"));
+  }, false],
   ["certificate policy cannot claim state diploma", dir => {
     const path = join(dir, "docs/CERTIFICATE_POLICY.md");
     writeFileSync(path, readFileSync(path, "utf8").replace("не является государственным дипломом", "является государственным дипломом"));
