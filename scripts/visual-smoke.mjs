@@ -77,6 +77,7 @@ try {
       }],
       history: [{ from: "applicant", to: "active", note: "Зачисление подтверждено", changedAt: 1790848800 }]
     };
+    fixturePage.on("pageerror", error => failures.push(`${name}/passport fixture page error: ${error.message}`));
     await fixturePage.addInitScript((passport) => {
       const empty = {};
       const base = {
@@ -105,8 +106,11 @@ try {
     await fixturePage.locator('.avatar-button[data-go="profile"]').click();
     await fixturePage.waitForSelector(".profile-screen", { timeout: 10000 });
     await fixturePage.locator('[data-go="academicPassport"]').click();
-    await fixturePage.waitForSelector(".academic-passport-screen .passport-program-card", { timeout: 10000 });
+    await fixturePage.waitForSelector(".academic-passport-screen", { timeout: 10000 });
+    await fixturePage.waitForTimeout(350);
     const fixtureText = await fixturePage.locator(".academic-passport-screen").innerText();
+    const fixtureProgramCards = await fixturePage.locator(".academic-passport-screen .passport-program-card").count();
+    if (fixtureProgramCards !== 1) failures.push(`${name}/passport: expected one populated program card, found ${fixtureProgramCards}; screen: ${fixtureText.slice(0, 1200)}`);
     for (const required of ["Тестовый Студент", "MAG-IT-001", "Введение в искусственный интеллект", "2 из 3 занятий", "Практика: 2/3", "Итоговый экзамен"]) {
       if (!fixtureText.includes(required)) failures.push(`${name}/passport: missing populated data: ${required}`);
     }
