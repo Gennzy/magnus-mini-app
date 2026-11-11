@@ -35,6 +35,112 @@ function academicAccessError(payload) {
   return null;
 }
 
+function parseAcademicRecord(value) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch { return {}; }
+  }
+  return {};
+}
+
+function buildStudentAcademicPassport(payload, profile = {}) {
+  const source = payload && typeof payload === 'object' ? payload : {};
+  const enrollments = cleanMap(source.enrollments);
+  const completed = cleanMap(source.completedLessons);
+  const practices = cleanMap(source.lessonPracticeResults);
+  const exams = source.finalExams && typeof source.finalExams === 'object' ? source.finalExams : {};
+  const certificates = source.certificates && typeof source.certificates === 'object' ? source.certificates : {};
+  const programs = Object.keys(enrollments).map(programId => {
+    const program = ACADEMIC_CATALOG.programs[programId];
+    if (!program) return null;
+    const faculty = ACADEMIC_CATALOG.faculties.find(item => item.id === program.facultyId);
+    const lessonIds = getProgramLessonIds(programId);
+    const programLessonsDone = lessonIds.filter(id => Boolean(completed[id])).length;
+    const practiceRecords = lessonIds.map(id => parseAcademicRecord(practices[id]));
+    const passedPractices = practiceRecords.filter(item => item.verdict === 'pass' && Number.isFinite(Number(item.totalScore)));
+    const practiceAverage = passedPractices.length
+      ? Math.round(passedPractices.reduce((sum, item) => sum + Number(item.totalScore), 0) / passedPractices.length * 10) / 10
+      : null;
+    const exam = parseAcademicRecord(exams[programId]);
+    const attempts = Array.isArray(exam.attempts) ? exam.attempts : [];
+    const lastAttempt = attempts[attempts.length - 1] || {};
+    const terms = program.terms.map(term => ({
+      id: term.id,
+      title: term.title,
+      order: term.order,
+      subjects: term.subjects.map(subject => {
+        const subjectIds = Array.isArray(subject.lessonIds) ? subject.lessonIds : [];
+        const subjectPractices = subjectIds.map(id => parseAcademicRecord(practices[id]))
+          .filter(item => item.verdict === 'pass' && Number.isFinite(Number(item.totalScore)));
+        return {
+          id: subject.id,
+          title: subject.title,
+          required: subject.required !== false,
+          totalLessons: subjectIds.length,
+          completedLessons: subjectIds.filter(id => Boolean(completed[id])).length,
+          passedPractices: subjectPractices.length,
+          practiceAverage: subjectPractices.length
+            ? Math.round(subjectPractices.reduce((sum, item) => sum + Number(item.totalScore), 0) / subjectPractices.length * 10) / 10
+            : null,
+        };
+      }),
+    }));
+    return {
+      id: program.id,
+      code: program.code,
+      title: program.title,
+      facultyId: program.facultyId,
+      facultyTitle: faculty?.title || 'Факультет MAGNUS',
+      enrolledAt: enrollments[programId],
+      totalLessons: lessonIds.length,
+      completedLessons: programLessonsDone,
+      progress: lessonIds.length ? Math.round(programLessonsDone / lessonIds.length * 100) : 0,
+      passedPractices: passedPractices.length,
+      totalPractices: lessonIds.length,
+      practiceAverage,
+      exam: {
+        passed: Boolean(exam.passed),
+        score: Number(lastAttempt.score ?? exam.score) || 0,
+        attempts: attempts.length,
+        maxAttempts: 3,
+      },
+      certificate: certificates[programId] ? {
+        issued: true,
+        certificateId: String(certificates[programId].certificateId || ''),
+        issuedAt: certificates[programId].issuedAt || '',
+      } : { issued: false, certificateId: '', issuedAt: '' },
+      terms,
+      completed: lessonIds.length > 0 && programLessonsDone === lessonIds.length && Boolean(exam.passed),
+    };
+  }).filter(Boolean);
+  const allowedStatuses = ['applicant', 'active', 'academic_leave', 'expelled', 'graduated'];
+  const storedStatus = String(source.academicStatus || '');
+  const status = allowedStatuses.includes(storedStatus) ? storedStatus : (programs.length ? 'active' : 'applicant');
+  const history = (Array.isArray(source.academicHistory) ? source.academicHistory : []).slice(-20).reverse().map(item => ({
+    from: String(item?.from || ''),
+    to: String(item?.to || ''),
+    note: String(item?.note || '').slice(0, 500),
+    changedAt: Number(item?.changedAt) || 0,
+  }));
+  const totalLessons = programs.reduce((sum, item) => sum + item.totalLessons, 0);
+  const completedLessons = programs.reduce((sum, item) => sum + item.completedLessons, 0);
+  return {
+    status,
+    studentName: [profile.firstName, profile.lastName].filter(Boolean).join(' ').slice(0, 160) || 'Студент MAGNUS',
+    username: String(profile.username || '').slice(0, 64),
+    enrolledProgramsCount: programs.length,
+    totalLessons,
+    completedLessons,
+    progress: totalLessons ? Math.round(completedLessons / totalLessons * 100) : 0,
+    programs,
+    history,
+    updatedAt: Number(source.updatedAt) || 0,
+  };
+}
+
 export default async function (input, ctx) {
   if (input?.action === 'verifyCertificate') {
     const certificateId = String(input.certificateId || '').trim().toUpperCase();
@@ -67,6 +173,15 @@ export default async function (input, ctx) {
     lastName: String(ctx.initData.user.last_name || '').slice(0, 80),
     username: String(ctx.initData.user.username || '').slice(0, 64),
   };
+  if (input?.action === 'getAcademicPassport') {
+    const existing = await db.select().from(studentData).where(eq(studentData.tgId, tgId)).get();
+    const payload = existing?.payload || {};
+    return { ok: true, academicPassport: buildStudentAcademicPassport(payload, {
+      firstName: telegramProfile.firstName || payload.studentProfile?.firstName || '',
+      lastName: telegramProfile.lastName || payload.studentProfile?.lastName || '',
+      username: telegramProfile.username || payload.studentProfile?.username || '',
+    }) };
+  }
   if (input?.action === 'submitAssignment') {
     const assignmentId = String(input.assignmentId || '');
     const answer = typeof input.answer === 'string' ? input.answer.trim() : '';
@@ -410,6 +525,11 @@ export default async function (input, ctx) {
       certificates: payload.certificates && typeof payload.certificates === 'object' ? payload.certificates : {},
       assignmentSubmissions: Array.isArray(payload.assignmentSubmissions) ? payload.assignmentSubmissions.slice(-50) : [],
       academicCatalog: getPublicAcademicCatalog(),
+      academicPassport: buildStudentAcademicPassport(payload, {
+        firstName: telegramProfile.firstName || payload.studentProfile?.firstName || '',
+        lastName: telegramProfile.lastName || payload.studentProfile?.lastName || '',
+        username: telegramProfile.username || payload.studentProfile?.username || '',
+      }),
       subscription: publicSubscription(subscriptionRow),
     };
   }
