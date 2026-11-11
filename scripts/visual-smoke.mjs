@@ -49,6 +49,21 @@ try {
     }
     await assertNoHorizontalOverflow("home");
 
+    // The passport must degrade cleanly outside Telegram without inventing student records.
+    await page.locator('.avatar-button[data-go="profile"]').click();
+    await page.waitForSelector(".profile-screen", { timeout: 10000 });
+    await page.locator('[data-go="academicPassport"]').click();
+    await page.waitForSelector(".academic-passport-screen", { timeout: 10000 });
+    const passportGuestText = await page.locator(".academic-passport-screen").innerText();
+    if (!passportGuestText.includes("Нужен вход через Telegram")) failures.push(`${name}/passport: guest state is missing`);
+    await assertNoHorizontalOverflow("academic-passport-guest");
+    await page.screenshot({ path: `${artifacts}/${name}-academic-passport-guest.png`, fullPage: true });
+
+    // Reset to a clean startup state before the learning-flow regression checks.
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForSelector("#app .home-screen", { timeout: 15000 });
+    await page.waitForTimeout(1900);
+
     await page.locator('[data-course="ai"]').click();
     await page.waitForSelector(".learning-map-screen .learning-path", { timeout: 10000 });
     await page.waitForTimeout(250);
