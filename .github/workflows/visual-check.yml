@@ -63,7 +63,7 @@ jobs:
       - name: Install Playwright
         run: |
           npm install --no-save --package-lock=false playwright
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
 
       - name: Run desktop and mobile browser checks
         run: node scripts/visual-smoke.mjs
