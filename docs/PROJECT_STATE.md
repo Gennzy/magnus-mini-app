@@ -73,13 +73,15 @@
 
 **Текущий WP: PROD-007 — определить проходные пороги, число попыток, пересдачи и апелляции.**
 
-- **Статус:** [ ] Planned; не начат.
+- **Статус:** [~] In progress.
 - **Последняя завершённая задача:** PROD-006 — [x] DONE.
 - **Решение PROD-006:** `docs/ASSESSMENT_AND_COMPLETION_POLICY.md`.
-- **WP PROD-006:** `docs/work-packages/PROD-006.md`.
-- **Подтверждение PROD-006:** полный visual CI [run 43024279012](https://github.com/Gennzy/magnus-mini-app/actions/runs/43024279012), SHA `00318e136efcf4a068878389c3709efd258a43a1` — SUCCESS. Проверки docs checker и негативных сценариев, tutor coverage, payment invariants, backend syntax, production build, desktop/mobile Playwright smoke прошли.
-- **Границы PROD-006:** только документы и документационный checker/tests. Runtime, API, БД, каталог, UI и Telegram deploy не затрагивались.
-- **Следующая задача:** оформить PROD-007 по `docs/WP_TEMPLATE.md`, определить шкалы/пороги практик и итоговой аттестации, количество попыток, пересдачи, сроки и апелляции. До закрытия PROD-007 не начинать PROD-008.
+- **Исходный HEAD PROD-007:** `39c31b1130ae5d804581876dc316a58023c78c92`.
+- **Последний полный CI:** [run 43024595254](https://github.com/Gennzy/magnus-mini-app/actions/runs/43024595254), SUCCESS на исходном HEAD.
+- **WP:** `docs/work-packages/PROD-007.md`.
+- **Направление PROD-007:** практика — 4/6 при минимуме 1 по каждому критерию; контрольный вопрос без лимита; экзамен — 70% без округления, три стандартные попытки; дополнительная пересдача по решению академического администратора; апелляция в течение 7 календарных дней.
+- **Границы:** только продуктовая политика и documentation checker/tests. Backend, UI, API, БД и Telegram deploy не меняются.
+- **Следующая задача:** PROD-008 — правила заморозки, продления, возврата и прекращения доступа. До закрытия PROD-007 не начинать.
 
 ## 6. Как продолжать в новом чате
 

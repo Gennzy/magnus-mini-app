@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 const root = resolve(process.argv[2] || process.cwd());
 const filePath = path => resolve(root, path);
 
-const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md", "docs/KNOWN_ISSUES.md", "docs/ACADEMIC_STATUS_MODEL.md", "docs/LEARNING_ACTIVITY_MODEL.md", "docs/ASSESSMENT_AND_COMPLETION_POLICY.md"];
+const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md", "docs/KNOWN_ISSUES.md", "docs/ACADEMIC_STATUS_MODEL.md", "docs/LEARNING_ACTIVITY_MODEL.md", "docs/ASSESSMENT_AND_COMPLETION_POLICY.md", "docs/ASSESSMENT_POLICY.md"];
 const errors = [];
 
 for (const file of requiredFiles) {
@@ -26,6 +26,7 @@ const knownIssues = readFileSync(filePath("docs/KNOWN_ISSUES.md"), "utf8");
 const academicStatusModel = readFileSync(filePath("docs/ACADEMIC_STATUS_MODEL.md"), "utf8");
 const learningActivityModel = readFileSync(filePath("docs/LEARNING_ACTIVITY_MODEL.md"), "utf8");
 const assessmentPolicy = readFileSync(filePath("docs/ASSESSMENT_AND_COMPLETION_POLICY.md"), "utf8");
+const gradingPolicy = readFileSync(filePath("docs/ASSESSMENT_POLICY.md"), "utf8");
 const adrTemplate = readFileSync(filePath("docs/adr/ADR-TEMPLATE.md"), "utf8");
 
 const requireText = (text, pattern, label) => {
@@ -80,6 +81,14 @@ if (!roadmap.includes("docs/KNOWN_ISSUES.md")) errors.push("MASTER_ROADMAP does 
 if (!roadmap.includes("docs/ACADEMIC_STATUS_MODEL.md")) errors.push("MASTER_ROADMAP does not link to the academic status model");
 if (!roadmap.includes("docs/LEARNING_ACTIVITY_MODEL.md")) errors.push("MASTER_ROADMAP does not link to the learning activity model");
 if (!roadmap.includes("docs/ASSESSMENT_AND_COMPLETION_POLICY.md")) errors.push("MASTER_ROADMAP does not link to the assessment and completion policy");
+if (!roadmap.includes("docs/ASSESSMENT_POLICY.md")) errors.push("MASTER_ROADMAP does not link to the grading and appeals policy");
+for (const section of ["## 1. Принципы оценивания", "## 2. Практическая работа занятия", "## 4. Итоговая аттестация программы", "## 6. Апелляции и исправление ошибок", "## 7. История оценивания и аудит"]) {
+  if (!gradingPolicy.includes(section)) errors.push(`ASSESSMENT_POLICY is missing section: ${section}`);
+}
+for (const required of ["4 из 6", "70%", "3 стандартные попытки", "7 календарных дней", "voided"]) {
+  if (!gradingPolicy.includes(required)) errors.push(`ASSESSMENT_POLICY is missing policy requirement: ${required}`);
+}
+
 for (const section of ["## 1. Основное решение", "## 2. Термины и уровни", "### 2.3. Зачёт дисциплины", "### 2.4. Завершение учебного блока", "### 2.5. Завершение образовательной программы", "## 4. Повторные попытки и сохранение результата", "## 6. Версия программы и исторические результаты", "## 10. Подтверждённые расхождения текущей реализации"]) {
   if (!assessmentPolicy.includes(section)) errors.push(`ASSESSMENT_AND_COMPLETION_POLICY is missing section: ${section}`);
 }
