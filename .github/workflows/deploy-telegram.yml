@@ -60,7 +60,7 @@ jobs:
 
       - name: Compile changed payment and message modules in Telegram runtime
         run: |
-          npx tgcloud run handlers/message '{ from: {}, text: "compile-check" }' --ctx '{}'
+          npx tgcloud run handlers/message "{ from: {}, text: 'compile-check' }" --ctx '{}'
           npx tgcloud run endpoints/tutor '{}' --ctx '{}'
           npx tgcloud run endpoints/studentData '{}' --ctx '{}'
 
