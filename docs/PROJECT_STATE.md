@@ -62,24 +62,22 @@
 - **STU-003 — DONE:** академический паспорт, серверная авторизация по Telegram initData и проверенное пользователем гостевое состояние.
 - **PROD-003 — DONE:** жизненный цикл описан в `docs/STUDENT_LIFECYCLE.md`; checker исправлен на точное сопоставление ID, негативный регрессионный тест добавлен. Полный CI [run 43002543794](https://github.com/Gennzy/magnus-mini-app/actions/runs/43002543794) прошёл.
 - **PROD-004 — DONE:** модель академических статусов и переходов описана в `docs/ACADEMIC_STATUS_MODEL.md`; глобальное поле статуса заменяется в целевой архитектуре программными состояниями и вычисляемой сводкой. Документационный checker и негативный тест добавлены. Полный CI [run 43005437660](https://github.com/Gennzy/magnus-mini-app/actions/runs/43005437660) прошёл.
+- **PROD-005 — DONE:** правила асинхронной активности зафиксированы в `docs/LEARNING_ACTIVITY_MODEL.md`; квалифицирующие события, исключения, переход `enrolled → active`, last activity и границы аналитики описаны. Документ добавлен в checker и тест отсутствующей модели. Полный CI [run 43006927304](https://github.com/Gennzy/magnus-mini-app/actions/runs/43006927304) прошёл.
 - **PROD-001 — DONE:** позиционирование и аудитории зафиксированы в `docs/PRODUCT_POSITIONING.md`; финальный CI run [42984319752](https://github.com/Gennzy/magnus-mini-app/actions/runs/42984319752) прошёл.
 
 Подробная последовательность и оставшиеся задачи — в `docs/MASTER_ROADMAP.md`.
 
 ## 5. Текущая активная задача
 
-**Текущий WP: PROD-005 — определить активность и участие в самостоятельном обучении.**
+**Текущий WP: PROD-006 — определить правила зачёта дисциплин и программы.**
 
-- **Статус:** [~] In progress.
-- **Последняя завершённая задача:** PROD-004 — [x] DONE.
-- **Модель статусов:** `docs/ACADEMIC_STATUS_MODEL.md`.
-- **WP:** `docs/work-packages/PROD-005.md`.
-- **Исходный HEAD PROD-005:** `67575610008207fe665d2b73a77d81d8fb24c2cd`.
-- **Предыдущий полный CI:** [run 43005754173](https://github.com/Gennzy/magnus-mini-app/actions/runs/43005754173) — SUCCESS.
-- **Направление решения:** `enrolled → active` после первого серверно принятого содержательного действия по программе; активность и академический статус не смешиваются; входы, просмотры, черновики, AI-чат и платежи не считаются участием.
-- **Технические факты:** `student_data.updated_at` меняется при `load`, generic save и AI usage; журнала учебных событий нет. Для last academic activity необходим отдельный серверный источник.
-- **Границы:** документация и documentation CI/checker/tests; без runtime/API/БД и Telegram deploy.
-- **Следующая задача после закрытия:** PROD-006 — правила зачёта дисциплин и программы. До закрытия PROD-005 не начинать.
+- **Статус:** [ ] Planned; не начат.
+- **Последняя завершённая задача:** PROD-005 — [x] DONE.
+- **Решение PROD-005:** `docs/LEARNING_ACTIVITY_MODEL.md`.
+- **WP PROD-005:** `docs/work-packages/PROD-005.md`.
+- **Подтверждение PROD-005:** полный visual CI [run 43006927304](https://github.com/Gennzy/magnus-mini-app/actions/runs/43006927304), SHA `8d75a4f2f61aaf5688821c8415248b2c68d733a0` — SUCCESS; документационная модель, checker, негативные тесты, tutor coverage, payment invariants, backend syntax, build и desktop/mobile smoke прошли.
+- **Границы PROD-005:** менялись только документы и documentation checker/tests. UI, runtime, API, схема БД, student records и Telegram deploy не затрагивались.
+- **Следующая задача:** оформить PROD-006 по `docs/WP_TEMPLATE.md`, изучить текущие требования завершения занятия, практики и экзамена, затем определить зачёт дисциплины/программы. До закрытия PROD-006 не начинать PROD-007.
 
 ## 6. Как продолжать в новом чате
 
