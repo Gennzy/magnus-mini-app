@@ -12,6 +12,7 @@ on:
       - "package.json"
       - "package-lock.json"
       - "scripts/check-project-docs.mjs"
+      - "scripts/test-project-docs.mjs"
       - "scripts/visual-smoke.mjs"
       - "scripts/check-tutor-curriculum.mjs"
       - ".github/workflows/visual-check.yml"
@@ -41,6 +42,8 @@ jobs:
 
       - name: Validate project documentation and active work package
         run: npm run check:docs
+      - name: Test documentation checker negative cases
+        run: npm run test:docs
       - name: Check tutor coverage for every course lesson
         run: npm run check:tutor
       - name: Check payment and subscription safety invariants
