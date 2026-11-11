@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 const root = resolve(process.argv[2] || process.cwd());
 const filePath = path => resolve(root, path);
 
-const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md", "docs/KNOWN_ISSUES.md"];
+const requiredFiles = ["docs/MASTER_ROADMAP.md", "docs/PROJECT_STATE.md", "docs/WP_TEMPLATE.md", "docs/adr/README.md", "docs/adr/ADR-TEMPLATE.md", "docs/adr/ADR-0001-telegram-mini-app-client.md", "docs/adr/ADR-0002-telegram-serverless-backend.md", "docs/adr/ADR-0003-single-academic-catalog.md", "docs/adr/ADR-0004-server-authoritative-student-records.md", "docs/adr/ADR-0005-server-side-ai-provider.md", "docs/KNOWN_ISSUES.md", "docs/ACADEMIC_STATUS_MODEL.md"];
 const errors = [];
 
 for (const file of requiredFiles) {
@@ -23,6 +23,7 @@ const template = readFileSync(filePath("docs/WP_TEMPLATE.md"), "utf8");
 const workflow = readFileSync(filePath(".github/workflows/visual-check.yml"), "utf8");
 const adrIndex = readFileSync(filePath("docs/adr/README.md"), "utf8");
 const knownIssues = readFileSync(filePath("docs/KNOWN_ISSUES.md"), "utf8");
+const academicStatusModel = readFileSync(filePath("docs/ACADEMIC_STATUS_MODEL.md"), "utf8");
 const adrTemplate = readFileSync(filePath("docs/adr/ADR-TEMPLATE.md"), "utf8");
 
 const requireText = (text, pattern, label) => {
@@ -74,6 +75,14 @@ for (const field of ["Категория", "Приоритет / статус", 
   if (!knownIssues.includes(`**${field}:**`)) errors.push(`Known issues register is missing required field: ${field}`);
 }
 if (!roadmap.includes("docs/KNOWN_ISSUES.md")) errors.push("MASTER_ROADMAP does not link to the known issues register");
+if (!roadmap.includes("docs/ACADEMIC_STATUS_MODEL.md")) errors.push("MASTER_ROADMAP does not link to the academic status model");
+for (const section of ["## 1. Основное решение", "## 4. Статусы программы", "## 5. Матрица переходов", "## 10. Сопоставление с текущими данными"]) {
+  if (!academicStatusModel.includes(section)) errors.push(`ACADEMIC_STATUS_MODEL is missing section: ${section}`);
+}
+for (const status of ["enrolled", "active", "academic_leave", "withdrawn", "expelled", "completed"]) {
+  if (!academicStatusModel.includes("`" + status + "`")) errors.push(`ACADEMIC_STATUS_MODEL is missing status: ${status}`);
+}
+
 
 const activeMatch = state.match(/^\*\*Текущий WP: ([A-Z]+-\d+) —/m);
 if (!activeMatch) {

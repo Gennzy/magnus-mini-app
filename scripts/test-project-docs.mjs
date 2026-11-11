@@ -18,6 +18,7 @@ const sourceFiles = [
   "docs/adr/ADR-0004-server-authoritative-student-records.md",
   "docs/adr/ADR-0005-server-side-ai-provider.md",
   "docs/KNOWN_ISSUES.md",
+  "docs/ACADEMIC_STATUS_MODEL.md",
   "package.json",
   ".github/workflows/visual-check.yml",
 ];
@@ -42,6 +43,7 @@ const cases = [
   ["missing template fails", dir => rmSync(join(dir, "docs/WP_TEMPLATE.md")), false],
   ["missing ADR record fails", dir => rmSync(join(dir, "docs/adr/ADR-0003-single-academic-catalog.md")), false],
   ["missing known issues register fails", dir => rmSync(join(dir, "docs/KNOWN_ISSUES.md")), false],
+  ["missing academic status model fails", dir => rmSync(join(dir, "docs/ACADEMIC_STATUS_MODEL.md")), false],
   ["missing known issue record fails", dir => {
     const path = join(dir, "docs/KNOWN_ISSUES.md");
     writeFileSync(path, readFileSync(path, "utf8").replace("### BL-006 —", "### BL-XXX —"));
