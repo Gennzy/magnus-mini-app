@@ -157,6 +157,14 @@ try {
     await assertNoHorizontalOverflow("profile");
     const profileMenuIcons = await page.locator(".profile-menu .menu-icon svg").count();
     if (profileMenuIcons !== 5) failures.push(name + "/profile: expected 5 SVG menu icons, found " + profileMenuIcons);
+    const profileMenuCopy = await page.locator(".profile-menu .menu-copy").evaluateAll(nodes => nodes.map(node => {
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return { title: node.querySelector("b")?.textContent?.trim() || "", description: node.querySelector("small")?.textContent?.trim() || "", width: rect.width, height: rect.height, display: style.display, visibility: style.visibility, opacity: Number(style.opacity) };
+    }));
+    if (profileMenuCopy.length !== 5 || profileMenuCopy.some(item => !item.title || !item.description || item.width < 80 || item.height < 24 || item.display === "none" || item.visibility !== "visible" || item.opacity < .95)) {
+      failures.push(name + "/profile: menu labels are missing or visually collapsed " + JSON.stringify(profileMenuCopy));
+    }
     for (const actionName of ["settings", "notifications", "support", "about"]) {
       await page.locator('.profile-menu [data-action="' + actionName + '"]').click();
       await page.waitForSelector(".info-modal-panel", { timeout: 5000 });
@@ -636,6 +644,7 @@ try {
     }, {delay:scenario.delay,valid:scenario.valid,certificate:scenario.certificate});
     await certificatePage.goto(baseUrl + "?certificate=" + encodeURIComponent(scenario.id), { waitUntil: "domcontentloaded", timeout: 30000 });
     await certificatePage.waitForSelector(".certificate-verify-panel h2", { timeout: 15000 });
+    await certificatePage.locator(".startup-screen").waitFor({ state: "detached", timeout: 5000 });
     const loadingLabel = await certificatePage.locator(".certificate-verify-panel h2").innerText();
     if (!loadingLabel.includes("Проверяем сертификат")) failures.push("certificate-" + scenario.name + ": loading state is not displayed while verification is pending");
     const expectedTitle = scenario.valid ? "Сертификат подлинный" : "Сертификат не найден";
