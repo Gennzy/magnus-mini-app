@@ -71,17 +71,15 @@
 
 ## 5. Текущая активная задача
 
-**Текущий WP: PROD-007 — определить проходные пороги, число попыток, пересдачи и апелляции.**
+**Текущий WP: PROD-008 — определить правила заморозки, продления, возврата и прекращения доступа.**
 
-- **Статус:** [~] In progress.
-- **Последняя завершённая задача:** PROD-006 — [x] DONE.
-- **Решение PROD-006:** `docs/ASSESSMENT_AND_COMPLETION_POLICY.md`.
-- **Исходный HEAD PROD-007:** `39c31b1130ae5d804581876dc316a58023c78c92`.
-- **Последний полный CI:** [run 43024595254](https://github.com/Gennzy/magnus-mini-app/actions/runs/43024595254), SUCCESS на исходном HEAD.
-- **WP:** `docs/work-packages/PROD-007.md`.
-- **Направление PROD-007:** практика — 4/6 при минимуме 1 по каждому критерию; контрольный вопрос без лимита; экзамен — 70% без округления, три стандартные попытки; дополнительная пересдача по решению академического администратора; апелляция в течение 7 календарных дней.
-- **Границы:** только продуктовая политика и documentation checker/tests. Backend, UI, API, БД и Telegram deploy не меняются.
-- **Следующая задача:** PROD-008 — правила заморозки, продления, возврата и прекращения доступа. До закрытия PROD-007 не начинать.
+- **Статус:** [ ] Planned; не начат.
+- **Последняя завершённая задача:** PROD-007 — [x] DONE.
+- **Решение PROD-007:** `docs/ASSESSMENT_POLICY.md`.
+- **WP PROD-007:** `docs/work-packages/PROD-007.md`.
+- **Подтверждение PROD-007:** полный visual CI [run 43026406876](https://github.com/Gennzy/magnus-mini-app/actions/runs/43026406876), SHA `f3ee840817d1cacc0bf1bcf243db7984b8b6e335` — SUCCESS. Документационный checker и негативные тесты, tutor coverage, payment invariants, backend syntax, production build, desktop/mobile Playwright smoke и screenshots прошли.
+- **Границы PROD-007:** только продуктовая политика и documentation checker/tests. Runtime, API, БД, UI, student records и Telegram deploy не затрагивались.
+- **Следующая задача:** оформить PROD-008 по `docs/WP_TEMPLATE.md`, проверить текущие подписки, payment orders, доступ к материалам и ограничения, затем определить заморозку, продление, возврат и прекращение доступа. До закрытия PROD-008 не начинать PROD-009.
 
 ## 6. Как продолжать в новом чате
 
