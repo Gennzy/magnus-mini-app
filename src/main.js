@@ -134,6 +134,9 @@ let enrollments = readStudentStorage("enrollments");
 let finalExams = {};
 let certificates = {};
 let academicCatalog = null;
+let academicPassport = null;
+let academicPassportLoading = false;
+let academicPassportError = "";
 let certificateVerification = null;
 let certificateIssuePending = false;
 let activeExam = null;
@@ -492,6 +495,7 @@ function initializeCloudStudentData() {
     finalExams = result.finalExams && typeof result.finalExams === "object" ? result.finalExams : {};
     certificates = result.certificates && typeof result.certificates === "object" ? result.certificates : {};
     academicCatalog = result.academicCatalog?.programs?.length ? result.academicCatalog : academicCatalog;
+    academicPassport = result.academicPassport && typeof result.academicPassport === "object" ? result.academicPassport : academicPassport;
     writeStudentStorage("enrollments", enrollments);
     studentSubscription = result.subscription || { status: 'none', planId: '', startsAt: 0, endsAt: 0 };
     storeAssignmentDrafts();
@@ -941,6 +945,11 @@ function profilePage() {
       <div class="profile-info"><small>ЛИЧНЫЙ КАБИНЕТ</small><h2>${esc(profileName)}</h2><p>${esc(profileCaption)}</p></div>
       <span class="profile-connection ${telegramConnected?"connected":""}">${telegramConnected?"TELEGRAM":"ГОСТЕВОЙ РЕЖИМ"}</span>
     </section>
+    <section class="profile-academic-entry">
+      <div class="profile-academic-entry-mark">${icon("faculty")}</div>
+      <div class="profile-academic-entry-copy"><span class="subtle-label">АКАДЕМИЧЕСКИЕ ДАННЫЕ</span><b>Паспорт студента</b><small>${academicPassport ? academicPassport.enrolledProgramsCount ? academicPassport.enrolledProgramsCount + " программ · " + academicPassport.completedLessons + " из " + academicPassport.totalLessons + " занятий" : "Пока нет активных зачислений" : "Статус обучения и академические результаты"}</small></div>
+      <button data-go="academicPassport" aria-label="Открыть академический паспорт">${icon("arrow")}</button>
+    </section>
     <section class="profile-subscription-card"><div><span>УЧЕБНЫЙ ДОСТУП</span><b>${subscriptionLabel}</b><small>${studentSubscription.status==='active'&&subscriptionUntil?'Действует до '+subscriptionUntil:'Информация о доступе обновляется из аккаунта'}</small></div><i class="profile-subscription-indicator ${studentSubscription.status==='active'?'active':''}"></i></section>
     <section class="profile-plans"><div class="profile-plans-heading"><span class="subtle-label">ПОДПИСКА</span><h2>Выбери срок обучения</h2><p>Оплата цифрового доступа проходит внутри Telegram через Stars.</p></div>${availableSubscriptionPlans.length?availableSubscriptionPlans.map(plan=>`<article class="profile-plan"><div><b>${esc(plan.days+' дней')}</b><small>${esc(plan.title)}</small></div><strong>${Number(plan.starsPrice)} ⭐</strong><button data-buy-plan="${esc(plan.planId)}">Купить</button></article>`).join(''):'<div class="profile-plans-empty">'+(paymentPlansLoading?'Загружаем тарифы…':paymentPlansError?'Не удалось загрузить тарифы. Попробуй обновить профиль.':'Сейчас нет доступных тарифов.')+'</div>'}</section>
     ${studentPaymentHistorySection()}
@@ -965,6 +974,132 @@ function profilePage() {
       <button data-action="support"><span class="menu-icon">?</span><span><b>Поддержка</b><small>Помощь и обратная связь</small></span>${icon("arrow")}</button>
       <button data-action="about"><span class="menu-icon">${icon("faculty")}</span><span><b>О MAGNUS</b><small>Пространство для знаний и развития</small></span>${icon("arrow")}</button>
     </section>
+  </main>`;
+}
+
+
+function academicDate(value) {
+  if (!value) return "Не указана";
+  const date = typeof value === "number" ? new Date(value * 1000) : new Date(value);
+  return Number.isNaN(date.getTime()) ? "Не указана" : date.toLocaleDateString("ru-RU", { day:"numeric", month:"long", year:"numeric" });
+}
+
+function academicStatusMeta(status) {
+  const labels = {
+    applicant: ["Абитуриент", "applicant"],
+    active: ["Обучается", "active"],
+    academic_leave: ["Академический отпуск", "paused"],
+    expelled: ["Отчислен", "stopped"],
+    graduated: ["Программа завершена", "graduated"],
+  };
+  return labels[status] || ["Статус не определён", "unknown"];
+}
+
+function refreshAcademicPassport() {
+  if (!telegramUser?.id) {
+    academicPassportError = "Академический паспорт доступен после открытия MAGNUS через Telegram.";
+    academicPassportLoading = false;
+    if (currentPage === "academicPassport") render();
+    return false;
+  }
+  academicPassportLoading = true;
+  academicPassportError = "";
+  const called = callCloudStudentData("getAcademicPassport", {}, (error, result) => {
+    academicPassportLoading = false;
+    if (error || !result?.ok || !result.academicPassport) {
+      academicPassportError = error?.message || result?.message || "Не удалось загрузить академические данные. Попробуй ещё раз.";
+    } else {
+      academicPassport = result.academicPassport;
+    }
+    if (currentPage === "academicPassport") render();
+  });
+  if (!called) {
+    academicPassportLoading = false;
+    academicPassportError = "Открой MAGNUS через Telegram, чтобы получить данные из учебной системы.";
+    if (currentPage === "academicPassport") render();
+    return false;
+  }
+  return true;
+}
+
+function academicPassportPage() {
+  const passport = academicPassport;
+  const [statusLabel, statusClass] = academicStatusMeta(passport?.status);
+  const programs = Array.isArray(passport?.programs) ? passport.programs : [];
+  const loadingState = academicPassportLoading && !passport;
+  const programCards = programs.map(program => {
+    const course = courses.find(item => item.id === program.id);
+    const examLabel = program.exam?.passed
+      ? "Сдан · " + Number(program.exam.score || 0) + "%"
+      : program.exam?.attempts
+        ? "Попыток: " + Number(program.exam.attempts) + " из " + Number(program.exam.maxAttempts || 3)
+        : "Не начат";
+    const terms = (program.terms || []).map(term => `
+      <section class="passport-term">
+        <div class="passport-term-heading"><span>МОДУЛЬ ${String(term.order || 0).padStart(2,"0")}</span><b>${esc(term.title)}</b></div>
+        <div class="passport-subject-list">${(term.subjects || []).map(subject => {
+          const done = Number(subject.completedLessons) || 0;
+          const total = Number(subject.totalLessons) || 0;
+          const practice = Number(subject.passedPractices) || 0;
+          const subjectStatus = total > 0 && done === total ? "Завершена" : done > 0 ? "В процессе" : "Не начата";
+          return `<article class="passport-subject">
+            <div class="passport-subject-top"><b>${esc(subject.title)}</b><span>${subjectStatus}</span></div>
+            <div class="passport-subject-progress"><i style="width:${total ? Math.round(done/total*100) : 0}%"></i></div>
+            <div class="passport-subject-meta"><span>${done} из ${total} занятий</span><span>Практика: ${practice}/${total}</span></div>
+          </article>`;
+        }).join("")}</div>
+      </section>`).join("");
+    return `<article class="passport-program-card">
+      <div class="passport-program-head">
+        <div><span class="subtle-label">${esc(program.code || "MAGNUS")} · ${esc(program.facultyTitle || "Факультет")}</span><h2>${esc(program.title)}</h2><p>Зачисление: ${academicDate(program.enrolledAt)}</p></div>
+        <strong>${Number(program.progress) || 0}%</strong>
+      </div>
+      <div class="passport-progress-track"><i style="width:${Number(program.progress) || 0}%"></i></div>
+      <div class="passport-program-stats">
+        <div><b>${Number(program.completedLessons) || 0}/${Number(program.totalLessons) || 0}</b><span>Занятия</span></div>
+        <div><b>${program.practiceAverage === null || program.practiceAverage === undefined ? "—" : Number(program.practiceAverage).toFixed(1)+"/6"}</b><span>Средняя практика</span></div>
+        <div><b>${esc(examLabel)}</b><span>Итоговый экзамен</span></div>
+      </div>
+      ${terms}
+      <div class="passport-program-footer">
+        <span class="passport-program-certificate">${program.certificate?.issued ? "Сертификат выдан" : program.completed ? "Можно оформить сертификат" : "Документ после завершения программы"}</span>
+        ${course ? `<button data-course="${esc(course.id)}">Открыть программу ${icon("arrow")}</button>` : ""}
+      </div>
+    </article>`;
+  }).join("");
+  const history = (passport?.history || []).length ? `
+    <section class="passport-history">
+      <div class="section-title"><div><span class="subtle-label">ИЗМЕНЕНИЯ СТАТУСА</span><h2>Академическая история</h2></div></div>
+      <div class="passport-history-list">${passport.history.map(item => {
+        const [, toClass] = academicStatusMeta(item.to);
+        const [toLabel] = academicStatusMeta(item.to);
+        const [fromLabel] = academicStatusMeta(item.from);
+        return `<article class="passport-history-item"><span class="passport-history-dot ${toClass}"></span><div><b>${esc(fromLabel)} → ${esc(toLabel)}</b><time>${academicDate(item.changedAt)}</time>${item.note ? `<p>${esc(item.note)}</p>` : ""}</div></article>`;
+      }).join("")}</div>
+    </section>` : "";
+  return `<main class="screen inner-screen academic-passport-screen">
+    <button class="back-button" data-go="profile">${icon("back")} Вернуться в профиль</button>
+    ${heading("ЛИЧНОЕ ДЕЛО · MAGNUS", "Академический<br><em>паспорт.</em>", "Твоё зачисление, учебный маршрут и подтверждённые результаты в одном месте.")}
+    ${!telegramUser?.id ? `<section class="passport-state-card"><b>Нужен вход через Telegram</b><p>Открой Mini App из бота MAGNUS, чтобы загрузить личные академические данные.</p></section>`
+      : loadingState ? `<section class="passport-state-card is-loading"><span class="passport-loader"></span><b>Загружаем академическое дело</b><p>Получаем данные из учебной системы.</p></section>`
+      : academicPassportError && !passport ? `<section class="passport-state-card"><b>Не удалось открыть паспорт</b><p>${esc(academicPassportError)}</p><button class="orange-button" data-academic-refresh>Повторить загрузку</button></section>`
+      : `
+        <section class="passport-identity-card">
+          <div class="passport-avatar">${avatarContent()}</div>
+          <div class="passport-identity-copy"><span class="subtle-label">СТУДЕНТ MAGNUS</span><h2>${esc(passport?.studentName || [telegramUser.first_name,telegramUser.last_name].filter(Boolean).join(" ") || "Студент")}</h2><p>${passport?.username ? "@"+esc(passport.username) : "Профиль подтверждён Telegram"}</p></div>
+          <span class="passport-status-badge ${statusClass}">${statusLabel}</span>
+        </section>
+        <section class="passport-summary-grid">
+          <div><span>Программы</span><b>${Number(passport?.enrolledProgramsCount) || 0}</b></div>
+          <div><span>Занятия завершены</span><b>${Number(passport?.completedLessons) || 0}<small> / ${Number(passport?.totalLessons) || 0}</small></b></div>
+          <div><span>Общий прогресс</span><b>${Number(passport?.progress) || 0}%</b></div>
+        </section>
+        ${programCards ? `<section class="passport-programs"><div class="section-title"><div><span class="subtle-label">ТВОЁ ОБУЧЕНИЕ</span><h2>Зачисленные программы</h2></div><span class="course-count">${programs.length}</span></div>${programCards}</section>`
+          : `<section class="passport-state-card"><span class="subtle-label">АКАДЕМИЧЕСКОЕ ДЕЛО</span><h2>${statusLabel}</h2><p>${passport?.status === "academic_leave" ? "Обучение сейчас приостановлено. Условия возвращения можно уточнить в учебной поддержке." : passport?.status === "expelled" ? "Доступ к учебному процессу приостановлен. История профиля сохранена." : "Пока нет зачисленных программ. Выбери факультет и подайся на доступную программу."}</p>${passport?.status === "applicant" ? `<button class="orange-button" data-go="faculties">Посмотреть факультеты ${icon("arrow")}</button>` : ""}</section>`}
+        ${history}
+        <p class="passport-legal-note">Паспорт отражает внутренние данные образовательной платформы MAGNUS. Он не является государственным документом об образовании или подтверждением аккредитации.</p>
+        <div class="passport-refresh-row"><span>Данные загружаются из учебной системы</span><button data-academic-refresh>Обновить ${icon("refresh")}</button></div>
+      `}
   </main>`;
 }
 
@@ -1106,7 +1241,7 @@ function adminPage(){
 }
 
 function render() {
-  const pages = {home:homePage,faculties:facultiesPage,facultyDetail:facultyDetailPage,study:studyPage,courseDetail:courseDetailPage,finalExam:finalExamPage,lesson:lessonPage,assignments:assignmentsPage,assignmentDetail:assignmentDetailPage,documents:documentsPage,profile:profilePage,admin:adminPage};
+  const pages = {home:homePage,faculties:facultiesPage,facultyDetail:facultyDetailPage,study:studyPage,courseDetail:courseDetailPage,finalExam:finalExamPage,lesson:lessonPage,assignments:assignmentsPage,assignmentDetail:assignmentDetailPage,documents:documentsPage,profile:profilePage,academicPassport:academicPassportPage,admin:adminPage};
   document.querySelector("#app").innerHTML = `${topbar()}${(pages[currentPage] || homePage)()}${bottomNav()}<div class="toast" id="toast" role="status"></div>`;
   const screen=document.querySelector("#app > main.screen");
   if(screen){screen.classList.add("screen-enter");requestAnimationFrame(()=>screen.classList.add("screen-enter-active"));}
@@ -1321,7 +1456,8 @@ document.querySelectorAll("[data-admin-payment-refresh]").forEach(el=>el.addEven
     }
   }));
   document.querySelectorAll("[data-review-status]").forEach(el=>el.addEventListener("click",()=>{const card=el.closest("[data-admin-submission]"),comment=card?.querySelector("[data-review-comment]")?.value||"",grade=card?.querySelector("[data-review-grade]")?.value??"";el.disabled=true;callAdminApi("reviewSubmission",{studentId:el.dataset.studentId,submissionId:el.dataset.submissionId,status:el.dataset.reviewStatus,comment,grade},(error,result)=>{if(error||!result?.ok){toast(error?.message||result?.message||"Не удалось сохранить проверку.");loadAdminDashboard();return;}toast(result.notificationSent?"Проверка сохранена, уведомление отправлено.":"Проверка сохранена. Бот не смог доставить уведомление.");loadAdminDashboard();});}));
-  document.querySelectorAll("[data-go]").forEach(el => el.addEventListener("click", () => { currentPage = el.dataset.go; searchValue=""; if(currentPage==="admin")loadAdminDashboard(); if(currentPage==="profile")loadStudentPaymentHistory(); render(); window.scrollTo({top:0,behavior:"smooth"}); }));
+  document.querySelectorAll("[data-go]").forEach(el => el.addEventListener("click", () => { currentPage = el.dataset.go; searchValue=""; if(currentPage==="admin")loadAdminDashboard(); if(currentPage==="profile")loadStudentPaymentHistory(); if(currentPage==="academicPassport")refreshAcademicPassport(); render(); window.scrollTo({top:0,behavior:"smooth"}); }));
+  document.querySelectorAll("[data-academic-refresh]").forEach(button=>button.addEventListener("click",()=>{refreshAcademicPassport();}));
   document.querySelectorAll("[data-enroll-program]").forEach(button=>button.addEventListener("click",()=>enrollInProgram(button.dataset.enrollProgram,button)));
   document.querySelectorAll("[data-faculty]").forEach(el => el.addEventListener("click", () => { selectedFaculty=faculties.find(f=>f.id===el.dataset.faculty)||faculties[0]; currentPage="facultyDetail"; render(); window.scrollTo({top:0,behavior:"smooth"}); }));
   document.querySelectorAll("[data-lesson-open]").forEach(el=>el.addEventListener("click",()=>{selectedLessonId=el.dataset.lessonOpen;quizChoice="";lessonTab="lesson";currentPage="lesson";render();window.scrollTo({top:0,behavior:"smooth"});}));
