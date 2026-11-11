@@ -51,8 +51,15 @@ const cases = [
     writeFileSync(path, readFileSync(path, "utf8").replace("## 7. План тестирования", "## 7. Тесты"));
   }, false],
   ["completed active WP fails consistency check", dir => {
-    const path = join(dir, "docs/MASTER_ROADMAP.md");
-    writeFileSync(path, readFileSync(path, "utf8").replace("- [ ] PROD-002", "- [x] PROD-002"));
+    const statePath = join(dir, "docs/PROJECT_STATE.md");
+    const roadmapPath = join(dir, "docs/MASTER_ROADMAP.md");
+    const state = readFileSync(statePath, "utf8");
+    const active = state.match(/^\*\*Текущий WP: ([A-Z]+-\d+) —/m);
+    assert.ok(active, "fixture must declare one active WP");
+    const pattern = new RegExp("^- \\[[ ~]\\] " + active[1] + "(?=\\s|—)", "m");
+    const roadmap = readFileSync(roadmapPath, "utf8");
+    assert.match(roadmap, pattern, "roadmap must contain active WP " + active[1]);
+    writeFileSync(roadmapPath, roadmap.replace(pattern, "- [x] " + active[1]));
   }, false],
 ];
 
@@ -60,8 +67,8 @@ for (const [name, mutate, shouldPass] of cases) {
   const dir = fixture(mutate);
   try {
     const result = run(dir);
-    assert.equal(result.status === 0, shouldPass, `${name}\n${result.stdout}\n${result.stderr}`);
-    console.log(`PASS: ${name}`);
+    assert.equal(result.status === 0, shouldPass, name + "\n" + result.stdout + "\n" + result.stderr);
+    console.log("PASS: " + name);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
