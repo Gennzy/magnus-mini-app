@@ -130,7 +130,7 @@ if (!activeMatch) {
     for (const section of ["## 1. Цель и ожидаемый результат", "## 3. Границы", "## 5. Затрагиваемые файлы и области", "## 6. Критерии приёмки", "## 7. План тестирования", "## 10. Закрытие WP"]) {
       if (!activeWorkPackage.includes(section)) errors.push(activeId + " WP is missing section: " + section);
     }
-    if (!/^- \\*\*\*Статус:\*\* (?:\[~\] In progress|\[ \] Planned)/m.test(activeWorkPackage)) {
+    if (!activeWorkPackage.includes("- **Статус:** [~] In progress") && !activeWorkPackage.includes("- **Статус:** [ ] Planned")) {
       errors.push("Current WP " + activeId + " must be Planned or In progress, not complete/blocked");
     }
   }
