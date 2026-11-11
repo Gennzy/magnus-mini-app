@@ -1,18 +1,6 @@
 name: Deploy MAGNUS to Telegram Serverless
 
 on:
-  push:
-    branches:
-      - magnus-source-upload
-    paths:
-      - "src/**"
-      - "tgcloud/**"
-      - "public/**"
-      - "index.html"
-      - "package.json"
-      - "package-lock.json"
-      - "tgcloud.jsonc"
-      - ".github/workflows/deploy-telegram.yml"
   workflow_dispatch:
 
 permissions:
