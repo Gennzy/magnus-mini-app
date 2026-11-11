@@ -313,6 +313,7 @@ try {
     await adminPage.locator('.admin-tabs [data-admin-tab="' + tab + '"]').click();
     await adminPage.waitForSelector(selector, { timeout: 10000 });
     const adminDimensions = await adminPage.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, navBottom: document.querySelector(".bottom-nav").getBoundingClientRect().bottom, screenTop: document.querySelector("main.screen").getBoundingClientRect().top }));
+    if (tab === "bot" && await adminPage.locator(".admin-bot-icon svg").count() !== 1) failures.push("admin-bot: expected the shared owl brand mark instead of a text monogram");
     if (adminDimensions.document > adminDimensions.viewport + 1) failures.push("admin-" + tab + ": horizontal overflow " + JSON.stringify(adminDimensions));
     if (adminDimensions.navBottom > adminDimensions.screenTop + 1) failures.push("admin-" + tab + ": primary navigation overlaps admin content " + JSON.stringify(adminDimensions));
     await adminPage.screenshot({ path: artifacts + "/admin-mobile-" + tab + ".png", fullPage: true });

@@ -6320,7 +6320,8 @@ body { background:#f6f6f3;color:#252b2d; }
 .admin-existing-comment { margin:10px 0 0;padding:10px;border-left:2px solid #e87525;background:#faf7f3;color:#5d6669;font-size:10px;line-height:1.6; }
 .admin-bot-card,.admin-settings-card,.admin-command-list { margin:12px 0;padding:18px;border:1px solid #e7e5df;border-radius:13px;background:#fff; }
 .admin-bot-top { display:flex;align-items:center;gap:12px; }
-.admin-bot-icon { display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#293235;color:#f5a05e;font-size:22px;font-weight:850; }
+.admin-bot-icon { display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:var(--orange);color:#fff;box-shadow:0 4px 12px rgba(244,122,25,.2); }
+.admin-bot-icon svg { display:block;width:30px;height:30px; }
 .admin-bot-top>div { flex:1;min-width:0; }
 .admin-bot-top>div>span { color:#899194;font-size:8px;font-weight:850;letter-spacing:1px; }
 .admin-bot-top h2 { margin:3px 0;color:#30383a;font-size:17px; }
