@@ -86,6 +86,8 @@ export default async function (input, ctx) {
     }
     const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
     const payload = existing?.payload || {};
+    const academicError = academicAccessError(payload);
+    if (academicError) return academicError;
     const enrollments = cleanMap(payload.enrollments);
     if (!enrollments[courseId]) enrollments[courseId] = new Date().toISOString();
     const updatedAt = Math.floor(Date.now() / 1000);
@@ -213,6 +215,8 @@ export default async function (input, ctx) {
     if (!questions) return { ok: false, code: 'INVALID_PROGRAM', message: 'Итоговый экзамен для этой программы не найден.' };
     const existing = await db.select({ payload: studentData.payload }).from(studentData).where(eq(studentData.tgId, tgId)).get();
     const payload = existing?.payload || {};
+    const academicError = academicAccessError(payload);
+    if (academicError) return academicError;
     if (!cleanMap(payload.enrollments)[courseId]) return { ok: false, code: 'NOT_ENROLLED', message: 'Сначала оформи зачисление на программу.' };
     const lessons = { ai:['ai-01','ai-02','ai-03','ai-04','ai-05','ai-06'], mind:['mind-01','mind-02','mind-03','mind-04','mind-05','mind-06'], brand:['brand-01','brand-02','brand-03','brand-04','brand-05','brand-06'] }[courseId];
     const completed = cleanMap(payload.completedLessons);
