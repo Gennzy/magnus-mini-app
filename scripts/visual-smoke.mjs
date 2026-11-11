@@ -72,6 +72,8 @@ try {
     await page.locator('.faculty-card[data-faculty="it"]').click();
     await page.waitForSelector(".detail-screen", { timeout: 10000 });
     await assertNoHorizontalOverflow("faculty-detail");
+    const facultyCopy = await page.locator(".detail-screen").innerText();
+    if (/преподавател/i.test(facultyCopy)) failures.push(name + "/faculty-detail: human teacher wording conflicts with the AI-led learning model");
 
     await page.locator('.bottom-nav [data-go="assignments"]').click();
     await page.waitForSelector(".assignments-screen", { timeout: 10000 });
@@ -79,6 +81,8 @@ try {
     await page.locator("[data-assignment-open]").first().click();
     await page.waitForSelector(".assignment-detail-screen", { timeout: 10000 });
     await assertNoHorizontalOverflow("assignment-detail");
+    const assignmentCopy = await page.locator(".assignment-detail-screen").innerText();
+    if (/преподавател/i.test(assignmentCopy)) failures.push(name + "/assignment-detail: human teacher wording conflicts with the AI-led learning model");
     await page.screenshot({ path: artifacts + "/" + name + "-assignment-detail.png", fullPage: true });
 
     await page.locator('.bottom-nav [data-go="profile"]').click();
@@ -301,6 +305,8 @@ try {
   await adminPage.waitForSelector(".admin-screen .admin-header", { timeout: 15000 });
   await adminPage.locator(".startup-screen").evaluate(el => el.remove()).catch(() => {});
   await adminPage.waitForSelector(".admin-stat-grid", { timeout: 10000 });
+  const adminOverviewCopy = await adminPage.locator(".admin-screen").innerText();
+  if (/преподавател/i.test(adminOverviewCopy)) failures.push("admin-overview: human teacher wording conflicts with the AI-led learning model");
   const mobileAdminTabs = await adminPage.locator(".admin-tabs").evaluate(el => ({ overflowX: getComputedStyle(el).overflowX, scrollWidth: el.scrollWidth, clientWidth: el.clientWidth, flexWrap: getComputedStyle(el).flexWrap }));
   if (mobileAdminTabs.overflowX !== "auto" || mobileAdminTabs.flexWrap !== "nowrap" || mobileAdminTabs.scrollWidth <= mobileAdminTabs.clientWidth) failures.push("admin-mobile: tabs are not a compact horizontal scroll row " + JSON.stringify(mobileAdminTabs));
   for (const [tab, selector] of [["overview", ".admin-stat-grid"], ["reviews", ".admin-screen section"], ["students", ".admin-students-section"], ["support", ".admin-support-section"], ["payments", ".admin-payment-plans"], ["ai", ".admin-ai-settings"], ["bot", ".admin-bot-settings"], ["audit", ".admin-audit-section"]]) {
@@ -309,7 +315,7 @@ try {
     const adminDimensions = await adminPage.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, navBottom: document.querySelector(".bottom-nav").getBoundingClientRect().bottom, screenTop: document.querySelector("main.screen").getBoundingClientRect().top }));
     if (adminDimensions.document > adminDimensions.viewport + 1) failures.push("admin-" + tab + ": horizontal overflow " + JSON.stringify(adminDimensions));
     if (adminDimensions.navBottom > adminDimensions.screenTop + 1) failures.push("admin-" + tab + ": primary navigation overlaps admin content " + JSON.stringify(adminDimensions));
-    if (tab === "overview") await adminPage.screenshot({ path: artifacts + "/admin-mobile-overview.png", fullPage: true });
+    await adminPage.screenshot({ path: artifacts + "/admin-mobile-" + tab + ".png", fullPage: true });
   }
   await adminPage.setViewportSize({ width: 1440, height: 1000 });
   await adminPage.goto(baseUrl + "?admin=1", { waitUntil: "domcontentloaded", timeout: 30000 });
