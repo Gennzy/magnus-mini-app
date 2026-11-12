@@ -8322,3 +8322,19 @@ body{
 }
 .learning-path-finish.is-complete>b{color:#495d53}
 .learning-path-finish.is-complete>small{color:#65756c}
+
+
+/* UX-001 · Readable course-map typography on compact phones */
+@media(max-width:380px){
+  .learning-map-screen .learning-node-card>b{font-size:12px;line-height:1.32}
+  .learning-map-screen .learning-node-meta{font-size:8px}
+  .learning-map-screen .learning-node-meta span:last-child{display:none}
+  .learning-map-screen .learning-node-status{font-size:7px;letter-spacing:.35px}
+  .learning-map-screen .learning-chapter-copy small{font-size:7.5px;letter-spacing:.45px}
+  .learning-map-screen .learning-chapter-count{font-size:8px}
+  .learning-map-screen .learning-checkpoint-copy small{font-size:7px;letter-spacing:.45px}
+  .learning-map-screen .learning-checkpoint-copy b{font-size:11px;line-height:1.3}
+  .learning-map-screen .learning-checkpoint-copy>span{font-size:8px}
+  .learning-map-screen .learning-checkpoint>strong{display:none}
+  .learning-map-screen .learning-path-map-label b{font-size:7.5px}
+}
