@@ -526,6 +526,40 @@ try {
     await breakpointPage.waitForSelector(".study-screen", { timeout: 10000 });
     await breakpointPage.locator('.study-screen [data-course="ai"]').last().click();
     await breakpointPage.waitForSelector(".learning-map-screen .learning-path", { timeout: 10000 });
+    if (width <= 380) {
+      const compactMapText = await breakpointPage.evaluate(() => {
+        const size = selector => {
+          const node = document.querySelector(selector);
+          return node ? Number.parseFloat(getComputedStyle(node).fontSize) : 0;
+        };
+        const display = selector => {
+          const node = document.querySelector(selector);
+          return node ? getComputedStyle(node).display : "missing";
+        };
+        return {
+          lessonTitle: size(".learning-node-card>b"),
+          lessonMeta: size(".learning-node-meta"),
+          lessonStatus: size(".learning-node-status"),
+          chapterLabel: size(".learning-chapter-copy small"),
+          chapterCount: size(".learning-chapter-count"),
+          checkpointLabel: size(".learning-checkpoint-copy small"),
+          checkpointTitle: size(".learning-checkpoint-copy b"),
+          checkpointMeta: size(".learning-checkpoint-copy>span"),
+          duplicateLessonStatus: display(".learning-node-meta span:last-child"),
+          duplicateCheckpointStatus: display(".learning-checkpoint>strong")
+        };
+      });
+      const minimums = {
+        lessonTitle: 12, lessonMeta: 8, lessonStatus: 7,
+        chapterLabel: 7, chapterCount: 8, checkpointLabel: 7,
+        checkpointTitle: 11, checkpointMeta: 8
+      };
+      const tooSmall = Object.entries(minimums).filter(([key, minimum]) => compactMapText[key] < minimum);
+      if (tooSmall.length) failures.push("breakpoint-" + width + "/course-map: compact typography below minimum " + JSON.stringify({compactMapText,tooSmall}));
+      if (compactMapText.duplicateLessonStatus !== "none" || compactMapText.duplicateCheckpointStatus !== "none") {
+        failures.push("breakpoint-" + width + "/course-map: redundant status copy is still visible " + JSON.stringify(compactMapText));
+      }
+    }
     await checkStage("course-map");
     await breakpointPage.locator(".learning-node[data-lesson-open]").first().click();
     await breakpointPage.waitForSelector(".lesson-screen .lesson-tutor", { timeout: 10000 });
