@@ -10,16 +10,15 @@
 - **Запрет:** не работать в `main`.
 - **Mini App:** https://app9020486965.tgcloud.ai/
 - **Стек:** Vite, vanilla JS/CSS, Telegram WebApp, Telegram Serverless endpoints/DB.
-- **Дата обновления:** 11 ноября 2026 года.
+- **Дата обновления:** 12 ноября 2026 года.
 
 ## 2. Текущий HEAD и публикация
 
-- PROD-002 закрыта финальным полным visual CI: [run 43001055233](https://github.com/Gennzy/magnus-mini-app/actions/runs/43001055233), SHA `552ba7c4af2a7b64d2aab3ab6b0cf3bf6c87c3c3`. PROD-003 закрыта после исправления false-positive в checker и нового регрессионного теста: полный visual CI [run 43002543794](https://github.com/Gennzy/magnus-mini-app/actions/runs/43002543794), SHA `cb2e08d328829c934f0d2e6033bd7c1ebd188629` — SUCCESS. Финальный HEAD после синхронизации статусов: `0a7187a5850c5ce66a118fe3f561ba3dacba19e2`; проверка [run 43002935812](https://github.com/Gennzy/magnus-mini-app/actions/runs/43002935812) — SUCCESS.
-- Этот CI включал документационный checker и негативные тесты, tutor coverage, payment invariants, backend syntax, production build и desktop/mobile Playwright smoke.
-- **Последний ранее подтверждённый runtime commit:** `c23dfa43b81047b58ae1f2168881bb2eb93c5afa`; в нём административный gradebook переведён на единый `ACADEMIC_CATALOG`.
-- **Последний подтверждённый Telegram deploy:** [run 42970888891](https://github.com/Gennzy/magnus-mini-app/actions/runs/42970888891), app SHA `90798104fb29df89ff05d1064a26ef07e3977fa7`.
-- Commit `c23dfa43` не был опубликован в Telegram Cloud на момент последней зафиксированной проверки. Telegram deploy запускается вручную; GitHub Pages не используется.
-- PROD-001 и PROD-002 — документационные задачи. Telegram deploy не требуется, пока изменения не затрагивают runtime.
+- **Последний runtime commit:** `af6f2198cf9f971e8464a07ce664147e9ffa7689` — улучшена читаемость учебной карты на ширине 320–380 px и добавлены регрессионные assertions минимального размера текста/скрытия повторных статусов.
+- **Полный visual CI:** [run 43200405223](https://github.com/Gennzy/magnus-mini-app/actions/runs/43200405223), HEAD `af6f2198cf9f971e8464a07ce664147e9ffa7689` — SUCCESS. Успешно прошли docs checker и negative tests, tutor coverage, payment invariants, backend syntax, production build, desktop/mobile Playwright и загрузка screenshot artifacts.
+- Предыдущий CSS-only проход [run 43200361754](https://github.com/Gennzy/magnus-mini-app/actions/runs/43200361754), commit `7b7cec57f62f38d2f13a1fec5d2cb9e220e49f28` — SUCCESS; итоговый run выше включает также новые browser assertions.
+- **Последний подтверждённый Telegram Cloud deploy:** [run 43082656469](https://github.com/Gennzy/magnus-mini-app/actions/runs/43082656469), attempt 3, job `130765932123`; deployment logs подтверждают checkout SHA `fa6ac75b49a5a4be4eecfead1f401f1895a5515d`, production build, загрузку новых JS/CSS assets и успешный `tgcloud push`. Safe migrations: schema in sync, изменений схемы не было.
+- Runtime commit `af6f2198` пока **не опубликован** в Telegram Cloud. Deployment workflow остаётся manual-only; для нового runtime релиза требуется ручной запуск [deploy-telegram.yml](https://github.com/Gennzy/magnus-mini-app/actions/workflows/deploy-telegram.yml) с веткой `magnus-source-upload`. GitHub Pages не используется.
 - После каждого коммита проверять новые Actions; статус запуска не равен успешному завершению.
 
 ## 3. Продукт и действующие ограничения
